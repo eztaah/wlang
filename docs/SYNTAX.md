@@ -1,77 +1,58 @@
+Types
+```
+unsigned   : u8 u16 u32 u64 u128
+signed int : i8 i16 i32 i64 i128
+float      : f32 f64 
+character  : char
+```
+
 Declarations and Definitions:
 ```c
-int a = 2;
-char b = 'c';
-float c = 3.14;
-double d = 9.81;
+cst a: i32 = 2
+var c: i32 = 2
+var b: char = 'c'
+cst myString: string = "Test"
+myString.length 
 
-// Declaration of a structure
+// Array
+cst myArray: i32[] = [1, 2, 3] 
+myArray[1] = 1
+myArray.push(4)
+
+// Structure
 struct Point {
-    int x;
-    int y;
-};
-
-// Declaration of a union
-union Data {
-    int i;
-    float f;
-    char str[20];
-};
-
-// Declaration of an enumeration
-enum boolean { NO, YES };
+    cst x: i32
+    cst x: i32
+}
 ```
 
-<br>
-
-Operators:
+Blocks
 ```c
-a + b; // Addition
-a - b; // Subtraction
-a * b; // Multiplication
-a / b; // Division
-a % b; // Modulo (remainder of integer division)
+// if statement
+if (a == b) {
+} 
 
-a == b; // Equal to
-a != b; // Not equal to
-a > b;  // Greater than
-a < b;  // Less than
-a >= b; // Greater than or equal to
-a <= b; // Less than or equal to
+// while loop
+while (1) {
+}
 
-a && b; // Logical AND operator
-a || b; // Logical OR operator
-!a;     // Logical NOT operator
+// for loop
+for (i in 0..10) {
+}
+for (i in 0..=10) {
+}
+for (cst elt in array) {
+}
 ```
-
-<br>
 
 Functions:
 ```c
-// Function declaration
-int myFunction(int a, int b) {
-    return a + b;
+fun foo1(a: i32, b: f64): i32 {
+    return
 }
-
-// Function call
-int result = myFunction(3, 4);
-```
-
-<br>
-
-Pointers:
-```c
-int var = 5;
-int *ptr = &var; // Pointer declaration
-
-*ptr = 10; // Modifying the value pointed to
-```
-
-<br>
-
-Array:
-```c
-int array[10]; // Declaration of an array of 10 integers
-
-array[0] = 1; // Assigning the value 1 to the first element
+fun foo2(cst a: &i32, var b: &f64): chr {
+    return
+}
+foo1(var1, var2)
+foo2(&var1, &var2)
 ```
