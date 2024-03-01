@@ -1,1 +1,1 @@
-c compiler
+c++ compiler

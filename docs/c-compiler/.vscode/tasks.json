@@ -1,0 +1,19 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+      {
+          "label": "Build avec Makefile",
+          "type": "shell",
+          "command": "make",
+          "group": {
+              "kind": "build",
+              "isDefault": true
+          },
+          "problemMatcher": "$gcc",
+          "presentation": {
+              "reveal": "always",
+              "panel": "shared"
+          }
+      }
+  ]
+}

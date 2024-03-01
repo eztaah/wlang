@@ -1,0 +1,84 @@
+INPUT :  
+
+int a = 2;
+int b = 3;
+
+int c = b + a;
+
+print(c);
+
+
+
+
+
+OUTPUT LEXER : 
+[
+    ("INT", None),
+    ("IDENTIFIER", "a"),
+    ("EQUALS", None),
+    ("NUMBER", 2),
+    ("SEMICOLON", None),
+
+    ("INT", None),
+    ("IDENTIFIER", "b"),
+    ("EQUALS", None),
+    ("NUMBER", 3),
+    ("SEMICOLON", None),
+
+    ("INT", None),
+    ("IDENTIFIER", "c"),
+    ("EQUALS", None),
+    ("IDENTIFIER", "b"),
+    ("PLUS", None),
+    ("IDENTIFIER", "a"),
+    ("SEMICOLON", None),
+
+    ("PRINT", None),
+    ("LPAREN", None),
+    ("IDENTIFIER", "c"),
+    ("RPAREN", None),
+    ("SEMICOLON", None),
+
+    ("EOF", None)
+]
+
+
+
+
+OUTPUT PARSER : 
+
+NodesDispo : 
+
+VarDeclaration:
+   - type
+   - name 
+   - value
+
+BinaryOp:
+   - left 
+   - op
+   - right
+
+PrintStatement
+   - expression
+
+
+
+Program
+├─ VarDeclaration
+│  ├─ type: INT
+│  ├─ name: a
+│  └─ value: Number(2)
+├─ VarDeclaration
+│  ├─ type: INT
+│  ├─ name: b
+│  └─ value: Number(3)
+├─ VarDeclaration
+│  ├─ type: INT
+│  ├─ name: c
+│  └─ value: BinaryOp
+│     ├─ left: Identifier(b)
+│     ├─ op: PLUS
+│     └─ right: Identifier(a)
+└─ PrintStatement
+   └─ expression: Identifier(c)
