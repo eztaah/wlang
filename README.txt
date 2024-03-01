@@ -34,15 +34,17 @@ Meta characters are < > | ( ) ? * [ ] '
 
     <unary_operator> ::= '++' | '--'
  
-    <variable_declaration_statement> = <variable_keyword> <variable_name> (: <type>)? = <expr>
+    <variable_declaration_statement> ::= <variable_keyword> <variable_name> (: <type>)? = <expr>
 
-    <variable_assignment_statement> = <variable_name> = <expr>
+    <variable_assignment_statement> ::= <variable_name> = <expr>
       
     <if_statement> ::=
       if '(' <expr> ')' {
-          <statement>
+          <statements>
       } [ 
-        else '(' <expr> ')' { <statements> }
+        else '(' <expr> ')' { 
+          <statements> 
+        }
      ]
      // TODO: Add support for "else if"
 
@@ -67,4 +69,5 @@ Meta characters are < > | ( ) ? * [ ] '
       | f64
       | string
 
-    <function_statement> ::= fun <identifier> '(' ( <identifier>: <type> )* ')' (: <type>)?  { <expr> }
+    <function_statement> ::= fun <identifier> '(' ( <identifier>: <type> )* ')' (: <type>)?  { <statements> }
+    // TODO: fix this definition for arguments
