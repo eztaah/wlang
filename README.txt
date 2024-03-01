@@ -1,1 +1,22 @@
 c++ compiler
+
+
+
+- First approximative BNF
+
+    <identifier> ::= [a-zA-Z][a-zA-Z0-9]*
+
+    <expr> ::= <number> | <identifier> | <expr> + <expr> | <string>
+
+    <statement> ::= 
+            <"cst" | "var"> <variable_name> = <expr>
+        |  if ( <expr> ) {
+            <statement>
+            } [ else (<expr>) { <statement> } ]
+        | while (<expr>) { <statement> }
+
+    <var_prefix> ::= var | cst
+
+    <type> ::= i8 | i16 | i32 | i64
+
+    <function_statement> ::= fun <identifier> '(' ( <identifier>: <type> )* ')' (: <type>)?  { <expr> }
