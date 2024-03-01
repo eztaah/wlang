@@ -1,14 +1,16 @@
-// lexer.cpp
 #include "lexer.hpp"
 #include <cctype>
 #include <stdexcept>
 #include <iostream>
+#include <set>
 
 
 std::vector<Token> lexer(const std::string& code) 
 {
     std::vector<Token> tokens;
     size_t i = 0;
+    std::set<std::string> int_sizes = {"8", "16", "32", "64", "128"};
+    std::set<std::string> float_sizes = {"32", "64"};
 
     while (i < code.length()) {
 
@@ -41,10 +43,19 @@ std::vector<Token> lexer(const std::string& code)
                 i++;
             }
         }
+        else if (code[i] == '&') {
+            tokens.push_back(Token("REFERENCE", ""));
+            i++;
+        }
+        else if (code[i] == ':') {
+            tokens.push_back(Token("COLON", ""));
+            i++;
+        }
         else if (code[i] == ';') {
             tokens.push_back(Token("SEMICOLON", ""));
             i++;
         }
+        
 
         // Handling parentheses and braces
         else if (code[i] == '(') {
@@ -63,6 +74,14 @@ std::vector<Token> lexer(const std::string& code)
             tokens.push_back(Token("RBRACE", ""));
             i++;
         }
+        else if (code[i] == '[') {
+            tokens.push_back(Token("LSQUARE", ""));
+            i++;
+        }
+        else if (code[i] == ']') {
+            tokens.push_back(Token("RSQUARE", ""));
+            i++;
+        }
 
         // Handling variables and keywords
         else if (isalpha(code[i])) {
@@ -75,7 +94,45 @@ std::vector<Token> lexer(const std::string& code)
             if (ident == "if") {
                 tokens.push_back(Token("IF", ""));
             }
-            else {
+            else if (ident == "while") {
+                tokens.push_back(Token("WHILE", ""));
+            }
+            else if (ident == "for") {
+                tokens.push_back(Token("FOR", ""));
+            }
+            else if (ident == "in") {
+                tokens.push_back(Token("IN", ""));
+            }
+            else if (ident == "cst") {
+                tokens.push_back(Token("CONST", ""));
+            }
+            else if (ident == "var") {
+                tokens.push_back(Token("VAR", ""));
+            }
+            else if (ident == "struct") {
+                tokens.push_back(Token("STRUCT", ""));
+            }
+            else if (ident == "fun") {
+                tokens.push_back(Token("FUNCTION", ""));
+            }
+
+
+            //handling datatypes
+            else if (ident == "char") {
+                tokens.push_back(Token("CHARDECLAR", ""));
+            }
+            else if (ident[0] == 'u' && (int_sizes.find(ident.substr(1, ident.length()-1)) != int_sizes.end())) {
+                tokens.push_back(Token("UDECLAR", ident.substr(1, ident.length()-1)));
+            }
+            else if (ident[0] == 'i' && (int_sizes.find(ident.substr(1, ident.length()-1)) != int_sizes.end())) {
+                tokens.push_back(Token("IDECLAR", ident.substr(1, ident.length()-1)));
+            }
+            else if (ident[0] == 'f' && (float_sizes.find(ident.substr(1, ident.length()-1)) != float_sizes.end())) {
+                tokens.push_back(Token("FDECLAR", ident.substr(1, ident.length()-1)));
+            }
+
+            //handling var names
+             else {
                 tokens.push_back(Token("IDENTIFIER", ident));
             }
         }
