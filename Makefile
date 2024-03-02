@@ -1,8 +1,8 @@
 TARGET = build/prog
 SRC_DIR = src
 BUILD_DIR = build
-SOURCES = $(SRC_DIR)/main.cpp $(SRC_DIR)/lexer.cpp
-CFLAGS = -Wall -Werror
+SOURCES = $(SRC_DIR)/main.cpp $(SRC_DIR)/lexer.cpp $(SRC_DIR)/parser.cpp
+CFLAGS = -Wall -Wextra
 
 $(TARGET): $(SOURCES)
 	mkdir -p $(BUILD_DIR)
