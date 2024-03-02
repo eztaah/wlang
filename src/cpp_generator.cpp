@@ -50,6 +50,10 @@ string generate_cpp_impl(const NodePtr &node, int tab_offset)
         {
             output += " / ";
         }
+        else if (bnode->_op == "EQUALS_EQUALS")
+        {
+            output += " == ";
+        }
         output += generate_cpp_impl(bnode->_right, tab_offset);
         output += " )";
     }
