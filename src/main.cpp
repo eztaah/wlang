@@ -1,12 +1,26 @@
+#include <iostream>
+#include <fstream>
+#include <sstream>
 #include "lexer.hpp"
 #include "parser.hpp"
 #include "asm_generator.hpp"
 #include "nodes.hpp"
-#include <iostream>
 
 int main() 
 {
-    std::string code = "a = 4 + 2 * 7; b = 2; c = a + b; if (a == b) {r = 0;}";
+    std::string filePath = "test.cp";
+    std::ifstream fileStream(filePath);
+    std::string code;
+
+    if (fileStream) {
+        std::stringstream buffer;
+        buffer << fileStream.rdbuf();
+        code = buffer.str();
+    } else {
+        std::cerr << "Unable to open file: " << filePath << std::endl;
+        return 1; // Return avec un code d'erreur
+    }
+
 
     // LEXER 
     std::cout << "\n---- LEXER OUTPUT ----\n" << std::endl;
