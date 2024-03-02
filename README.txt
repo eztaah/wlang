@@ -2,10 +2,39 @@ c++ compiler
 
 
 # TODO
-- Manage the priority of mathematical operations
-- Add the else branch
-- Differentiate between BinExpr and BoolExpr
+- configurer ou install code formatter c++
 
+- output l'ast en json
+- ajouter commentaires  //, ou #, ou /*  */
+- faire une analyse sémantique (verifier les const par exemple)
+- faire un global.hpp
+- ajout syntaxe
+- implémentation des print et println, non-prioritairement, la fonction input
+- faire les outputs de tt les phases dans des fichiers text (dans build)
+      - build/output.lex
+      - build/output.ast
+      - build/output.cpp OU build/output.asm
+
+V1:
+println("test" + 123)
+- concatenation + number, string
+- type string
+
+V2:
+println("test", 123)   // arguments variadiques
+
+
+class FunCall : public Node {
+    std::string _name;
+    std::vector<Node> parameters;
+};
+
+
+
+
+
+
+-----------------------------------------
 
 
 # First approximative BNF
