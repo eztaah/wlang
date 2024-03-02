@@ -1,15 +1,22 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+
 #include "lexer.hpp"
 #include "parser.hpp"
 #include "nodes.hpp"
 #include "asm_generator.hpp"
 #include "cpp_generator.hpp"
 
-int main() 
+
+int main(int argc, char* argv[]) 
 {
-    std::string filePath = "test.cp";
+    if (argc != 2) {
+        std::cerr << "usage: compiler <file.cp>" << std::endl;
+        return EXIT_FAILURE;
+    }
+
+    std::string filePath = argv[1];
     std::ifstream fileStream(filePath);
     std::string code;
 

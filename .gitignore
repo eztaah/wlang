@@ -1,4 +1,4 @@
-prog
+compiler
 .vscode/
 
 # Prerequisites
@@ -33,3 +33,5 @@ prog
 *.exe
 *.out
 *.app
+
+prog
