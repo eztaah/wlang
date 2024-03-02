@@ -1,4 +1,4 @@
-TARGET = prog
+TARGET = compiler
 SRC_DIR = src
 SOURCES = $(SRC_DIR)/main.cpp $(SRC_DIR)/lexer.cpp $(SRC_DIR)/parser.cpp $(SRC_DIR)/asm_generator.cpp
 CFLAGS = -Wall -Wextra
