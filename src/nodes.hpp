@@ -4,6 +4,7 @@
 #include <vector>
 #include <memory>
 #include <string>
+#include "lexer.hpp"
 
 class Node {
 public:
@@ -26,10 +27,10 @@ public:
 
 class BinOpNode : public Node {
 public:
-    BinOpNode(NodePtr left, const std::string& op, NodePtr right)
+    BinOpNode(NodePtr left, const TokenType& op, NodePtr right)
         : _left(left), _op(op), _right(right) {}
     NodePtr _left;
-    std::string _op;
+    TokenType _op;
     NodePtr _right;
 };
 

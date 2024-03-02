@@ -37,7 +37,7 @@ std::pair<std::vector<std::string>, int> generate_assembly(const NodePtr& node, 
         auto [left_instructions, left_label_count] = generate_assembly(bnode->_left, variables, offset, right_label_count);
         instructions.insert(instructions.end(), left_instructions.begin(), left_instructions.end());
         instructions.push_back("pop rbx");
-        if (bnode->_op == "PLUS") {
+        if (bnode->_op == PLUS) {
             instructions.push_back("add rax, rbx");
         }
         label_count = left_label_count;

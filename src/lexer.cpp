@@ -21,65 +21,57 @@ std::vector<Token> lexer(const std::string& code)
                 num += code[i];
                 i++;
             }
-            tokens.push_back(Token("NUMBER", num));
+            tokens.push_back(Token(NUMBER, num));
         }
 
         // Handling operators
         else if (code[i] == '+') {
-            tokens.push_back(Token("PLUS", ""));
+            tokens.push_back(Token(PLUS, ""));
             i++;
         }
         else if (code[i] == '*') {
-            tokens.push_back(Token("TIMES", ""));
+            tokens.push_back(Token(TIMES, ""));
+            i++;
+        }
+        else if (code[i] == '-') {
+            tokens.push_back(Token(MINUS, ""));
+            i++;
+        }
+        else if (code[i] == '/') {
+            tokens.push_back(Token(DIVIDE, ""));
             i++;
         }
         else if (code[i] == '=') {
             if (i + 1 < code.length() && code[i + 1] == '=') {
-                tokens.push_back(Token("EQUALS_EQUALS", ""));
+                tokens.push_back(Token(EQUALS_EQUALS, ""));
                 i += 2;
             }
             else {
-                tokens.push_back(Token("EQUALS", ""));
+                tokens.push_back(Token(EQUALS, ""));
                 i++;
             }
         }
-        else if (code[i] == '&') {
-            tokens.push_back(Token("REFERENCE", ""));
-            i++;
-        }
-        else if (code[i] == ':') {
-            tokens.push_back(Token("COLON", ""));
-            i++;
-        }
         else if (code[i] == ';') {
-            tokens.push_back(Token("SEMICOLON", ""));
+            tokens.push_back(Token(SEMICOLON, ""));
             i++;
         }
         
 
         // Handling parentheses and braces
         else if (code[i] == '(') {
-            tokens.push_back(Token("LPAREN", ""));
+            tokens.push_back(Token(LPAREN, ""));
             i++;
         }
         else if (code[i] == ')') {
-            tokens.push_back(Token("RPAREN", ""));
+            tokens.push_back(Token(RPAREN, ""));
             i++;
         }
         else if (code[i] == '{') {
-            tokens.push_back(Token("LBRACE", ""));
+            tokens.push_back(Token(LBRACE, ""));
             i++;
         }
         else if (code[i] == '}') {
-            tokens.push_back(Token("RBRACE", ""));
-            i++;
-        }
-        else if (code[i] == '[') {
-            tokens.push_back(Token("LSQUARE", ""));
-            i++;
-        }
-        else if (code[i] == ']') {
-            tokens.push_back(Token("RSQUARE", ""));
+            tokens.push_back(Token(RBRACE, ""));
             i++;
         }
 
@@ -92,48 +84,12 @@ std::vector<Token> lexer(const std::string& code)
             }
             // Handling keywords
             if (ident == "if") {
-                tokens.push_back(Token("IF", ""));
-            }
-            else if (ident == "while") {
-                tokens.push_back(Token("WHILE", ""));
-            }
-            else if (ident == "for") {
-                tokens.push_back(Token("FOR", ""));
-            }
-            else if (ident == "in") {
-                tokens.push_back(Token("IN", ""));
-            }
-            else if (ident == "cst") {
-                tokens.push_back(Token("CONST", ""));
-            }
-            else if (ident == "var") {
-                tokens.push_back(Token("VAR", ""));
-            }
-            else if (ident == "struct") {
-                tokens.push_back(Token("STRUCT", ""));
-            }
-            else if (ident == "fun") {
-                tokens.push_back(Token("FUNCTION", ""));
-            }
-
-
-            //handling datatypes
-            else if (ident == "char") {
-                tokens.push_back(Token("CHARDECLAR", ""));
-            }
-            else if (ident[0] == 'u' && (int_sizes.find(ident.substr(1, ident.length()-1)) != int_sizes.end())) {
-                tokens.push_back(Token("UDECLAR", ident.substr(1, ident.length()-1)));
-            }
-            else if (ident[0] == 'i' && (int_sizes.find(ident.substr(1, ident.length()-1)) != int_sizes.end())) {
-                tokens.push_back(Token("IDECLAR", ident.substr(1, ident.length()-1)));
-            }
-            else if (ident[0] == 'f' && (float_sizes.find(ident.substr(1, ident.length()-1)) != float_sizes.end())) {
-                tokens.push_back(Token("FDECLAR", ident.substr(1, ident.length()-1)));
+                tokens.push_back(Token(IF, ""));
             }
 
             //handling var names
              else {
-                tokens.push_back(Token("IDENTIFIER", ident));
+                tokens.push_back(Token(IDENTIFIER, ident));
             }
         }
         
@@ -147,18 +103,105 @@ std::vector<Token> lexer(const std::string& code)
         }
     }
     // Adding end-of-file character
-    tokens.push_back(Token("EOF", ""));
+    tokens.push_back(Token(EOF_TOKEN, ""));
     return tokens;
 }
 
 
+std::string tokenTypeToString(TokenType type) {
+    switch(type) {
+        case NUMBER: return "NUMBER";
+        case PLUS: return "PLUS";
+        case TIMES: return "TIMES";
+        case MINUS: return "MINUS";
+        case DIVIDE: return "DIVIDE";
+        case EQUALS: return "EQUALS";
+        case EQUALS_EQUALS: return "EQUALS_EQUALS";
+        case LPAREN: return "LPAREN";
+        case RPAREN: return "RPAREN";
+        case LBRACE: return "LBRACE";
+        case RBRACE: return "RBRACE";
+        case IF: return "IF";
+        case IDENTIFIER: return "IDENTIFIER";
+        case EOF_TOKEN: return "EOF_TOKEN";
+        case SEMICOLON: return "SEMICOLON";
+        default: return "UNKNOWN";
+    }
+}
 
 
-void pretty_print(const std::vector<Token>& tokens)
-{
+void print_lexer_output(const std::vector<Token>& tokens) {
     std::cout << "[" << std::endl;
     for (const Token& token : tokens) {
-        std::cout << "    ('" << token.first << "', " << token.second << ")," << std::endl;
+        std::string tokenTypeName = tokenTypeToString(token.first);
+        std::cout << "    ('" << tokenTypeName << "', '" << token.second << "')," << std::endl;
+        if (token.first == SEMICOLON) {
+            std::cout << std::endl;
+        }
     }
     std::cout << "]" << std::endl;
 }
+
+
+
+
+
+/*
+        else if (code[i] == '&') {
+            tokens.push_back(Token(REFERENCE, ""));
+            i++;
+        }
+        else if (code[i] == ':') {
+            tokens.push_back(Token(COLON, ""));
+            i++;
+        }
+        else if (code[i] == ';') {
+            tokens.push_back(Token(SEMICOLON", ""));
+            i++;
+        }
+
+        else if (code[i] == '[') {
+            tokens.push_back(Token(LSQUARE, ""));
+            i++;
+        }
+        else if (code[i] == ']') {
+            tokens.push_back(Token(RSQUARE, ""));
+            i++;
+        }
+
+            else if (ident == "while") {
+                tokens.push_back(Token(WHILE, ""));
+            }
+            else if (ident == "for") {
+                tokens.push_back(Token(FOR, ""));
+            }
+            else if (ident == "in") {
+                tokens.push_back(Token(IN, ""));
+            }
+            else if (ident == "cst") {
+                tokens.push_back(Token(CONST, ""));
+            }
+            else if (ident == "var") {
+                tokens.push_back(Token(VAR, ""));
+            }
+            else if (ident == "struct") {
+                tokens.push_back(Token(STRUCT, ""));
+            }
+            else if (ident == "fun") {
+                tokens.push_back(Token(FUNCTION, ""));
+            }
+
+            //handling datatypes
+            else if (ident == "char") {
+                tokens.push_back(Token(CHARDECLAR, ""));
+            }
+            else if (ident[0] == 'u' && (int_sizes.find(ident.substr(1, ident.length()-1)) != int_sizes.end())) {
+                tokens.push_back(Token(UDECLAR, ident.substr(1, ident.length()-1)));
+            }
+            else if (ident[0] == 'i' && (int_sizes.find(ident.substr(1, ident.length()-1)) != int_sizes.end())) {
+                tokens.push_back(Token(IDECLAR, ident.substr(1, ident.length()-1)));
+            }
+            else if (ident[0] == 'f' && (float_sizes.find(ident.substr(1, ident.length()-1)) != float_sizes.end())) {
+                tokens.push_back(Token(FDECLAR, ident.substr(1, ident.length()-1)));
+            }
+*/
