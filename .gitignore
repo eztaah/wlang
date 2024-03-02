@@ -33,5 +33,4 @@ compiler
 *.exe
 *.out
 *.app
-
-prog
+compiler
