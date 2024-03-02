@@ -63,7 +63,7 @@ int main(int argc, char* argv[])
     }
 
     if (mode == "CPP") {
-        std::cout << "\n\n---- ASM_GENERATOR OUTPUT ----\n" << std::endl;
+        std::cout << "\n\n---- CPP_GENERATOR OUTPUT ----\n" << std::endl;
         std::cout << generate_cpp(ast) << std::endl;
         std::cout << "----------------------" << std::endl;
     }
