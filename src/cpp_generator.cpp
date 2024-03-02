@@ -4,9 +4,22 @@ using namespace std;
 #include <iostream>
 #include <string>
 
+string gentab(int tab_offset)
+{
+    string tabs_output = "";
+    for (int i = 0; i < tab_offset; i++)
+    {
+        tabs_output += "    ";
+    }
+    return tabs_output;
+}
+
 string generate_cpp_impl(const NodePtr &node, int tab_offset)
 {
+    cout << "generate_cpp_impl " << tab_offset << endl;
     string output = "";
+
+    string tabs_output = gentab(tab_offset);
 
     if (ProgramNode *pnode = dynamic_cast<ProgramNode *>(node.get()))
     {
@@ -15,14 +28,14 @@ string generate_cpp_impl(const NodePtr &node, int tab_offset)
         output += "int main() {\n";
         for (const NodePtr &stmt : pnode->_statements)
         {
-            output += generate_cpp_impl(stmt, ++tab_offset);
+            output += generate_cpp_impl(stmt, 1);
         }
-        output += "return 0;\n";
+        output += gentab(1) + "return 0;\n";
         output += "}\n";
     }
     else if (VarDeclNode *vnode = dynamic_cast<VarDeclNode *>(node.get()))
     {
-        output += "int v_" + vnode->_name + " = ";
+        output += tabs_output + "int v_" + vnode->_name + " = ";
         output += generate_cpp_impl(vnode->_value, tab_offset);
         output += ";\n";
     }
@@ -63,19 +76,19 @@ string generate_cpp_impl(const NodePtr &node, int tab_offset)
     }
     else if (IfNode *inode = dynamic_cast<IfNode *>(node.get()))
     {
-        output += "if ( ";
+        output += tabs_output + "if ( ";
         output += generate_cpp_impl(inode->_condition, tab_offset);
         output += " ) {\n";
         for (const NodePtr &stmt : inode->_true_block)
         {
-            output += generate_cpp_impl(stmt, ++tab_offset);
+            output += generate_cpp_impl(stmt, tab_offset+1);
         }
-        output += "} else {\n";
+        output += tabs_output + "} else {\n";
         for (const NodePtr &stmt : inode->_false_block)
         {
-            output += generate_cpp_impl(stmt, ++tab_offset);
+            output += generate_cpp_impl(stmt, tab_offset+1);
         }
-        output += "}\n";
+        output += tabs_output + "}\n";
     }
 
     return output;
