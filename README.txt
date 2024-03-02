@@ -1,6 +1,13 @@
 c++ compiler
 
 
+# TODO
+- Manage the priority of mathematical operations
+- Add the else branch
+- Differentiate between BinExpr and BoolExpr
+
+
+
 # First approximative BNF
 Meta characters are < > | ( ) ? * [ ] '
 
