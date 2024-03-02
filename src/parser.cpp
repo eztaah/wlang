@@ -16,15 +16,16 @@ NodePtr parse_prog();
 NodePtr parse_stmt();
 NodePtr parse_if();
 std::vector<NodePtr> parse_block();
+NodePtr parse_factor();
 NodePtr parse_expr();
 NodePtr parse_term();
 
 
-Token consume(const std::string& expected_type = "") {
+Token consume(const TokenType expected_type = UNDEFINED) {
     if (tokenIndex < tokens.size()) {
         Token current_token = tokens[tokenIndex++];
-        if (!expected_type.empty() && current_token.first != expected_type) {
-            throw std::runtime_error("Expected token type " + expected_type + ", got (" + current_token.first + ", " + current_token.second + ")");
+        if (expected_type != UNDEFINED  && current_token.first != expected_type) {
+            throw std::runtime_error("Expected token type " + tokenTypeToString(expected_type) + ", got (" + tokenTypeToString(current_token.first) + ", " + current_token.second + ")");
         }
         return current_token;
     }
@@ -32,56 +33,66 @@ Token consume(const std::string& expected_type = "") {
 }
 
 NodePtr parse_term() {
-    if (tokens[tokenIndex].first == "NUMBER") {
-        Token token = consume("NUMBER");
+    if (tokens[tokenIndex].first == NUMBER) {
+        Token token = consume(NUMBER);
         return std::make_shared<NumberNode>(std::stoi(token.second));
     }
-    if (tokens[tokenIndex].first == "IDENTIFIER") {
-        Token token = consume("IDENTIFIER");
+    if (tokens[tokenIndex].first == IDENTIFIER) {
+        Token token = consume(IDENTIFIER);
         return std::make_shared<VarRefNode>(token.second);
     }
     return nullptr;
 }
 
-NodePtr parse_expr() {
+NodePtr parse_factor() {
     NodePtr node = parse_term();
-    while (tokenIndex < tokens.size() && (tokens[tokenIndex].first == "PLUS" || tokens[tokenIndex].first == "TIMES" || tokens[tokenIndex].first == "EQUALS_EQUALS")) {
-        std::string op = consume().first;
+    while (tokenIndex < tokens.size() && (tokens[tokenIndex].first == TIMES || tokens[tokenIndex].first == DIVIDE)) {
+        TokenType op = consume().first;
         NodePtr right = parse_term();
         node = std::make_shared<BinOpNode>(node, op, right);
     }
     return node;
 }
 
+NodePtr parse_expr() {
+    NodePtr node = parse_factor();
+    while (tokenIndex < tokens.size() && (tokens[tokenIndex].first == PLUS || tokens[tokenIndex].first == MINUS || tokens[tokenIndex].first == EQUALS_EQUALS)) {
+        TokenType op = consume().first;
+        NodePtr right = parse_factor();
+        node = std::make_shared<BinOpNode>(node, op, right);
+    }
+    return node;
+}
+
 std::vector<NodePtr> parse_block() {
-    consume("LBRACE");
+    consume(LBRACE);
     std::vector<NodePtr> statements;
-    while (tokenIndex < tokens.size() && tokens[tokenIndex].first != "RBRACE") {
+    while (tokenIndex < tokens.size() && tokens[tokenIndex].first != RBRACE) {
         statements.push_back(parse_stmt());
     }
-    consume("RBRACE");
+    consume(RBRACE);
     return statements;
 }
 
 NodePtr parse_if() {
-    consume("IF");
-    consume("LPAREN");
+    consume(IF);
+    consume(LPAREN);
     NodePtr condition = parse_expr();
-    consume("RPAREN");
+    consume(RPAREN);
     std::vector<NodePtr> true_branch = parse_block();
     // No support for 'else' at the moment
     return std::make_shared<IfNode>(condition, true_branch);
 }
 
 NodePtr parse_stmt() {
-    if (tokens[tokenIndex].first == "IF") {
+    if (tokens[tokenIndex].first == IF) {
         return parse_if();
     }
-    if (tokens[tokenIndex].first == "IDENTIFIER" && tokens[tokenIndex + 1].first == "EQUALS") {
-        std::string var_name = consume("IDENTIFIER").second;
-        consume("EQUALS");
+    if (tokens[tokenIndex].first == IDENTIFIER && tokens[tokenIndex + 1].first == EQUALS) {
+        std::string var_name = consume(IDENTIFIER).second;
+        consume(EQUALS);
         NodePtr value = parse_expr();
-        consume("SEMICOLON");
+        consume(SEMICOLON);
         return std::make_shared<VarDeclNode>(var_name, value);
     }
     return nullptr;
@@ -89,7 +100,7 @@ NodePtr parse_stmt() {
 
 NodePtr parse_prog() {
     std::vector<NodePtr> statements;
-    while (tokenIndex < tokens.size() && tokens[tokenIndex].first != "EOF") {
+    while (tokenIndex < tokens.size() && tokens[tokenIndex].first != EOF_TOKEN) {
         statements.push_back(parse_stmt());
     }
     return std::make_shared<ProgramNode>(statements);
@@ -144,7 +155,7 @@ void print_ast(const NodePtr& node, const std::string& indent = "", bool last = 
     } 
     else if (BinOpNode* bnode = dynamic_cast<BinOpNode*>(node.get())) {
         std::cout << indent << branch << "BinOpNode" << std::endl;
-        std::cout << next_indent << "├─ op: " << bnode->_op << std::endl;
+        std::cout << next_indent << "├─ op: " << tokenTypeToString(bnode->_op) << std::endl;
         std::cout << next_indent << "├─ left: " << std::endl;
         print_ast(bnode->_left, next_indent + "│  ", false);
         std::cout << next_indent << "└─ right: " << std::endl;

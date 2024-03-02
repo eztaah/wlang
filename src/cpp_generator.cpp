@@ -47,23 +47,23 @@ string generate_cpp_impl(const NodePtr &node, int tab_offset)
     {
         output += "( ";
         output += generate_cpp_impl(bnode->_left, tab_offset);
-        if (bnode->_op == "PLUS")
+        if (bnode->_op == PLUS)
         {
             output += " + ";
         }
-        else if (bnode->_op == "MINUS")
+        else if (bnode->_op == MINUS)
         {
             output += " - ";
         }
-        else if (bnode->_op == "TIMES")
+        else if (bnode->_op == TIMES)
         {
             output += " * ";
         }
-        else if (bnode->_op == "DIV")
+        else if (bnode->_op == DIVIDE)
         {
             output += " / ";
         }
-        else if (bnode->_op == "EQUALS_EQUALS")
+        else if (bnode->_op == EQUALS_EQUALS)
         {
             output += " == ";
         }

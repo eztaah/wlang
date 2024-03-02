@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
     std::cout << "\n---- LEXER OUTPUT ----\n"
               << std::endl;
     std::vector<Token> tokens = lexer(code);
-    pretty_print(tokens);
+    print_lexer_output(tokens);
 
     // PARSER
     std::cout << "\n\n---- PARSER OUTPUT ----\n"
@@ -102,14 +102,14 @@ int main(int argc, char *argv[])
 
         asm_final_output += "global _start\n\n";
         asm_final_output += "_start:\n";
-        for (const auto &instruction : assembly_code)
+        for (const auto &instruction : assembly_code) 
         {
-            std::cout << instruction << std::endl;
+            asm_final_output += instruction + '\n';
         }
-        asm_final_output += "; exit syscall" + '\n';
-        asm_final_output += "mov rax, 60" + '\n';
-        asm_final_output += "mov rdi, 0" + '\n';
-        asm_final_output += "syscall" + '\n';
+        asm_final_output += "; exit syscall\n";
+        asm_final_output += "mov rax, 60\n";
+        asm_final_output += "mov rdi, 0\n";
+        asm_final_output += "syscall\n";
         
         std::cout << asm_final_output << std::endl;
         std::cout << "----------------------" << std::endl;

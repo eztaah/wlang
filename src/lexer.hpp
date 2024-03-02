@@ -5,10 +5,30 @@
 #include <vector>
 #include <string>
 
+typedef enum {
+    UNDEFINED,
 
-typedef std::pair<std::string, std::string> Token;
+    NUMBER, 
+    PLUS, 
+    MINUS,
+    TIMES, 
+    DIVIDE,
+    EQUALS, 
+    EQUALS_EQUALS, 
+    SEMICOLON,
+    LPAREN,
+    RPAREN,
+    LBRACE,
+    RBRACE, 
+    IF, 
+    IDENTIFIER, 
+    EOF_TOKEN
+} TokenType;
+
+typedef std::pair<TokenType, std::string> Token;
 
 std::vector<Token> lexer(const std::string& code);
-void pretty_print(const std::vector<Token>& tokens);
+std::string tokenTypeToString(TokenType type);
+void print_lexer_output(const std::vector<Token>& tokens);
 
 #endif // LEXER_HPP
