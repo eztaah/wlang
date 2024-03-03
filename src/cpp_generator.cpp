@@ -15,7 +15,6 @@ string gentab(int tab_offset)
 
 string generate_cpp_impl(const NodePtr &node, int tab_offset)
 {
-  // cout << "generate_cpp_impl " << tab_offset << endl;
   string output = "";
 
   string tabs_output = gentab(tab_offset);
