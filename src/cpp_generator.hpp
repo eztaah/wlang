@@ -3,7 +3,6 @@
 
 #include "nodes.hpp"
 
-std::string generate_cpp(const NodePtr& node);
+std::string generate_cpp(const NodePtr &node);
 
 #endif // CPP_GENERATOR_HPP
-
