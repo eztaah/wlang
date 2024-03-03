@@ -218,7 +218,28 @@ std::string &print_ast(const NodePtr &node, std::string &output,
     if (vnode->_value) {
       print_ast(vnode->_value, output, next_indent + "   ", true, true);
     }
-  } else if (VarRefNode *vrefnode = dynamic_cast<VarRefNode *>(node.get())) {
+  } 
+  else if (ExpressionNode *exprnode = dynamic_cast<ExpressionNode *>(node.get())) { 
+      output += indent + branch + "ExpressionNode\n";
+      print_ast(exprnode->_expression, output, next_indent + "   ");
+  }
+  else if (ExpressionStatementNode *exprstatnode = dynamic_cast<ExpressionStatementNode *>(node.get())) { 
+      output += indent + branch + "ExpressionStatementNode\n";
+      print_ast(exprstatnode->_expression, output, next_indent + "   ");
+  }
+  else if (FunctionCallNode *funccallnode = dynamic_cast<FunctionCallNode *>(node.get())) { 
+        // output += indent + branch + "FunctionCall(name=" + funccallnode->_name + ")" + "\n";
+        //output += indent + branch + "FunctionCall(arguments=" + funccallnode->_args + ")" + "\n";
+
+        output += indent + branch + "FunctionCall" + "\n";
+        output += next_indent + "├─ name: " + funccallnode->_name + "\n";
+        output += next_indent + "├─ arguments: " + "\n";
+        for (NodePtr arg : funccallnode->_args) {
+            print_ast(arg, output, next_indent + "│  ", false);
+        }
+  }
+
+  else if (VarRefNode *vrefnode = dynamic_cast<VarRefNode *>(node.get())) {
     output +=
         indent + branch + "VarRefNode(name=" + vrefnode->_name + ")" + "\n";
   }
