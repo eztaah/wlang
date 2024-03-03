@@ -74,6 +74,10 @@ int main(int argc, char *argv[])
     // LEXER
     std::vector<Token> tokens = lexer(code);
     std::string lexer_output = get_lexer_output(tokens);
+    if (verbose) {
+        std::cout << "\n---- LEXER OUTPUT ----\n" << std::endl;
+        std::cout << lexer_output << std::endl;
+    }
     // Write result to file
     std::ofstream output1(outputDir + "lexer.out");
     output1 << lexer_output;
@@ -83,6 +87,12 @@ int main(int argc, char *argv[])
     NodePtr ast = parse(tokens);
     std::string parser_output1;
     std::string parser_output2 = print_ast(ast, parser_output1, "", false, false);
+
+    // PARSER OUTPUT
+    if (verbose) {
+        std::cout << "\n\n---- PARSER OUTPUT ----\n" << std::endl;
+        std::cout << parser_output2 << std::endl;
+    }
     // Write result to file
     std::ofstream output2(outputDir + "parser.out");
     output2 << parser_output2;
@@ -127,14 +137,6 @@ int main(int argc, char *argv[])
 
     // Print if verbose
     if (verbose) {
-        // LEXER OUTPUT
-        std::cout << "\n---- LEXER OUTPUT ----\n" << std::endl;
-        std::cout << lexer_output << std::endl;
-
-        // PARSER OUTPUT
-        std::cout << "\n\n---- PARSER OUTPUT ----\n" << std::endl;
-        std::cout << parser_output2 << std::endl;
-
         if (isModeAsm) {
             // ASSEMBLY
             std::cout << "\n\n---- ASM_GENERATOR OUTPUT ----\n" << std::endl;

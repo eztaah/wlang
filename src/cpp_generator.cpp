@@ -40,6 +40,9 @@ string generate_cpp_impl(const NodePtr &node, int tab_offset)
     else if (NumberNode *nnode = dynamic_cast<NumberNode *>(node.get())) {
         output += to_string(nnode->_value);
     }
+    else if (StringNode *nnode = dynamic_cast<StringNode *>(node.get())) {
+        output += "\"" + nnode->_content + "\"";
+    }
 
     else if (BinOpNode *bnode = dynamic_cast<BinOpNode *>(node.get())) {
         output += "( ";

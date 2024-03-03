@@ -37,6 +37,13 @@ NodePtr parse_term()
         Token token = consume(NUMBER);
         return std::make_shared<NumberNode>(std::stoi(token.second));
     }
+    if (tokens[tokenIndex].first == QUOTE) {
+        consume(QUOTE);
+        Token token = consume(IDENTIFIER);
+        NodePtr res = std::make_shared<StringNode>(token.second);
+        consume(QUOTE);
+        return res;
+    }
     if (tokens[tokenIndex].first == IDENTIFIER) {
         Token token = consume(IDENTIFIER);
         return std::make_shared<VarRefNode>(token.second);
@@ -207,6 +214,9 @@ std::string &print_ast(const NodePtr &node, std::string &output, const std::stri
 
     else if (NumberNode *nnode = dynamic_cast<NumberNode *>(node.get())) {
         output += indent + branch + "NumberNode(value=" + std::to_string(nnode->_value) + ")" + "\n";
+    }
+    else if (StringNode *nnode = dynamic_cast<StringNode *>(node.get())) {
+        output += indent + branch + "StringNode(value=" + nnode->_content + ")" + "\n";
     }
 
     else if (VarDeclNode *vnode = dynamic_cast<VarDeclNode *>(node.get())) {

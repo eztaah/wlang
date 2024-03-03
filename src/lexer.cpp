@@ -55,7 +55,7 @@ std::vector<Token> lexer(const std::string &code)
             i++;
         }
 
-        // Handling parentheses and braces
+        // Handling parentheses, braces and symbols
         else if (code[i] == '(') {
             tokens.push_back(Token(LPAREN, ""));
             i++;
@@ -70,6 +70,10 @@ std::vector<Token> lexer(const std::string &code)
         }
         else if (code[i] == '}') {
             tokens.push_back(Token(RBRACE, ""));
+            i++;
+        }
+        else if (code[i] == '"') {
+            tokens.push_back(Token(QUOTE, ""));
             i++;
         }
 
@@ -115,6 +119,8 @@ std::vector<Token> lexer(const std::string &code)
 std::string tokenTypeToString(TokenType type)
 {
     switch (type) {
+    case QUOTE:
+        return "QUOTE";
     case LET:
         return "LET";
     case VAR:
