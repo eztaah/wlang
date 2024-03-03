@@ -36,8 +36,9 @@ public:
 
 class VarDeclNode : public Node {
 public:
-    VarDeclNode(const std::string& name, NodePtr value)
-        : _name(name), _value(value) {}
+    VarDeclNode(TokenType type, const std::string& name, NodePtr value)
+        : _type(type), _name(name), _value(value) {}
+    TokenType _type;
     std::string _name;
     NodePtr _value;
 };
