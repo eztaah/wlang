@@ -17,10 +17,10 @@ int main(int argc, char *argv[])
     return EXIT_FAILURE;
   }
 
+  bool verbose = false;
   bool isModeAsm = false;
   bool isModeCpp = false;
-
-  std::string outputDir;
+  std::string outputDir = "build/";
 
   for (int i = 2; i < argc; i++) {
     if (std::string(argv[i]) == "--asm") {
@@ -36,6 +36,9 @@ int main(int argc, char *argv[])
         std::cerr << "error: no output directory specified" << std::endl;
         return EXIT_FAILURE;
       }
+    } else if (std::string(argv[i]) == "-v" ||
+               std::string(argv[i]) == "--verbose") {
+      verbose = true;
     }
   }
 
@@ -66,37 +69,30 @@ int main(int argc, char *argv[])
   }
 
   // LEXER
-  std::cout << "\n---- LEXER OUTPUT ----\n" << std::endl;
   std::vector<Token> tokens = lexer(code);
   std::string lexer_output = get_lexer_output(tokens);
-  std::cout << lexer_output << std::endl;
   // Write result to file
   std::ofstream output1(outputDir + "lexer.out");
   output1 << lexer_output;
   output1.close();
 
   // PARSER
-  std::cout << "\n\n---- PARSER OUTPUT ----\n" << std::endl;
   NodePtr ast = parse(tokens);
   std::string parser_output1;
   std::string parser_output2 = print_ast(ast, parser_output1, "", false, false);
-  std::cout << parser_output2 << std::endl;
   // Write result to file
   std::ofstream output2(outputDir + "parser.out");
   output2 << parser_output2;
   output2.close();
 
-  std::string final_output = "";
+  std::string asm_final_output = "";
 
   if (isModeAsm) {
 
     // ASSEMBLY
-    std::cout << "\n\n---- ASM_GENERATOR OUTPUT ----\n" << std::endl;
     std::unordered_map<std::string, std::string> variables;
     auto assembly_code_pair = generate_assembly(ast, variables);
     auto assembly_code = assembly_code_pair.first;
-
-    std::string asm_final_output = "";
 
     asm_final_output += "global _start\n\n";
     asm_final_output += "_start:\n";
@@ -108,34 +104,54 @@ int main(int argc, char *argv[])
     asm_final_output += "mov rdi, 0\n";
     asm_final_output += "syscall\n";
 
-    std::cout << asm_final_output << std::endl;
-    std::cout << "----------------------" << std::endl;
-
-    final_output = asm_final_output;
-
     if (true) // TODO : need to check if directory exists
     {
       std::ofstream output(outputDir + "output.asm");
-      output << final_output;
+      output << asm_final_output;
       output.close();
-      std::cout << "Output written to " << outputDir << std::endl;
     }
   }
 
+  std::string cpp_final_output = "";
+
   if (isModeCpp) {
-    std::cout << "\n\n---- CPP_GENERATOR OUTPUT ----\n" << std::endl;
-    final_output = generate_cpp(ast);
-    std::cout << final_output << std::endl;
-    std::cout << "----------------------" << std::endl;
+    cpp_final_output = generate_cpp(ast);
 
     if (true) // TODO : need to check if directory exists
     {
       std::ofstream output(outputDir + "output.cpp");
-      output << final_output;
+      output << cpp_final_output;
       output.close();
-      std::cout << "Output written to " << outputDir << std::endl;
     }
   }
+
+  // Print if verbose
+  if (verbose) {
+    // LEXER OUTPUT
+    std::cout << "\n---- LEXER OUTPUT ----\n" << std::endl;
+    std::cout << lexer_output << std::endl;
+
+    // PARSER OUTPUT
+    std::cout << "\n\n---- PARSER OUTPUT ----\n" << std::endl;
+    std::cout << parser_output2 << std::endl;
+
+    if (isModeAsm) {
+        // ASSEMBLY
+        std::cout << "\n\n---- ASM_GENERATOR OUTPUT ----\n" << std::endl;
+        std::cout << asm_final_output << std::endl;
+        std::cout << "------------------------------\n" << std::endl;
+
+    }
+    if (isModeCpp) {
+        // CPP GENERATOR OUTPUT
+        std::cout << "\n\n---- CPP_GENERATOR OUTPUT ----\n" << std::endl;
+        std::cout << cpp_final_output << std::endl;
+        std::cout << "------------------------------\n" << std::endl;
+    }
+  }
+
+  std::cout << "Output written to \"" << outputDir << "\"" << std::endl;
+
 
   return 0;
 }
