@@ -5,6 +5,3 @@ CFLAGS = -Wall -Wextra
 
 $(TARGET): $(SOURCES)
 	g++ -g $(CFLAGS) $(SOURCES) -o $(TARGET)
-
-clean:
-	rm -rf $(BUILD_DIR)

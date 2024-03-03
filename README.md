@@ -32,14 +32,17 @@ if (a == i) {
 --cpp   # compile for cpp only
 # if you put nothing or both il will compile for both
 
+-o
 --output-dir "mydirectory"  # put output files in ./mydirectory ()
 # if nothing is provided, it will put output files in the build
 # the directory is automaticaly created
 
+-v
+--verbose # display in the terminal all the outputs
 
 # Exemples
 compiler test.sh
-compiler test.sh --asm --output-dir "build"
+compiler test.sh --asm -v --output-dir "build"
 compiler test.sh --asm --cpp --output-dir "mydirectory" 
 ``` 
 
