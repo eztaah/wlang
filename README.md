@@ -51,10 +51,14 @@ compiler test.sh --asm --cpp --output-dir "mydirectory"
 ## Developpement
 
 ### Build 
-``` 
+```shell
 $ make
 ``` 
 
 ### Codind style
+
+```shell
+$ clang-format -i ./src/*
+``` 
 
 check this file : [coding-style.txt](./docs/coding-style.txt)

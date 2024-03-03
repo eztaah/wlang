@@ -1,5 +1,10 @@
-vera++ (coding style)
+https://clang.llvm.org/docs/ClangFormatStyleOptions.html
 
+
+
+
+
+vera++ (coding style)
 F001
 F002
 L001

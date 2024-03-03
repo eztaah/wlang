@@ -6,25 +6,25 @@
 #include <vector>
 
 typedef enum {
-  UNDEFINED,
-  LET,
-  VAR,
-  NUMBER,
-  PLUS,
-  MINUS,
-  TIMES,
-  DIVIDE,
-  EQUALS,
-  EQUALS_EQUALS,
-  SEMICOLON,
-  COMMA,
-  LPAREN,
-  RPAREN,
-  LBRACE,
-  RBRACE,
-  IF,
-  IDENTIFIER,
-  EOF_TOKEN
+    UNDEFINED,
+    LET,
+    VAR,
+    NUMBER,
+    PLUS,
+    MINUS,
+    TIMES,
+    DIVIDE,
+    EQUALS,
+    EQUALS_EQUALS,
+    SEMICOLON,
+    COMMA,
+    LPAREN,
+    RPAREN,
+    LBRACE,
+    RBRACE,
+    IF,
+    IDENTIFIER,
+    EOF_TOKEN
 } TokenType;
 
 typedef std::pair<TokenType, std::string> Token;
