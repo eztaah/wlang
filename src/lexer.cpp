@@ -83,7 +83,13 @@ std::vector<Token> lexer(const std::string& code)
                 i++;
             }
             // Handling keywords
-            if (ident == "if") {
+            if (ident == "let") {
+                tokens.push_back(Token(LET, ""));
+            }
+            else if (ident == "var") {
+                tokens.push_back(Token(VAR, ""));
+            }
+            else if (ident == "if") {
                 tokens.push_back(Token(IF, ""));
             }
 
@@ -110,6 +116,8 @@ std::vector<Token> lexer(const std::string& code)
 
 std::string tokenTypeToString(TokenType type) {
     switch(type) {
+        case LET: return "LET";
+        case VAR: return "VAR";
         case NUMBER: return "NUMBER";
         case PLUS: return "PLUS";
         case TIMES: return "TIMES";
@@ -130,16 +138,18 @@ std::string tokenTypeToString(TokenType type) {
 }
 
 
-void print_lexer_output(const std::vector<Token>& tokens) {
-    std::cout << "[" << std::endl;
+std::string get_lexer_output(const std::vector<Token>& tokens) {
+    std::string output;
+    output += "[\n";
     for (const Token& token : tokens) {
         std::string tokenTypeName = tokenTypeToString(token.first);
-        std::cout << "    ('" << tokenTypeName << "', '" << token.second << "')," << std::endl;
+        output += "    ('" + tokenTypeName + "', '" + token.second + "'),\n";
         if (token.first == SEMICOLON) {
-            std::cout << std::endl;
+            output += "\n";
         }
     }
-    std::cout << "]" << std::endl;
+    output += "]";
+    return output;
 }
 
 
@@ -177,12 +187,6 @@ void print_lexer_output(const std::vector<Token>& tokens) {
             }
             else if (ident == "in") {
                 tokens.push_back(Token(IN, ""));
-            }
-            else if (ident == "cst") {
-                tokens.push_back(Token(CONST, ""));
-            }
-            else if (ident == "var") {
-                tokens.push_back(Token(VAR, ""));
             }
             else if (ident == "struct") {
                 tokens.push_back(Token(STRUCT, ""));

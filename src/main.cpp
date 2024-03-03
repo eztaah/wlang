@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
     bool isModeAsm = false;
     bool isModeCpp = false;
 
-    std::string outputFile;
+    std::string outputDir;
 
     for (int i = 2; i < argc; i++)
     {
@@ -35,27 +35,29 @@ int main(int argc, char *argv[])
         {
             if (i + 1 < argc)
             {
-                outputFile = argv[i + 1];
+                outputDir = argv[i + 1];
                 i++;
             }
             else
             {
-                std::cerr << "error: no output file specified" << std::endl;
+                std::cerr << "error: no output directory specified" << std::endl;
                 return EXIT_FAILURE;
             }
         }
     }
 
-    if (isModeAsm && isModeCpp)
-    {
-        std::cerr << "error: cannot use both --asm and --cpp flags" << std::endl;
-        return EXIT_FAILURE;
-    }
+    // if (isModeAsm && isModeCpp)
+    // {
+    //     std::cerr << "error: cannot use both --asm and --cpp flags" << std::endl;
+    //     return EXIT_FAILURE;
+    // }
 
     if (!isModeAsm && !isModeCpp)
     {
-        std::cerr << "error: no mode specified, use --asm or --cpp" << std::endl;
-        return EXIT_FAILURE;
+        isModeAsm = true;
+        isModeCpp = true;
+        // std::cerr << "error: no mode specified, use --asm or --cpp" << std::endl;
+        // return EXIT_FAILURE;
     }
 
     std::string filePath = argv[1];
@@ -78,13 +80,26 @@ int main(int argc, char *argv[])
     std::cout << "\n---- LEXER OUTPUT ----\n"
               << std::endl;
     std::vector<Token> tokens = lexer(code);
-    print_lexer_output(tokens);
+    std::string lexer_output = get_lexer_output(tokens);
+    std::cout << lexer_output << std::endl;
+    //Write result to file
+    std::ofstream output1(outputDir + "lexer.out");
+    output1 << lexer_output;
+    output1.close();
 
     // PARSER
     std::cout << "\n\n---- PARSER OUTPUT ----\n"
               << std::endl;
     NodePtr ast = parse(tokens);
-    print_ast(ast, "", false, false);
+    std::string parser_output1;
+    std::string parser_output2 = print_ast(ast, parser_output1, "", false, false);
+    std::cout << parser_output2 << std::endl;
+    //Write result to file
+    std::ofstream output2(outputDir + "parser.out");
+    output2 << parser_output2;
+    output2.close();
+
+
 
     std::string final_output = "";
 
@@ -115,6 +130,14 @@ int main(int argc, char *argv[])
         std::cout << "----------------------" << std::endl;
 
         final_output = asm_final_output;
+
+        if (true)  // TODO : need to check if directory exists
+        {
+            std::ofstream output(outputDir + "output.asm");
+            output << final_output;
+            output.close();
+            std::cout << "Output written to " << outputDir << std::endl;
+        }
     }
 
     if (isModeCpp)
@@ -124,15 +147,17 @@ int main(int argc, char *argv[])
         final_output = generate_cpp(ast);
         std::cout << final_output << std::endl;
         std::cout << "----------------------" << std::endl;
+
+        if (true)  // TODO : need to check if directory exists
+        {
+            std::ofstream output(outputDir + "output.cpp");
+            output << final_output;
+            output.close();
+            std::cout << "Output written to " << outputDir << std::endl;
+        }
     }
 
-    if (!outputFile.empty())
-    {
-        std::ofstream output(outputFile);
-        output << final_output;
-        output.close();
-        std::cout << "Output written to " << outputFile << std::endl;
-    }
+
 
     return 0;
 }

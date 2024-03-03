@@ -88,12 +88,13 @@ NodePtr parse_stmt() {
     if (tokens[tokenIndex].first == IF) {
         return parse_if();
     }
-    if (tokens[tokenIndex].first == IDENTIFIER && tokens[tokenIndex + 1].first == EQUALS) {
+    if ((tokens[tokenIndex].first == VAR || tokens[tokenIndex].first == LET) && tokens[tokenIndex + 1].first == IDENTIFIER && tokens[tokenIndex + 2].first == EQUALS) {
+        TokenType type = consume().first;
         std::string var_name = consume(IDENTIFIER).second;
         consume(EQUALS);
         NodePtr value = parse_expr();
         consume(SEMICOLON);
-        return std::make_shared<VarDeclNode>(var_name, value);
+        return std::make_shared<VarDeclNode>(type, var_name, value);
     }
     return nullptr;
 }
@@ -112,7 +113,7 @@ NodePtr parse(const std::vector<Token>& inputTokens) {
     return parse_prog();
 }
 
-void print_ast(const NodePtr& node, const std::string& indent = "", bool last = true, bool is_value = false) {
+std::string& print_ast(const NodePtr& node, std::string& output, const std::string& indent = "", bool last = true, bool is_value = false) {
     // Branch symbol management
     std::string branch;
     if (is_value) {
@@ -135,44 +136,47 @@ void print_ast(const NodePtr& node, const std::string& indent = "", bool last = 
         
     // Checking the current node type
     if (ProgramNode* pnode = dynamic_cast<ProgramNode*>(node.get())) {
-        std::cout << indent << "ProgramNode" << std::endl;
+        output += indent + "ProgramNode" + "\n";
         for (size_t i = 0; i < pnode->_statements.size(); ++i) {
-            print_ast(pnode->_statements[i], next_indent, i == pnode->_statements.size() - 1);
+            print_ast(pnode->_statements[i], output, next_indent, i == pnode->_statements.size() - 1);
         }
     } 
     else if (IfNode* inode = dynamic_cast<IfNode*>(node.get())) {
-        std::cout << indent << branch << "IfNode" << std::endl;
-        std::cout << next_indent << "├─ condition: " << std::endl;
-        print_ast(inode->_condition, next_indent + "│  ", true);
+        output += indent + branch + "IfNode" + "\n";
+        output += next_indent + "├─ condition: " + "\n";
+        print_ast(inode->_condition, output, next_indent + "│  ", true);
         if (!inode->_true_block.empty()) {
-            std::cout << next_indent << "└─ true_block: " << std::endl;
+            output += next_indent + "└─ true_block: " + "\n";
             for (size_t i = 0; i < inode->_true_block.size(); ++i) {
-                print_ast(inode->_true_block[i], next_indent + "   ", i == inode->_true_block.size() - 1);
+                print_ast(inode->_true_block[i], output, next_indent + "   ", i == inode->_true_block.size() - 1);
             }
         } else {
-            std::cout << next_indent << "└── true_block: " << std::endl;
+            output += next_indent + "└── true_block: " + "\n";
         }
     } 
     else if (BinOpNode* bnode = dynamic_cast<BinOpNode*>(node.get())) {
-        std::cout << indent << branch << "BinOpNode" << std::endl;
-        std::cout << next_indent << "├─ op: " << tokenTypeToString(bnode->_op) << std::endl;
-        std::cout << next_indent << "├─ left: " << std::endl;
-        print_ast(bnode->_left, next_indent + "│  ", false);
-        std::cout << next_indent << "└─ right: " << std::endl;
-        print_ast(bnode->_right, next_indent + "   ");
+        output += indent + branch + "BinOpNode" + "\n";
+        output += next_indent + "├─ op: " + tokenTypeToString(bnode->_op) + "\n";
+        output += next_indent + "├─ left: " + "\n";
+        print_ast(bnode->_left, output, next_indent + "│  ", false);
+        output += next_indent + "└─ right: " + "\n";
+        print_ast(bnode->_right, output, next_indent + "   ");
     } 
     else if (NumberNode* nnode = dynamic_cast<NumberNode*>(node.get())) {
-        std::cout << indent << branch << "NumberNode(value=" << nnode->_value << ")" << std::endl;
+        output += indent + branch + "NumberNode(value=" + std::to_string(nnode->_value) + ")" + "\n";
     } 
     else if (VarDeclNode* vnode = dynamic_cast<VarDeclNode*>(node.get())) {
-        std::cout << indent << branch << "VarDeclNode" << std::endl;
-        std::cout << next_indent << "├─ name: " << vnode->_name << std::endl;
-        std::cout << next_indent << "└─ value: " << std::endl;
+        output += indent + branch + "VarDeclNode" + "\n";
+        output += next_indent + "├─ type: " + tokenTypeToString(vnode->_type) + "\n";
+        output += next_indent + "├─ name: " + vnode->_name + "\n";
+        output += next_indent + "└─ value: " + "\n";
         if (vnode->_value) {
-            print_ast(vnode->_value, next_indent + "   ", true, true);
+            print_ast(vnode->_value, output, next_indent + "   ", true, true);
         }
     } 
     else if (VarRefNode* vrefnode = dynamic_cast<VarRefNode*>(node.get())) {
-        std::cout << indent << branch << "VarRefNode(name=" << vrefnode->_name << ")" << std::endl;
+        output += indent + branch + "VarRefNode(name=" + vrefnode->_name + ")" + "\n";
     }
+
+    return output;
 }

@@ -7,7 +7,8 @@
 
 typedef enum {
     UNDEFINED,
-
+    LET,
+    VAR,
     NUMBER, 
     PLUS, 
     MINUS,
@@ -29,6 +30,6 @@ typedef std::pair<TokenType, std::string> Token;
 
 std::vector<Token> lexer(const std::string& code);
 std::string tokenTypeToString(TokenType type);
-void print_lexer_output(const std::vector<Token>& tokens);
+std::string get_lexer_output(const std::vector<Token>& tokens);
 
 #endif // LEXER_HPP

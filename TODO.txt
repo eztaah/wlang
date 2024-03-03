@@ -1,0 +1,26 @@
+# TODO
+
+- faire un --verbose pour output terminal
+
+- configurer ou install code formatter c++
+
+- output l'ast en json
+- ajouter commentaires  //, ou #, ou /*  */
+- faire une analyse sémantique (verifier les const par exemple)
+- faire un global.hpp
+- ajout syntaxe
+- implémentation des print et println, non-prioritairement, la fonction input
+
+V1:
+println("test" + 123)
+- concatenation + number, string
+- type string
+
+V2:
+println("test", 123)   // arguments variadiques
+
+
+class FunCall : public Node {
+    std::string _name;
+    std::vector<Node> parameters;
+};
