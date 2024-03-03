@@ -2,8 +2,6 @@
 
 - faire un --verbose pour output terminal
 
-- configurer ou install code formatter c++
-
 - output l'ast en json
 - ajouter commentaires  //, ou #, ou /*  */
 - faire une analyse sémantique (verifier les const par exemple)
