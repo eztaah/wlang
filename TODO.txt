@@ -1,13 +1,17 @@
 # TODO
 
-- faire un --verbose pour output terminal
-
 - output l'ast en json
 - ajouter commentaires  //, ou #, ou /*  */
 - faire une analyse sémantique (verifier les const par exemple)
 - faire un global.hpp
-- ajout syntaxe
 - implémentation des print et println, non-prioritairement, la fonction input
+
+
+
+
+
+
+---------------------------
 
 V1:
 println("test" + 123)

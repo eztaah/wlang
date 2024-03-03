@@ -1,4 +1,8 @@
 BasedOnStyle: LLVM
+UseTab: Never
+TabWidth: 4
+IndentWidth: 4
+ColumnLimit: 0
 BreakBeforeBraces: Custom
 BraceWrapping:
   AfterControlStatement: false
@@ -9,7 +13,7 @@ BraceWrapping:
   AfterUnion: false
   AfterExternBlock: false
   BeforeCatch: false
-  BeforeElse: false
+  BeforeElse: true
   BeforeWhile: false
   SplitEmptyFunction: true
   SplitEmptyRecord: true
