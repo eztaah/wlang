@@ -117,9 +117,11 @@ NodePtr parse_if()
 
 NodePtr parse_stmt()
 {
+    // handle if statements
     if (tokens[tokenIndex].first == IF) {
         return parse_if();
     }
+    // handle variable declaration
     else if ((tokens[tokenIndex].first == VAR || tokens[tokenIndex].first == LET) && tokens[tokenIndex + 1].first == IDENTIFIER && tokens[tokenIndex + 2].first == EQUALS) {
         TokenType type = consume().first;
         std::string var_name = consume(IDENTIFIER).second;
@@ -128,11 +130,11 @@ NodePtr parse_stmt()
         consume(SEMICOLON);
         return std::make_shared<VarDeclNode>(type, var_name, value);
     }
+    // other cases (here the only case left is function handling)
     else {
         NodePtr expr = parse_expr();
         consume(SEMICOLON);
-        ExpressionStatementNode expressionStatementNode =
-            ExpressionStatementNode(expr);
+        ExpressionStatementNode expressionStatementNode = ExpressionStatementNode(expr);
         return std::make_shared<ExpressionStatementNode>(expr);
     }
     return nullptr;
