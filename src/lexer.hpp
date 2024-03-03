@@ -7,6 +7,7 @@
 
 typedef enum {
     UNDEFINED,
+    QUOTE,
     LET,
     VAR,
     NUMBER,

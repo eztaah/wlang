@@ -20,6 +20,12 @@ class NumberNode : public Node {
     int _value;
 };
 
+class StringNode : public Node {
+  public:
+    StringNode(std::string content) : _content(content) {}
+    std::string _content;
+};
+
 class VarRefNode : public Node {
   public:
     VarRefNode(const std::string &name) : _name(name) {}
