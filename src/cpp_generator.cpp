@@ -100,7 +100,7 @@ string generate_cpp_impl(const NodePtr &node, int tab_offset)
             std::cout << "Unknown function call: " << fcnode->_name << std::endl;
         }
     }
-    
+
     else {
         cout << "Unknown node type" << endl;
     }

@@ -1,10 +1,15 @@
 # TODO
 
+- regler bug clang-format std::cout
+- faire conversion assembleur
+- faire un global.hpp
+
+
+
 - output l'ast en json
 - ajouter commentaires  //, ou #, ou /*  */
 - faire une analyse sémantique (verifier les const par exemple)
-- faire un global.hpp
-- implémentation des print et println, non-prioritairement, la fonction input
+- implémentation de la fonction input
 
 
 
