@@ -17,6 +17,7 @@ typedef enum {
   EQUALS,
   EQUALS_EQUALS,
   SEMICOLON,
+  COMMA,
   LPAREN,
   RPAREN,
   LBRACE,

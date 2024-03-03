@@ -36,6 +36,12 @@ public:
   NodePtr _right;
 };
 
+class ExpressionNode : public Node {
+public:
+  ExpressionNode(NodePtr expression) : _expression(expression) {}
+  NodePtr _expression;
+};
+
 class VarDeclNode : public Node { // VarDeclStatement
 public:
   VarDeclNode(TokenType type, const std::string &name, NodePtr value)
@@ -64,6 +70,16 @@ class ExpressionStatementNode : public Node {
 public:
   ExpressionStatementNode(NodePtr expression) : _expression(expression) {}
   NodePtr _expression;
+};
+
+class FunctionCallNode : public Node {
+public:
+  FunctionCallNode(const std::string &name, const std::vector<NodePtr> &args)
+      : _name(name), _args(args)
+  {
+  }
+  std::string _name;
+  std::vector<NodePtr> _args;
 };
 
 class ProgramNode : public Node {
