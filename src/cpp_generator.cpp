@@ -15,7 +15,6 @@ string gentab(int tab_offset)
 
 string generate_cpp_impl(const NodePtr &node, int tab_offset)
 {
-  cout << "generate_cpp_impl " << tab_offset << endl;
   string output = "";
 
   string tabs_output = gentab(tab_offset);
@@ -65,10 +64,21 @@ string generate_cpp_impl(const NodePtr &node, int tab_offset)
       output += generate_cpp_impl(stmt, tab_offset + 1);
     }
     output += tabs_output + "}\n";
-  } else if (ExpressionStatementNode *esnode = dynamic_cast<ExpressionStatementNode *>(node.get())) {
+  } else if (ExpressionStatementNode *esnode =
+                 dynamic_cast<ExpressionStatementNode *>(node.get())) {
     output += tabs_output;
     output += generate_cpp_impl(esnode->_expression, tab_offset);
     output += ";\n";
+  } else if (FunctionCallNode *fcnode =
+                 dynamic_cast<FunctionCallNode *>(node.get())) {
+    if (fcnode->_name == "println") {
+      output += "(std::cout << ";
+      output += generate_cpp_impl(fcnode->_args[0], tab_offset);
+      output += " << std::endl)";
+    }
+    else {
+      std::cout << "Unknown function call: " << fcnode->_name << std::endl;
+    }
   } else {
     cout << "Unknown node type" << endl;
   }

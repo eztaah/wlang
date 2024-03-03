@@ -138,6 +138,8 @@ std::string tokenTypeToString(TokenType type)
     return "EOF_TOKEN";
   case SEMICOLON:
     return "SEMICOLON";
+  case COMMA:
+    return "COMMA";
   default:
     return "UNKNOWN";
   }

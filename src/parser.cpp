@@ -61,16 +61,36 @@ NodePtr parse_factor()
 
 NodePtr parse_expr()
 {
-  NodePtr node = parse_factor();
+  Token currentToken = tokens[tokenIndex];
+  Token nextToken = tokens[tokenIndex + 1];
+
+  // Function call
+  if (currentToken.first == IDENTIFIER && nextToken.first == LPAREN) {
+    Token left = consume(IDENTIFIER);
+    consume(LPAREN);
+    std::vector<NodePtr> args;
+    while (tokens[tokenIndex].first != RPAREN) {
+      args.push_back(parse_expr());
+      if (tokens[tokenIndex].first == COMMA) {
+        consume(COMMA);
+      }
+    }
+    consume(RPAREN);
+    return std::make_shared<FunctionCallNode>(left.second, args);
+  }
+
+  NodePtr left = parse_factor();
+
+  // Binary expression
   while (tokenIndex < tokens.size() &&
          (tokens[tokenIndex].first == PLUS ||
           tokens[tokenIndex].first == MINUS ||
           tokens[tokenIndex].first == EQUALS_EQUALS)) {
     TokenType op = consume().first;
     NodePtr right = parse_factor();
-    node = std::make_shared<BinOpNode>(node, op, right);
+    left = std::make_shared<BinOpNode>(left, op, right);
   }
-  return node;
+  return left;
 }
 
 std::vector<NodePtr> parse_block()
@@ -99,21 +119,21 @@ NodePtr parse_stmt()
 {
   if (tokens[tokenIndex].first == IF) {
     return parse_if();
-  }
-  else if ((tokens[tokenIndex].first == VAR || tokens[tokenIndex].first == LET) &&
-      tokens[tokenIndex + 1].first == IDENTIFIER &&
-      tokens[tokenIndex + 2].first == EQUALS) {
+  } else if ((tokens[tokenIndex].first == VAR ||
+              tokens[tokenIndex].first == LET) &&
+             tokens[tokenIndex + 1].first == IDENTIFIER &&
+             tokens[tokenIndex + 2].first == EQUALS) {
     TokenType type = consume().first;
     std::string var_name = consume(IDENTIFIER).second;
     consume(EQUALS);
     NodePtr value = parse_expr();
     consume(SEMICOLON);
     return std::make_shared<VarDeclNode>(type, var_name, value);
-  }
-  else {
+  } else {
     NodePtr expr = parse_expr();
     consume(SEMICOLON);
-    ExpressionStatementNode expressionStatementNode = ExpressionStatementNode(expr);
+    ExpressionStatementNode expressionStatementNode =
+        ExpressionStatementNode(expr);
     return std::make_shared<ExpressionStatementNode>(expr);
   }
   return nullptr;

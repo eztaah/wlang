@@ -5,6 +5,9 @@ var b = 2;
 let c = a + b; 
 
 if (a == b) {
+    println(1);
     a;
     let r = 0;
 }
+
+println(4242);
