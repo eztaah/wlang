@@ -5,5 +5,6 @@ var b = 2;
 let c = a + b; 
 
 if (a == b) {
+    a;
     let r = 0;
 }

@@ -65,6 +65,12 @@ string generate_cpp_impl(const NodePtr &node, int tab_offset)
       output += generate_cpp_impl(stmt, tab_offset + 1);
     }
     output += tabs_output + "}\n";
+  } else if (ExpressionStatementNode *esnode = dynamic_cast<ExpressionStatementNode *>(node.get())) {
+    output += tabs_output;
+    output += generate_cpp_impl(esnode->_expression, tab_offset);
+    output += ";\n";
+  } else {
+    cout << "Unknown node type" << endl;
   }
 
   return output;

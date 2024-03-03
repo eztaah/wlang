@@ -36,7 +36,7 @@ public:
   NodePtr _right;
 };
 
-class VarDeclNode : public Node {
+class VarDeclNode : public Node { // VarDeclStatement
 public:
   VarDeclNode(TokenType type, const std::string &name, NodePtr value)
       : _type(type), _name(name), _value(value)
@@ -47,7 +47,7 @@ public:
   NodePtr _value;
 };
 
-class IfNode : public Node {
+class IfNode : public Node { // IfStatement
 public:
   IfNode(NodePtr condition, std::vector<NodePtr> true_block,
          std::vector<NodePtr> false_block = {})
@@ -58,6 +58,12 @@ public:
   NodePtr _condition;
   std::vector<NodePtr> _true_block;
   std::vector<NodePtr> _false_block;
+};
+
+class ExpressionStatementNode : public Node {
+public:
+  ExpressionStatementNode(NodePtr expression) : _expression(expression) {}
+  NodePtr _expression;
 };
 
 class ProgramNode : public Node {
