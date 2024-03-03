@@ -100,7 +100,7 @@ NodePtr parse_stmt()
   if (tokens[tokenIndex].first == IF) {
     return parse_if();
   }
-  if ((tokens[tokenIndex].first == VAR || tokens[tokenIndex].first == LET) &&
+  else if ((tokens[tokenIndex].first == VAR || tokens[tokenIndex].first == LET) &&
       tokens[tokenIndex + 1].first == IDENTIFIER &&
       tokens[tokenIndex + 2].first == EQUALS) {
     TokenType type = consume().first;
@@ -109,6 +109,12 @@ NodePtr parse_stmt()
     NodePtr value = parse_expr();
     consume(SEMICOLON);
     return std::make_shared<VarDeclNode>(type, var_name, value);
+  }
+  else {
+    NodePtr expr = parse_expr();
+    consume(SEMICOLON);
+    ExpressionStatementNode expressionStatementNode = ExpressionStatementNode(expr);
+    return std::make_shared<ExpressionStatementNode>(expr);
   }
   return nullptr;
 }
