@@ -3,7 +3,6 @@
 #include <sstream>
 
 #include "asm_generator.hpp"
-#include "cpp_generator.hpp"
 #include "lexer.hpp"
 #include "nodes.hpp"
 #include "parser.hpp"
@@ -101,10 +100,8 @@ int main(int argc, char *argv[])
     output2 << parser_output2;
     output2.close();
 
-
     // SEMANTIC ANALYSIS
     // analyzeAST(ast);
-
 
     // GENERATOR
     std::string asm_final_output = "";
@@ -122,16 +119,6 @@ int main(int argc, char *argv[])
 
     std::string cpp_final_output = "";
 
-    if (isModeCpp) {
-        cpp_final_output = generate_cpp(ast);
-
-        if (true) { // TODO : need to check if directory exists
-            std::ofstream output(outputDir + "output.cpp");
-            output << cpp_final_output;
-            output.close();
-        }
-    }
-
     // Print if verbose
     if (verbose) {
         if (isModeAsm) {
@@ -139,14 +126,6 @@ int main(int argc, char *argv[])
             std::cout << "\n\n---- ASM_GENERATOR OUTPUT ----\n"
                       << std::endl;
             std::cout << asm_final_output << std::endl;
-            std::cout << "------------------------------\n"
-                      << std::endl;
-        }
-        if (isModeCpp) {
-            // CPP GENERATOR OUTPUT
-            std::cout << "\n\n---- CPP_GENERATOR OUTPUT ----\n"
-                      << std::endl;
-            std::cout << cpp_final_output << std::endl;
             std::cout << "------------------------------\n"
                       << std::endl;
         }

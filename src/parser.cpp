@@ -142,17 +142,8 @@ NodePtr parse_stmt()
             std::cout << "\033[31m[!] Compilation error : Fonction non autorisée appelée: " + tokens[tokenIndex].second + "\033[0m" << std::endl;
             exit(-1);
         }
-
     }
 
-
-    // // other cases (here the only case left is function handling)
-    // else {
-    //     NodePtr expr = parse_expr();
-    //     consume(SEMICOLON);
-    //     ExpressionStatementNode expressionStatementNode = ExpressionStatementNode(expr);
-    //     return std::make_shared<ExpressionStatementNode>(expr);
-    // }
     return nullptr;
 }
 
@@ -253,17 +244,6 @@ std::string &print_ast(const NodePtr &node, std::string &output, const std::stri
             print_ast(vnode->_value, output, next_indent + "   ", true, true);
         }
     }
-
-    // else if (ExpressionNode *exprnode = dynamic_cast<ExpressionNode *>(node.get())) {
-    //     output += indent + branch + "ExpressionNode\n";
-    //     print_ast(exprnode->_expression, output, next_indent + "   ");
-    // }
-
-    // else if (ExpressionStatementNode *exprstatnode =
-    //              dynamic_cast<ExpressionStatementNode *>(node.get())) {
-    //     output += indent + branch + "ExpressionStatementNode\n";
-    //     print_ast(exprstatnode->_expression, output, next_indent + "   ");
-    // }
 
     else if (FunctionCallNode *funccallnode = dynamic_cast<FunctionCallNode *>(node.get())) {
         output += indent + branch + "FunctionCall" + "\n";
