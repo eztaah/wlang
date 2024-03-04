@@ -67,21 +67,6 @@ NodePtr parse_expr()
     Token currentToken = tokens[tokenIndex];
     Token nextToken = tokens[tokenIndex + 1];
 
-    // Function call
-    if (currentToken.first == IDENTIFIER && nextToken.first == LPAREN) {
-        Token left = consume(IDENTIFIER);
-        consume(LPAREN);
-        std::vector<NodePtr> args;
-        while (tokens[tokenIndex].first != RPAREN) {
-            args.push_back(parse_expr());
-            if (tokens[tokenIndex].first == COMMA) {
-                consume(COMMA);
-            }
-        }
-        consume(RPAREN);
-        return std::make_shared<FunctionCallNode>(left.second, args);
-    }
-
     NodePtr left = parse_factor();
 
     // Binary expression
@@ -130,13 +115,31 @@ NodePtr parse_stmt()
         consume(SEMICOLON);
         return std::make_shared<VarDeclNode>(type, var_name, value);
     }
-    // other cases (here the only case left is function handling)
-    else {
-        NodePtr expr = parse_expr();
+
+    // Println
+    else if (tokens[tokenIndex].first == IDENTIFIER && tokens[tokenIndex].second == "println") {
+        Token left = consume(IDENTIFIER);
+        consume(LPAREN);
+        std::vector<NodePtr> args;
+        while (tokens[tokenIndex].first != RPAREN) {
+            args.push_back(parse_expr());
+            if (tokens[tokenIndex].first == COMMA) {
+                consume(COMMA);
+            }
+        }
+        consume(RPAREN);
         consume(SEMICOLON);
-        ExpressionStatementNode expressionStatementNode = ExpressionStatementNode(expr);
-        return std::make_shared<ExpressionStatementNode>(expr);
+        return std::make_shared<FunctionCallNode>(left.second, args);
     }
+
+
+    // // other cases (here the only case left is function handling)
+    // else {
+    //     NodePtr expr = parse_expr();
+    //     consume(SEMICOLON);
+    //     ExpressionStatementNode expressionStatementNode = ExpressionStatementNode(expr);
+    //     return std::make_shared<ExpressionStatementNode>(expr);
+    // }
     return nullptr;
 }
 
@@ -232,16 +235,16 @@ std::string &print_ast(const NodePtr &node, std::string &output, const std::stri
         }
     }
 
-    else if (ExpressionNode *exprnode = dynamic_cast<ExpressionNode *>(node.get())) {
-        output += indent + branch + "ExpressionNode\n";
-        print_ast(exprnode->_expression, output, next_indent + "   ");
-    }
+    // else if (ExpressionNode *exprnode = dynamic_cast<ExpressionNode *>(node.get())) {
+    //     output += indent + branch + "ExpressionNode\n";
+    //     print_ast(exprnode->_expression, output, next_indent + "   ");
+    // }
 
-    else if (ExpressionStatementNode *exprstatnode =
-                 dynamic_cast<ExpressionStatementNode *>(node.get())) {
-        output += indent + branch + "ExpressionStatementNode\n";
-        print_ast(exprstatnode->_expression, output, next_indent + "   ");
-    }
+    // else if (ExpressionStatementNode *exprstatnode =
+    //              dynamic_cast<ExpressionStatementNode *>(node.get())) {
+    //     output += indent + branch + "ExpressionStatementNode\n";
+    //     print_ast(exprstatnode->_expression, output, next_indent + "   ");
+    // }
 
     else if (FunctionCallNode *funccallnode = dynamic_cast<FunctionCallNode *>(node.get())) {
         output += indent + branch + "FunctionCall" + "\n";

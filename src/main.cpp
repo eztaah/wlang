@@ -107,9 +107,7 @@ int main(int argc, char *argv[])
         std::unordered_map<std::string, std::string> variables;
         auto assembly_code_pair = generate_assembly(ast, variables);
         auto assembly_code = assembly_code_pair.first;
-
-        asm_final_output += "global _start\n\n";
-        asm_final_output += "_start:\n";
+        
         for (const auto &instruction : assembly_code) {
             asm_final_output += instruction + '\n';
         }
