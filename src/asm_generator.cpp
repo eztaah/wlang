@@ -1,78 +1,114 @@
 #include "asm_generator.hpp"
-
 #include <iostream>
 
-std::pair<std::vector<std::string>, int> generate_assembly(const NodePtr &node, std::unordered_map<std::string, std::string> &variables, int offset, int label_count)
-{
-    std::vector<std::string> data_instructions;
-    std::vector<std::string> text_instructions;
-    int current_label_count = label_count;
+
+std::unordered_map<std::string, std::string> variables;
+int offset;
+int label_count;
+std::vector<std::string> data_instructions;
+std::vector<std::string> text_instructions;
+
+void generate_assembly_internal(const NodePtr& node);
+
+
+
+std::string generate_assembly(const NodePtr& node) {
+    data_instructions.clear();
+    text_instructions.clear();
+    offset = 0;
+    
+    generate_assembly_internal(node);
+
+    // Combine data and text sections
+    std::vector<std::string> combined_instructions = data_instructions;
+    combined_instructions.insert(combined_instructions.end(), text_instructions.begin(), text_instructions.end());
+
+    std::string asm_final_output = "section .data\n";
+    for (const std::string &instruction : combined_instructions) {
+        asm_final_output += instruction + "\n";
+    }
+    asm_final_output += "mov rax, 60\n";
+    asm_final_output += "mov rdi, 0\n";
+    asm_final_output += "syscall\n";
+
+
+    return asm_final_output;
+}
+
+
+void generate_assembly_internal(const NodePtr& node) {
 
     if (ProgramNode *pnode = dynamic_cast<ProgramNode *>(node.get())) {
         text_instructions.push_back("\nsection .text");
         text_instructions.push_back("global _start");
+        text_instructions.push_back("extern printf");
         text_instructions.push_back("_start:");
+        text_instructions.push_back("\n; initialisation");
         text_instructions.push_back("push rbp");
-        text_instructions.push_back("mov rbp, rsp\n");
+        text_instructions.push_back("mov rbp, rsp");
         for (const NodePtr &stmt : pnode->_statements) {
-            auto [stmt_instructions, new_label_count] = generate_assembly(stmt, variables, offset, label_count);
-            text_instructions.insert(text_instructions.end(), stmt_instructions.begin(), stmt_instructions.end());
+            generate_assembly_internal(stmt);
             offset -= 8;
-            label_count = new_label_count;
         }
-        text_instructions.push_back("\nmov rsp, rbp");
+        text_instructions.push_back("\n; exit");
+        text_instructions.push_back("mov rsp, rbp");
         text_instructions.push_back("pop rbp");
     }
 
     else if (VarDeclNode *vnode = dynamic_cast<VarDeclNode *>(node.get())) {
+        text_instructions.push_back("\n; variables declaration");
         std::string var_offset = "[rbp-" + std::to_string(abs(offset)) + "]";
         variables[vnode->_name] = var_offset;
-        auto [value_instructions, new_label_count] = generate_assembly(vnode->_value, variables, offset, label_count);
-        text_instructions.insert(text_instructions.end(), value_instructions.begin(), value_instructions.end());
+        generate_assembly_internal(vnode->_value);
         text_instructions.push_back("mov " + var_offset + ", rax");
-        label_count = new_label_count;
     }
 
     else if (FunctionCallNode *fnode = dynamic_cast<FunctionCallNode *>(node.get())) {
         if (fnode->_name == "println") {
+            text_instructions.push_back("\n; println");
             // Gestion de println
             for (const NodePtr &arg : fnode->_args) {
                 if (StringNode *snode = dynamic_cast<StringNode *>(arg.get())) {
                     // Ajoutez votre chaîne à une section de données si votre assembleur le nécessite
-                    std::string str_label = "str_" + std::to_string(current_label_count++);
-                    data_instructions.push_back(".data");
-                    data_instructions.push_back(str_label + ": .string \"" + snode->_content + "\\n\"");
+                    std::string str_label = "str_" + std::to_string(label_count++);
+                    std::string format_label = "printf_content_" + std::to_string(label_count++);
+                    data_instructions.push_back(format_label + ": db \"%s\", 10, 0");
+                    data_instructions.push_back(str_label + ": db \"" + snode->_content + "\", 0");
                     
+                    // Chargement des arguments pour le syscall write
+                    text_instructions.push_back("mov rdi, " + format_label);
+                    text_instructions.push_back("mov rsi, " + str_label);
+                    text_instructions.push_back("xor rax, rax");
+                    text_instructions.push_back("call printf");
+                }
+                else {
+                    generate_assembly_internal(arg);    // traite la numbernode
+                    // Ajoutez votre chaîne à une section de données si votre assembleur le nécessite
+                    std::string format_label = "printf_content_" + std::to_string(label_count++);
+                    data_instructions.push_back(format_label + ": db \"%d\", 10, 0");
 
                     // Chargement des arguments pour le syscall write
-                    text_instructions.push_back("; println");
-                    text_instructions.push_back("mov rax, 1"); // syscall number for write
-                    text_instructions.push_back("mov rdi, 1"); // file descriptor 1 for stdout
-                    text_instructions.push_back("mov rsi, " + str_label); // address of the string
-                    text_instructions.push_back("mov rdx, " + std::to_string(snode->_content.size() + 1)); // string length + 1 for newline
-                    text_instructions.push_back("syscall"); // calling syscall
+                    text_instructions.push_back("mov rdi, " + format_label);
+                    text_instructions.push_back("mov rsi, rax");
+                    text_instructions.push_back("xor rax, rax");
+                    text_instructions.push_back("call printf");
                 }
             }
         }
     }
-
 
     else if (NumberNode *nnode = dynamic_cast<NumberNode *>(node.get())) {
         text_instructions.push_back("mov rax, " + std::to_string(nnode->_value));
     }
 
     else if (BinOpNode *bnode = dynamic_cast<BinOpNode *>(node.get())) {
-        auto [right_instructions, right_label_count] = generate_assembly(bnode->_right, variables, offset, label_count);
-        text_instructions.insert(text_instructions.end(), right_instructions.begin(), right_instructions.end());
+        generate_assembly_internal(bnode->_right);
         text_instructions.push_back("push rax");
-        auto [left_instructions, left_label_count] =
-            generate_assembly(bnode->_left, variables, offset, right_label_count);
-        text_instructions.insert(text_instructions.end(), left_instructions.begin(), left_instructions.end());
+        generate_assembly_internal(bnode->_left);
         text_instructions.push_back("pop rbx");
         if (bnode->_op == PLUS) {
             text_instructions.push_back("add rax, rbx");
         }
-        label_count = left_label_count;
     }
 
     else if (VarRefNode *vrefnode = dynamic_cast<VarRefNode *>(node.get())) {
@@ -87,21 +123,20 @@ std::pair<std::vector<std::string>, int> generate_assembly(const NodePtr &node, 
     }
 
     else if (IfNode *inode = dynamic_cast<IfNode *>(node.get())) {
-        auto [condition_instructions, cond_label_count] = generate_assembly(inode->_condition, variables, offset, label_count);
-        text_instructions.insert(text_instructions.end(), condition_instructions.begin(), condition_instructions.end());
         text_instructions.push_back("cmp rax, 0");
-        std::string true_label = "if_true_" + std::to_string(current_label_count);
-        std::string end_label = "if_end_" + std::to_string(current_label_count);
+        std::string true_label = "if_true_" + std::to_string(label_count);
+        std::string end_label = "if_end_" + std::to_string(label_count);
         text_instructions.push_back("je " + true_label);
         for (const NodePtr &stmt : inode->_true_block) {
-            auto [true_block_instructions, block_label_count] = generate_assembly(stmt, variables, offset, cond_label_count + 1);
-            text_instructions.insert(text_instructions.end(), true_block_instructions.begin(), true_block_instructions.end());
-            label_count = block_label_count;
+            label_count++;
+            generate_assembly_internal(stmt);
         }
         text_instructions.push_back("jmp " + end_label);
         text_instructions.push_back(true_label + ":");
         text_instructions.push_back(end_label + ":");
     }
-
-    return {text_instructions, label_count};
 }
+
+
+
+
