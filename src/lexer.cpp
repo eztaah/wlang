@@ -75,6 +75,14 @@ std::vector<Token> lexer(const std::string &code)
         else if (code[i] == '"') {
             tokens.push_back(Token(QUOTE, ""));
             i++;
+            std::string res = "";
+            while (code[i] != '"') {
+                res += code[i];
+                i++;
+            }
+            tokens.push_back(Token(IDENTIFIER, res));
+            tokens.push_back(Token(QUOTE, ""));
+            i++;
         }
 
         // Handling variables and keywords
@@ -94,6 +102,9 @@ std::vector<Token> lexer(const std::string &code)
             }
             else if (ident == "if") {
                 tokens.push_back(Token(IF, ""));
+            }
+            else if (ident == "else") {
+                tokens.push_back(Token(ELSE, ""));
             }
 
             // handling var names
@@ -149,6 +160,8 @@ std::string tokenTypeToString(TokenType type)
         return "RBRACE";
     case IF:
         return "IF";
+    case ELSE:
+        return "ELSE";
     case IDENTIFIER:
         return "IDENTIFIER";
     case EOF_TOKEN:

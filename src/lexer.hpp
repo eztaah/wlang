@@ -24,6 +24,7 @@ typedef enum {
     LBRACE,
     RBRACE,
     IF,
+    ELSE,
     IDENTIFIER,
     EOF_TOKEN
 } TokenType;

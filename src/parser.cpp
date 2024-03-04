@@ -96,8 +96,14 @@ NodePtr parse_if()
     NodePtr condition = parse_expr();
     consume(RPAREN);
     std::vector<NodePtr> true_branch = parse_block();
-    // No support for 'else' at the moment
-    return std::make_shared<IfNode>(condition, true_branch);
+    if (tokens[tokenIndex].first == ELSE) {
+        consume(ELSE);
+        std::vector<NodePtr> false_branch = parse_block();
+        return std::make_shared<IfNode>(condition, true_branch, false_branch);
+    }
+    else {
+        return std::make_shared<IfNode>(condition, true_branch);
+    }
 }
 
 NodePtr parse_stmt()
@@ -205,6 +211,12 @@ std::string &print_ast(const NodePtr &node, std::string &output, const std::stri
         }
         else {
             output += next_indent + "└── true_block: " + "\n";
+        }
+        if (!inode->_false_block.empty()) {
+            output += next_indent + "└─ false_block: " + "\n";
+            for (size_t i = 0; i < inode->_false_block.size(); ++i) {
+                print_ast(inode->_false_block[i], output, next_indent + "   ", i == inode->_false_block.size() - 1);
+            }
         }
     }
 
