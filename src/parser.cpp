@@ -123,19 +123,26 @@ NodePtr parse_stmt()
     }
 
     // Println
-    else if (tokens[tokenIndex].first == IDENTIFIER && tokens[tokenIndex].second == "println") {
-        Token left = consume(IDENTIFIER);
-        consume(LPAREN);
-        std::vector<NodePtr> args;
-        while (tokens[tokenIndex].first != RPAREN) {
-            args.push_back(parse_expr());
-            if (tokens[tokenIndex].first == COMMA) {
-                consume(COMMA);
+    else if (tokens[tokenIndex].first == IDENTIFIER) {
+        if (tokens[tokenIndex].second == "println") {
+            Token left = consume(IDENTIFIER);
+            consume(LPAREN);
+            std::vector<NodePtr> args;
+            while (tokens[tokenIndex].first != RPAREN) {
+                args.push_back(parse_expr());
+                if (tokens[tokenIndex].first == COMMA) {
+                    consume(COMMA);
+                }
             }
+            consume(RPAREN);
+            consume(SEMICOLON);
+            return std::make_shared<FunctionCallNode>(left.second, args);
         }
-        consume(RPAREN);
-        consume(SEMICOLON);
-        return std::make_shared<FunctionCallNode>(left.second, args);
+        else {
+            std::cout << "\033[31m[!] Compilation error : Fonction non autorisée appelée: " + tokens[tokenIndex].second + "\033[0m" << std::endl;
+            exit(-1);
+        }
+
     }
 
 

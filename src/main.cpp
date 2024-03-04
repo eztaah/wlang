@@ -7,6 +7,7 @@
 #include "lexer.hpp"
 #include "nodes.hpp"
 #include "parser.hpp"
+#include "semantic_analysis.hpp"
 
 int main(int argc, char *argv[])
 {
@@ -100,6 +101,12 @@ int main(int argc, char *argv[])
     output2 << parser_output2;
     output2.close();
 
+
+    // SEMANTIC ANALYSIS
+    // analyzeAST(ast);
+
+
+    // GENERATOR
     std::string asm_final_output = "";
 
     if (isModeAsm) {
