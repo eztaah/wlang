@@ -75,7 +75,8 @@ int main(int argc, char *argv[])
     std::vector<Token> tokens = lexer(code);
     std::string lexer_output = get_lexer_output(tokens);
     if (verbose) {
-        std::cout << "\n---- LEXER OUTPUT ----\n" << std::endl;
+        std::cout << "\n---- LEXER OUTPUT ----\n"
+                  << std::endl;
         std::cout << lexer_output << std::endl;
     }
     // Write result to file
@@ -90,7 +91,8 @@ int main(int argc, char *argv[])
 
     // PARSER OUTPUT
     if (verbose) {
-        std::cout << "\n\n---- PARSER OUTPUT ----\n" << std::endl;
+        std::cout << "\n\n---- PARSER OUTPUT ----\n"
+                  << std::endl;
         std::cout << parser_output2 << std::endl;
     }
     // Write result to file
@@ -139,15 +141,19 @@ int main(int argc, char *argv[])
     if (verbose) {
         if (isModeAsm) {
             // ASSEMBLY
-            std::cout << "\n\n---- ASM_GENERATOR OUTPUT ----\n" << std::endl;
+            std::cout << "\n\n---- ASM_GENERATOR OUTPUT ----\n"
+                      << std::endl;
             std::cout << asm_final_output << std::endl;
-            std::cout << "------------------------------\n" << std::endl;
+            std::cout << "------------------------------\n"
+                      << std::endl;
         }
         if (isModeCpp) {
             // CPP GENERATOR OUTPUT
-            std::cout << "\n\n---- CPP_GENERATOR OUTPUT ----\n" << std::endl;
+            std::cout << "\n\n---- CPP_GENERATOR OUTPUT ----\n"
+                      << std::endl;
             std::cout << cpp_final_output << std::endl;
-            std::cout << "------------------------------\n" << std::endl;
+            std::cout << "------------------------------\n"
+                      << std::endl;
         }
     }
 
