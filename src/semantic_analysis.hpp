@@ -3,6 +3,6 @@
 
 #include "nodes.hpp"
 
-void analyzeAST(const NodePtr& node);
+void analyzeAST(const NodePtr &node);
 
 #endif // SEMANTIC_ANALYSIS_HPP

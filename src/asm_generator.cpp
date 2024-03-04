@@ -1,22 +1,20 @@
 #include "asm_generator.hpp"
 #include <iostream>
 
-
 std::unordered_map<std::string, std::string> variables;
 int offset;
 int label_count;
 std::vector<std::string> data_instructions;
 std::vector<std::string> text_instructions;
 
-void generate_assembly_internal(const NodePtr& node);
+void generate_assembly_internal(const NodePtr &node);
 
-
-
-std::string generate_assembly(const NodePtr& node) {
+std::string generate_assembly(const NodePtr &node)
+{
     data_instructions.clear();
     text_instructions.clear();
     offset = 0;
-    
+
     generate_assembly_internal(node);
 
     // Combine data and text sections
@@ -31,12 +29,11 @@ std::string generate_assembly(const NodePtr& node) {
     asm_final_output += "mov rdi, 0\n";
     asm_final_output += "syscall\n";
 
-
     return asm_final_output;
 }
 
-
-void generate_assembly_internal(const NodePtr& node) {
+void generate_assembly_internal(const NodePtr &node)
+{
 
     if (ProgramNode *pnode = dynamic_cast<ProgramNode *>(node.get())) {
         text_instructions.push_back("\nsection .text");
@@ -76,7 +73,7 @@ void generate_assembly_internal(const NodePtr& node) {
                     std::string format_label = "printf_content_" + std::to_string(label_count++);
                     data_instructions.push_back(format_label + ": db \"%s\", 10, 0");
                     data_instructions.push_back(str_label + ": db \"" + snode->_content + "\", 0");
-                    
+
                     // Chargement des arguments pour le syscall write
                     text_instructions.push_back("mov rdi, " + format_label);
                     text_instructions.push_back("mov rsi, " + str_label);
@@ -84,7 +81,7 @@ void generate_assembly_internal(const NodePtr& node) {
                     text_instructions.push_back("call printf");
                 }
                 else {
-                    generate_assembly_internal(arg);    // traite la numbernode
+                    generate_assembly_internal(arg); // traite la numbernode
                     // Ajoutez votre chaîne à une section de données si votre assembleur le nécessite
                     std::string format_label = "printf_content_" + std::to_string(label_count++);
                     data_instructions.push_back(format_label + ": db \"%d\", 10, 0");
@@ -129,7 +126,6 @@ void generate_assembly_internal(const NodePtr& node) {
         std::string end_label = "if_end_" + std::to_string(label_count);
         std::string else_label = "else_" + std::to_string(label_count);
 
-
         text_instructions.push_back("\n; if statement");
         generate_assembly_internal(inode->_condition);
         text_instructions.push_back("cmp rax, rbx");
@@ -151,9 +147,9 @@ void generate_assembly_internal(const NodePtr& node) {
             generate_assembly_internal(stmt);
         }
         text_instructions.push_back("jmp " + end_label);
-        // else block 
+        // else block
         if (inode->_false_block.empty() == false) {
-        text_instructions.push_back(else_label + ":");
+            text_instructions.push_back(else_label + ":");
             for (const NodePtr &stmt : inode->_false_block) {
                 label_count++;
                 generate_assembly_internal(stmt);
@@ -161,11 +157,7 @@ void generate_assembly_internal(const NodePtr& node) {
         }
         text_instructions.push_back("jmp " + end_label);
 
-        // end 
+        // end
         text_instructions.push_back(end_label + ":");
     }
 }
-
-
-
-
