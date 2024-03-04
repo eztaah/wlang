@@ -104,17 +104,7 @@ int main(int argc, char *argv[])
 
     if (isModeAsm) {
         // ASSEMBLY
-        std::unordered_map<std::string, std::string> variables;
-        auto assembly_code_pair = generate_assembly(ast, variables);
-        auto assembly_code = assembly_code_pair.first;
-        
-        for (const auto &instruction : assembly_code) {
-            asm_final_output += instruction + '\n';
-        }
-        asm_final_output += "; exit syscall\n";
-        asm_final_output += "mov rax, 60\n";
-        asm_final_output += "mov rdi, 0\n";
-        asm_final_output += "syscall\n";
+        asm_final_output = generate_assembly(ast);
 
         if (true) { // TODO : need to check if directory exists
             std::ofstream output(outputDir + "output.asm");
