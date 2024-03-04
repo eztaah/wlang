@@ -46,6 +46,8 @@ void generate_assembly_internal(const NodePtr& node) {
         text_instructions.push_back("\n; initialisation");
         text_instructions.push_back("push rbp");
         text_instructions.push_back("mov rbp, rsp");
+        text_instructions.push_back("sub rsp, 32");
+
         for (const NodePtr &stmt : pnode->_statements) {
             generate_assembly_internal(stmt);
             offset -= 8;
@@ -57,7 +59,7 @@ void generate_assembly_internal(const NodePtr& node) {
 
     else if (VarDeclNode *vnode = dynamic_cast<VarDeclNode *>(node.get())) {
         text_instructions.push_back("\n; variables declaration");
-        std::string var_offset = "[rbp-" + std::to_string(abs(offset)) + "]";
+        std::string var_offset = "qword [rbp-" + std::to_string(abs(offset)) + "]";
         variables[vnode->_name] = var_offset;
         generate_assembly_internal(vnode->_value);
         text_instructions.push_back("mov " + var_offset + ", rax");
@@ -123,16 +125,43 @@ void generate_assembly_internal(const NodePtr& node) {
     }
 
     else if (IfNode *inode = dynamic_cast<IfNode *>(node.get())) {
-        text_instructions.push_back("cmp rax, 0");
         std::string true_label = "if_true_" + std::to_string(label_count);
         std::string end_label = "if_end_" + std::to_string(label_count);
+        std::string else_label = "else_" + std::to_string(label_count);
+
+
+        text_instructions.push_back("\n; if statement");
+        generate_assembly_internal(inode->_condition);
+        text_instructions.push_back("cmp rax, rbx");
         text_instructions.push_back("je " + true_label);
+
+        // si il y a un else
+        if (inode->_false_block.empty() == false) {
+            text_instructions.push_back("jmp " + else_label);
+        }
+        else {
+            // si pas de else
+            text_instructions.push_back("jmp " + end_label);
+        }
+
+        // true block
+        text_instructions.push_back(true_label + ":");
         for (const NodePtr &stmt : inode->_true_block) {
             label_count++;
             generate_assembly_internal(stmt);
         }
         text_instructions.push_back("jmp " + end_label);
-        text_instructions.push_back(true_label + ":");
+        // else block 
+        if (inode->_false_block.empty() == false) {
+        text_instructions.push_back(else_label + ":");
+            for (const NodePtr &stmt : inode->_false_block) {
+                label_count++;
+                generate_assembly_internal(stmt);
+            }
+        }
+        text_instructions.push_back("jmp " + end_label);
+
+        // end 
         text_instructions.push_back(end_label + ":");
     }
 }
