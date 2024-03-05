@@ -6,6 +6,7 @@ int offset;
 int label_count;
 std::vector<std::string> data_instructions;
 std::vector<std::string> text_instructions;
+std::vector<std::string> bss_instructions;
 
 void generate_assembly_internal(const NodePtr &node);
 
@@ -13,21 +14,20 @@ std::string generate_assembly(const NodePtr &node)
 {
     data_instructions.clear();
     text_instructions.clear();
+    bss_instructions.clear();
     offset = 0;
 
     generate_assembly_internal(node);
 
-    // Combine data and text sections
+    // Combine data, bss and text sections
     std::vector<std::string> combined_instructions = data_instructions;
+    combined_instructions.insert(combined_instructions.end(), bss_instructions.begin(), bss_instructions.end());
     combined_instructions.insert(combined_instructions.end(), text_instructions.begin(), text_instructions.end());
 
-    std::string asm_final_output = "section .data\n";
+    std::string asm_final_output = "";
     for (const std::string &instruction : combined_instructions) {
         asm_final_output += instruction + "\n";
     }
-    asm_final_output += "mov rax, 60\n";
-    asm_final_output += "mov rdi, 0\n";
-    asm_final_output += "syscall\n";
 
     return asm_final_output;
 }
@@ -36,27 +36,50 @@ void generate_assembly_internal(const NodePtr &node)
 {
 
     if (ProgramNode *pnode = dynamic_cast<ProgramNode *>(node.get())) {
+        // setup data instructions
+        data_instructions.push_back("\nsection .data");
+        data_instructions.push_back("endp_printf_content: db \"%s\", 0");
+        data_instructions.push_back("endp_str: db 10, 0");
+        data_instructions.push_back("input_format: db \"%d\", 0");
+
+        // setup bss instructions 
+        bss_instructions.push_back("\nsection .bss");
+        bss_instructions.push_back("box resb 64");
+        bss_instructions.push_back("buffer resb 8");
+
+        // setup text instructions 
         text_instructions.push_back("\nsection .text");
         text_instructions.push_back("global _start");
         text_instructions.push_back("extern printf");
+        text_instructions.push_back("extern scanf");
         text_instructions.push_back("_start:");
         text_instructions.push_back("\n; initialisation");
-        text_instructions.push_back("push rbp");
-        text_instructions.push_back("mov rbp, rsp");
-        text_instructions.push_back("sub rsp, 32");
+        // text_instructions.push_back("push rbp");
+        // text_instructions.push_back("mov r12, number");
+        // text_instructions.push_back("mov rbp, rsp");
 
         for (const NodePtr &stmt : pnode->_statements) {
             generate_assembly_internal(stmt);
             offset -= 8;
         }
+        // printf final
+        text_instructions.push_back("; printf");
+        text_instructions.push_back("mov rdi, endp_printf_content");
+        text_instructions.push_back("mov rsi, endp_str");
+        text_instructions.push_back("xor rax, rax");
+        text_instructions.push_back("call printf");
+        // exit
         text_instructions.push_back("\n; exit");
-        text_instructions.push_back("mov rsp, rbp");
-        text_instructions.push_back("pop rbp");
+        // text_instructions.push_back("mov rsp, rbp");
+        // text_instructions.push_back("pop rbp");
+        text_instructions.push_back("mov rax, 60");
+        text_instructions.push_back("mov rdi, 0");
+        text_instructions.push_back("syscall");
     }
 
     else if (VarDeclNode *vnode = dynamic_cast<VarDeclNode *>(node.get())) {
         text_instructions.push_back("\n; variables declaration");
-        std::string var_offset = "qword [rbp-" + std::to_string(abs(offset)) + "]";
+        std::string var_offset = "qword [box+" + std::to_string(abs(offset)) + "]";
         variables[vnode->_name] = var_offset;
         generate_assembly_internal(vnode->_value);
         text_instructions.push_back("mov " + var_offset + ", rax");
@@ -118,14 +141,24 @@ void generate_assembly_internal(const NodePtr &node)
                     text_instructions.push_back("call printf");
                 }
             }
-            // printf
-            data_instructions.push_back("endp_printf_content: db \"%s\", 0");
-            data_instructions.push_back("endp_str: db 10, 0");
+        } 
 
-            text_instructions.push_back("mov rdi, endp_printf_content");
-            text_instructions.push_back("mov rsi, endp_str");
-            text_instructions.push_back("xor rax, rax");
-            text_instructions.push_back("call printf");
+        // gestion de la fonction input
+        else if (fnode->_name == "input") {
+            text_instructions.push_back("\n; input");
+
+            std::string var_address = "box+" + std::to_string(std::abs(offset)); // Exemple, dépend de votre implémentation.
+
+            text_instructions.push_back("mov rdi, input_format"); // Adresse du format.
+            text_instructions.push_back("mov rsi, buffer");  // Adresse de la variable 'a'.
+            text_instructions.push_back("xor rax, rax"); // Parce que scanf est une fonction variadique.
+            text_instructions.push_back("call scanf");
+            text_instructions.push_back("mov rax, [buffer]");
+
+        }
+        else {
+            std::cout << "\033[31m[!] Generator error 1\033[0m" << std::endl;
+            exit(-1);
         }
     }
 

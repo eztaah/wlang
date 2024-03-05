@@ -67,7 +67,6 @@ NodePtr parse_expr()
 {
     Token currentToken = tokens[tokenIndex];
     Token nextToken = tokens[tokenIndex + 1];
-
     NodePtr left = parse_factor();
 
     // Binary expression
@@ -81,6 +80,13 @@ NodePtr parse_expr()
         TokenType op = consume().first;
         NodePtr right = parse_factor();
         left = std::make_shared<BoolOpNode>(left, op, right);
+    }
+    else if (currentToken.second == "input") {
+        // Input function
+        // L'identifier est deja consommé dans parse_factor
+        consume(LPAREN);
+        consume(RPAREN);
+        left = std::make_shared<FunctionCallNode>("input");
     }
     return left;
 }
@@ -152,7 +158,7 @@ NodePtr parse_stmt()
     // Print
     else if (tokens[tokenIndex].first == IDENTIFIER) {
         if (tokens[tokenIndex].second == "print") {
-            Token left = consume(IDENTIFIER);
+            Token token = consume(IDENTIFIER);
             consume(LPAREN);
             std::vector<NodePtr> args;
             while (tokens[tokenIndex].first != RPAREN) {
@@ -163,7 +169,7 @@ NodePtr parse_stmt()
             }
             consume(RPAREN);
             consume(SEMICOLON);
-            return std::make_shared<FunctionCallNode>(left.second, args);
+            return std::make_shared<FunctionCallNode>(token.second, args);
         }
         else {
             std::cout << "\033[31m[!] Parser error: Unknow keyword: \"" + tokens[tokenIndex].second + "\"\033[0m" << std::endl;

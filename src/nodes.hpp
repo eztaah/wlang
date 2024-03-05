@@ -98,7 +98,7 @@ class ExpressionStatementNode : public Node {
 
 class FunctionCallNode : public Node {
   public:
-    FunctionCallNode(const std::string &name, const std::vector<NodePtr> &args)
+    FunctionCallNode(const std::string &name, const std::vector<NodePtr> &args = {})
         : _name(name), _args(args) {}
     std::string _name;
     std::vector<NodePtr> _args;
