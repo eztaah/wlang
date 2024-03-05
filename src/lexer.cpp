@@ -13,6 +13,13 @@ std::vector<Token> lexer(const std::string &code)
     std::set<std::string> float_sizes = {"32", "64"};
 
     while (i < code.length()) {
+        // Ignoring comments
+        if (code[i] == '#') {
+            while (i < code.length() && code[i] != '\n') {
+                i++;
+            }
+        }
+
         // Handling numbers
         if (isdigit(code[i])) {
             std::string num;
@@ -91,6 +98,10 @@ std::vector<Token> lexer(const std::string &code)
         }
         else if (code[i] == '}') {
             tokens.push_back(Token(RBRACE, ""));
+            i++;
+        }
+        else if (code[i] == ',') {
+            tokens.push_back(Token(COMMA, ""));
             i++;
         }
         else if (code[i] == '"') {
@@ -193,6 +204,8 @@ std::string tokenTypeToString(TokenType type)
         return "LBRACE";
     case RBRACE:
         return "RBRACE";
+    case COMMA:
+        return "COMMA";
     case IF:
         return "IF";
     case WHILE:
@@ -205,8 +218,6 @@ std::string tokenTypeToString(TokenType type)
         return "EOF_TOKEN";
     case SEMICOLON:
         return "SEMICOLON";
-    case COMMA:
-        return "COMMA";
     default:
         std::cout << "\033[31m[!] Internal lexer error : Error in tokenTypeToString: " + std::to_string(type) + " does not have string equivalent" + "\033[0m" << std::endl;
         exit(-1);
