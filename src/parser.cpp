@@ -71,7 +71,7 @@ NodePtr parse_expr()
     NodePtr left = parse_factor();
 
     // Binary expression
-    if (tokens[tokenIndex].first == PLUS || tokens[tokenIndex].first == MINUS) {
+    while (tokenIndex < tokens.size() && (tokens[tokenIndex].first == PLUS || tokens[tokenIndex].first == MINUS)) {
         TokenType op = consume().first;
         NodePtr right = parse_factor();
         left = std::make_shared<BinOpNode>(left, op, right);
@@ -149,9 +149,9 @@ NodePtr parse_stmt()
         return std::make_shared<VarModifNode>(var_name, value);
     }
 
-    // Println
+    // Print
     else if (tokens[tokenIndex].first == IDENTIFIER) {
-        if (tokens[tokenIndex].second == "println") {
+        if (tokens[tokenIndex].second == "print") {
             Token left = consume(IDENTIFIER);
             consume(LPAREN);
             std::vector<NodePtr> args;

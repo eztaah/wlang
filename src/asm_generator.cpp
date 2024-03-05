@@ -77,15 +77,28 @@ void generate_assembly_internal(const NodePtr &node)
     }
 
     else if (FunctionCallNode *fnode = dynamic_cast<FunctionCallNode *>(node.get())) {
-        if (fnode->_name == "println") {
-            text_instructions.push_back("\n; println");
+        if (fnode->_name == "print") {
+            text_instructions.push_back("\n; print");
             // Gestion de println
             for (const NodePtr &arg : fnode->_args) {
                 if (StringNode *snode = dynamic_cast<StringNode *>(arg.get())) {
                     std::string str_label = "str_" + std::to_string(label_count++);
                     std::string format_label = "printf_content_" + std::to_string(label_count++);
-                    data_instructions.push_back(format_label + ": db \"%s\", 10, 0");
-                    data_instructions.push_back(str_label + ": db \"" + snode->_content + "\", 0");
+
+                    // handle \n
+                    std::string processed_content;
+                    for (size_t i = 0; i < snode->_content.size(); ++i) {
+                        if (snode->_content[i] == '\\' && snode->_content[i + 1] == 'n' && i + 1 < snode->_content.size()) {
+                            processed_content += "\", 10, \"";
+                            ++i;
+                        }
+                        else {
+                            processed_content.push_back(snode->_content[i]);
+                        }
+                    }
+
+                    data_instructions.push_back(format_label + ": db \"%s\", 0");
+                    data_instructions.push_back(str_label + ": db \"" + processed_content + "\", 0");
 
                     // printf
                     text_instructions.push_back("mov rdi, " + format_label);
@@ -96,7 +109,7 @@ void generate_assembly_internal(const NodePtr &node)
                 else {
                     generate_assembly_internal(arg); // traite la numbernode
                     std::string format_label = "printf_content_" + std::to_string(label_count++);
-                    data_instructions.push_back(format_label + ": db \"%d\", 10, 0");
+                    data_instructions.push_back(format_label + ": db \"%d\", 0");
 
                     // printf
                     text_instructions.push_back("mov rdi, " + format_label);
@@ -105,6 +118,14 @@ void generate_assembly_internal(const NodePtr &node)
                     text_instructions.push_back("call printf");
                 }
             }
+            // printf
+            data_instructions.push_back("endp_printf_content: db \"%s\", 0");
+            data_instructions.push_back("endp_str: db 10, 0");
+
+            text_instructions.push_back("mov rdi, endp_printf_content");
+            text_instructions.push_back("mov rsi, endp_str");
+            text_instructions.push_back("xor rax, rax");
+            text_instructions.push_back("call printf");
         }
     }
 

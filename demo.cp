@@ -1,21 +1,36 @@
 var a = 20;
-var b = 9;
+var b = 9 * 1 + 2 + 2* a;
 
-println("bonjour\n");
-
-println(a);
-println(b);
-
-a = 0;
-
-println("debut de la boucle while");
-
-while (a < b) {
-    a = a + 1;
-    println("valeur de a :");
-    println(a);
-}
+print(9 * 2 + 2 + 3 - 1);
+# print("coucouc");
+# print("aurevoir\n");
 
 
-println(a);
-println(b);
+
+
+
+
+
+# print("bonjour\n");
+
+
+# print("\n");
+# print(b);
+# print("\n");
+
+# a = 0;
+
+# print("debut de la boucle while\n");
+
+# while (a < b) {
+#     a = a + 1;
+#     print("valeur de a : ");
+#     print(a);
+#     print("\n");
+# }
+
+
+# print(a);
+# print("\n");
+# print(b);
+# print("\n");
