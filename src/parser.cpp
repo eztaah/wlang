@@ -112,12 +112,24 @@ NodePtr parse_if()
         return std::make_shared<IfNode>(condition, true_branch);
     }
 }
+NodePtr parse_while()
+{
+    consume(WHILE);
+    consume(LPAREN);
+    NodePtr condition = parse_expr();
+    consume(RPAREN);
+    std::vector<NodePtr> block = parse_block();
+    return std::make_shared<WhileNode>(condition, block);
+}
 
 NodePtr parse_stmt()
 {
     // handle if statements
     if (tokens[tokenIndex].first == IF) {
         return parse_if();
+    }
+    if (tokens[tokenIndex].first == WHILE) {
+        return parse_while();
     }
     // handle variable declaration
     else if ((tokens[tokenIndex].first == VAR || tokens[tokenIndex].first == LET) && tokens[tokenIndex + 1].first == IDENTIFIER && tokens[tokenIndex + 2].first == EQUALS) {
@@ -127,6 +139,14 @@ NodePtr parse_stmt()
         NodePtr value = parse_expr();
         consume(SEMICOLON);
         return std::make_shared<VarDeclNode>(type, var_name, value);
+    }
+    // handle variable modifiaction
+    else if (tokens[tokenIndex].first == IDENTIFIER && tokens[tokenIndex + 1].first == EQUALS) {
+        std::string var_name = consume(IDENTIFIER).second;
+        consume(EQUALS);
+        NodePtr value = parse_expr();
+        consume(SEMICOLON);
+        return std::make_shared<VarModifNode>(var_name, value);
     }
 
     // Println
@@ -224,6 +244,20 @@ std::string &print_ast(const NodePtr &node, std::string &output, const std::stri
             }
         }
     }
+    else if (WhileNode *wnode = dynamic_cast<WhileNode *>(node.get())) {
+        output += indent + branch + "WhileNode" + "\n";
+        output += next_indent + "├─ condition: " + "\n";
+        print_ast(wnode->_condition, output, next_indent + "│  ", true);
+        if (!wnode->_block.empty()) {
+            output += next_indent + "└─ _block: " + "\n";
+            for (size_t i = 0; i < wnode->_block.size(); ++i) {
+                print_ast(wnode->_block[i], output, next_indent + "   ", i == wnode->_block.size() - 1);
+            }
+        }
+        else {
+            output += next_indent + "└── _block: " + "\n";
+        }
+    }
 
     else if (BinOpNode *bnode = dynamic_cast<BinOpNode *>(node.get())) {
         output += indent + branch + "BinOpNode" + "\n";
@@ -251,8 +285,15 @@ std::string &print_ast(const NodePtr &node, std::string &output, const std::stri
 
     else if (VarDeclNode *vnode = dynamic_cast<VarDeclNode *>(node.get())) {
         output += indent + branch + "VarDeclNode" + "\n";
-        output +=
-            next_indent + "├─ type: " + tokenTypeToString(vnode->_type) + "\n";
+        output += next_indent + "├─ type: " + tokenTypeToString(vnode->_type) + "\n";
+        output += next_indent + "├─ name: " + vnode->_name + "\n";
+        output += next_indent + "└─ value: " + "\n";
+        if (vnode->_value) {
+            print_ast(vnode->_value, output, next_indent + "   ", true, true);
+        }
+    }
+    else if (VarModifNode *vnode = dynamic_cast<VarModifNode *>(node.get())) {
+        output += indent + branch + "VarModifNode" + "\n";
         output += next_indent + "├─ name: " + vnode->_name + "\n";
         output += next_indent + "└─ value: " + "\n";
         if (vnode->_value) {

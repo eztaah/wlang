@@ -62,19 +62,32 @@ void generate_assembly_internal(const NodePtr &node)
         text_instructions.push_back("mov " + var_offset + ", rax");
     }
 
+    else if (VarModifNode *mnode = dynamic_cast<VarModifNode *>(node.get())) {
+        text_instructions.push_back("\n; variables modification");
+
+        // recuperation de l'adresse de la variable
+        auto var_offset = variables.find(mnode->_name);
+        // gere les erreurs
+        if (var_offset == variables.end()) {
+            std::cout << "Undefined variable " + mnode->_name << std::endl;
+            exit(1);
+        }
+        generate_assembly_internal(mnode->_value);
+        text_instructions.push_back("mov " + var_offset->second + ", rax");
+    }
+
     else if (FunctionCallNode *fnode = dynamic_cast<FunctionCallNode *>(node.get())) {
         if (fnode->_name == "println") {
             text_instructions.push_back("\n; println");
             // Gestion de println
             for (const NodePtr &arg : fnode->_args) {
                 if (StringNode *snode = dynamic_cast<StringNode *>(arg.get())) {
-                    // Ajoutez votre chaîne à une section de données si votre assembleur le nécessite
                     std::string str_label = "str_" + std::to_string(label_count++);
                     std::string format_label = "printf_content_" + std::to_string(label_count++);
                     data_instructions.push_back(format_label + ": db \"%s\", 10, 0");
                     data_instructions.push_back(str_label + ": db \"" + snode->_content + "\", 0");
 
-                    // Chargement des arguments pour le syscall write
+                    // printf
                     text_instructions.push_back("mov rdi, " + format_label);
                     text_instructions.push_back("mov rsi, " + str_label);
                     text_instructions.push_back("xor rax, rax");
@@ -82,11 +95,10 @@ void generate_assembly_internal(const NodePtr &node)
                 }
                 else {
                     generate_assembly_internal(arg); // traite la numbernode
-                    // Ajoutez votre chaîne à une section de données si votre assembleur le nécessite
                     std::string format_label = "printf_content_" + std::to_string(label_count++);
                     data_instructions.push_back(format_label + ": db \"%d\", 10, 0");
 
-                    // Chargement des arguments pour le syscall write
+                    // printf
                     text_instructions.push_back("mov rdi, " + format_label);
                     text_instructions.push_back("mov rsi, rax");
                     text_instructions.push_back("xor rax, rax");
@@ -197,6 +209,33 @@ void generate_assembly_internal(const NodePtr &node)
                 generate_assembly_internal(stmt);
             }
         }
+        text_instructions.push_back("jmp " + end_label);
+
+        // end
+        text_instructions.push_back(end_label + ":");
+    }
+
+    else if (WhileNode *wnode = dynamic_cast<WhileNode *>(node.get())) {
+        std::string while_label = "while_label_" + std::to_string(label_count);
+        std::string true_label = "if_true_" + std::to_string(label_count);
+        std::string end_label = "if_end_" + std::to_string(label_count);
+        std::string else_label = "else_" + std::to_string(label_count);
+
+        text_instructions.push_back("\n; while statement");
+        text_instructions.push_back(while_label + ":");
+        generate_assembly_internal(wnode->_condition);
+        text_instructions.push_back("jmp " + else_label);
+
+        // true block
+        text_instructions.push_back(true_label + ":");
+        for (const NodePtr &stmt : wnode->_block) {
+            label_count++;
+            generate_assembly_internal(stmt);
+        }
+        text_instructions.push_back("jmp " + while_label);
+
+        // else block
+        text_instructions.push_back(else_label + ":");
         text_instructions.push_back("jmp " + end_label);
 
         // end
