@@ -124,6 +124,9 @@ std::vector<Token> lexer(const std::string &code)
             else if (ident == "if") {
                 tokens.push_back(Token(IF, ""));
             }
+            else if (ident == "while") {
+                tokens.push_back(Token(WHILE, ""));
+            }
             else if (ident == "else") {
                 tokens.push_back(Token(ELSE, ""));
             }
@@ -192,6 +195,8 @@ std::string tokenTypeToString(TokenType type)
         return "RBRACE";
     case IF:
         return "IF";
+    case WHILE:
+        return "WHILE";
     case ELSE:
         return "ELSE";
     case IDENTIFIER:

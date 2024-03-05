@@ -1,14 +1,21 @@
-var a = 9;
+var a = 20;
 var b = 9;
+
+println("bonjour\n");
 
 println(a);
 println(b);
 
-if (a > b) {
-    println("true");
-}
-else {
-    println("false");
+a = 0;
+
+println("debut de la boucle while");
+
+while (a < b) {
+    a = a + 1;
+    println("valeur de a :");
+    println(a);
 }
 
-println(a + b);
+
+println(a);
+println(b);

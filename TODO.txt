@@ -30,3 +30,28 @@ class FunCall : public Node {
     std::string _name;
     std::vector<Node> parameters;
 };
+
+
+
+----------------------------------
+
+
+var a = 9;
+var b = 9;
+
+println(a);
+println(b);
+
+if (a > b) {
+    println("true");
+}
+else {
+    println("false");
+}
+
+println(a + b);
+
+
+while (a < b) {
+    println("bonjour");
+}

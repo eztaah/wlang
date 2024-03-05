@@ -65,15 +65,29 @@ class VarDeclNode : public Node { // VarDeclStatement
     NodePtr _value;
 };
 
+class VarModifNode : public Node {
+  public:
+    VarModifNode(const std::string &name, NodePtr value)
+        : _name(name), _value(value) {}
+    std::string _name;
+    NodePtr _value;
+};
+
 class IfNode : public Node { // IfStatement
   public:
-    IfNode(NodePtr condition, std::vector<NodePtr> true_block,
-           std::vector<NodePtr> false_block = {})
-        : _condition(condition), _true_block(true_block),
-          _false_block(false_block) {}
+    IfNode(NodePtr condition, std::vector<NodePtr> true_block, std::vector<NodePtr> false_block = {})
+        : _condition(condition), _true_block(true_block), _false_block(false_block) {}
     NodePtr _condition;
     std::vector<NodePtr> _true_block;
     std::vector<NodePtr> _false_block;
+};
+
+class WhileNode : public Node {
+  public:
+    WhileNode(NodePtr condition, std::vector<NodePtr> block)
+        : _condition(condition), _block(block) {}
+    NodePtr _condition;
+    std::vector<NodePtr> _block;
 };
 
 class ExpressionStatementNode : public Node {

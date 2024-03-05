@@ -8,8 +8,10 @@
 typedef enum {
     UNDEFINED,
     QUOTE,
+
     LET,
     VAR,
+
     NUMBER,
     PLUS,
     MINUS,
@@ -30,6 +32,7 @@ typedef enum {
     RPAREN,
     LBRACE,
     RBRACE,
+    WHILE,
     IF,
     ELSE,
     IDENTIFIER,
