@@ -154,7 +154,7 @@ std::vector<Token> lexer(const std::string &code)
         }
         // Error otherwise
         else {
-            std::cout << "\033[31m[!] Lexer error : Unknown character: " + std::string(1, code[i]) + "\033[0m" << std::endl;
+            std::cout << "\033[31m[!] Lexer error : Unknown character: '" << code[i] << "' (ASCII: " << static_cast<int>(code[i]) << ")\033[0m" << std::endl;
             exit(-1);
         }
     }
