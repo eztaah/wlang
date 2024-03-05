@@ -16,7 +16,14 @@ typedef enum {
     TIMES,
     DIVIDE,
     EQUALS,
+
     EQUALS_EQUALS,
+    NOT_EQUALS,
+    LESS_THAN,
+    LESS_THAN_EQUALS,
+    GREATER_THAN,
+    GREATER_THAN_EQUALS,
+
     SEMICOLON,
     COMMA,
     LPAREN,

@@ -24,7 +24,8 @@ Token consume(const TokenType expected_type = UNDEFINED)
     if (tokenIndex < tokens.size()) {
         Token current_token = tokens[tokenIndex++];
         if (expected_type != UNDEFINED && current_token.first != expected_type) {
-            throw std::runtime_error("Expected token type " + tokenTypeToString(expected_type) + ", got (" + tokenTypeToString(current_token.first) + ", " + current_token.second + ")");
+            std::cout << "\033[31m[!] Parser error: Expected token type " + tokenTypeToString(expected_type) + ", got (" + tokenTypeToString(current_token.first) + ", " + current_token.second + ")\033[0m" << std::endl;
+            exit(-1);
         }
         return current_token;
     }
@@ -70,10 +71,16 @@ NodePtr parse_expr()
     NodePtr left = parse_factor();
 
     // Binary expression
-    while (tokenIndex < tokens.size() && (tokens[tokenIndex].first == PLUS || tokens[tokenIndex].first == MINUS || tokens[tokenIndex].first == EQUALS_EQUALS)) {
+    if (tokens[tokenIndex].first == PLUS || tokens[tokenIndex].first == MINUS) {
         TokenType op = consume().first;
         NodePtr right = parse_factor();
         left = std::make_shared<BinOpNode>(left, op, right);
+    }
+    // Boolean expression
+    if (tokens[tokenIndex].first == EQUALS_EQUALS || tokens[tokenIndex].first == NOT_EQUALS || tokens[tokenIndex].first == LESS_THAN || tokens[tokenIndex].first == LESS_THAN_EQUALS || tokens[tokenIndex].first == GREATER_THAN || tokens[tokenIndex].first == GREATER_THAN_EQUALS) {
+        TokenType op = consume().first;
+        NodePtr right = parse_factor();
+        left = std::make_shared<BoolOpNode>(left, op, right);
     }
     return left;
 }
@@ -139,7 +146,7 @@ NodePtr parse_stmt()
             return std::make_shared<FunctionCallNode>(left.second, args);
         }
         else {
-            std::cout << "\033[31m[!] Compilation error : Fonction non autorisée appelée: " + tokens[tokenIndex].second + "\033[0m" << std::endl;
+            std::cout << "\033[31m[!] Parser error: Unknow keyword: \"" + tokens[tokenIndex].second + "\"\033[0m" << std::endl;
             exit(-1);
         }
     }
@@ -226,6 +233,14 @@ std::string &print_ast(const NodePtr &node, std::string &output, const std::stri
         output += next_indent + "└─ right: " + "\n";
         print_ast(bnode->_right, output, next_indent + "   ");
     }
+    else if (BoolOpNode *bnode = dynamic_cast<BoolOpNode *>(node.get())) {
+        output += indent + branch + "BoolOpNode" + "\n";
+        output += next_indent + "├─ op: " + tokenTypeToString(bnode->_op) + "\n";
+        output += next_indent + "├─ left: " + "\n";
+        print_ast(bnode->_left, output, next_indent + "│  ", false);
+        output += next_indent + "└─ right: " + "\n";
+        print_ast(bnode->_right, output, next_indent + "   ");
+    }
 
     else if (NumberNode *nnode = dynamic_cast<NumberNode *>(node.get())) {
         output += indent + branch + "NumberNode(value=" + std::to_string(nnode->_value) + ")" + "\n";
@@ -257,6 +272,10 @@ std::string &print_ast(const NodePtr &node, std::string &output, const std::stri
     else if (VarRefNode *vrefnode = dynamic_cast<VarRefNode *>(node.get())) {
         output +=
             indent + branch + "VarRefNode(name=" + vrefnode->_name + ")" + "\n";
+    }
+    else {
+        std::cout << "\033[31m[!] Parser internal error: Unknow node encontered when displaying the ast \033[0m" << std::endl;
+        exit(-1);
     }
 
     return output;

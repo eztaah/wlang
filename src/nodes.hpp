@@ -41,6 +41,15 @@ class BinOpNode : public Node {
     NodePtr _right;
 };
 
+class BoolOpNode : public Node {
+  public:
+    BoolOpNode(NodePtr left, const TokenType &op, NodePtr right)
+        : _left(left), _op(op), _right(right) {}
+    NodePtr _left;
+    TokenType _op;
+    NodePtr _right;
+};
+
 class ExpressionNode : public Node {
   public:
     ExpressionNode(NodePtr expression) : _expression(expression) {}
