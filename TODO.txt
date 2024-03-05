@@ -1,10 +1,6 @@
 # TODO
 
 - dire que il y a probleme si pas ;
-- probleme si pas println
-
-- regler bug clang-format std::cout
-- faire conversion assembleur
 - faire un global.hpp
 
 

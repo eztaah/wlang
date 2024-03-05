@@ -1,14 +1,14 @@
-let a = 4;
-var b = 3;
+var a = 9;
+var b = 9;
 
 println(a);
 println(b);
 
-if (a == b) {
-    println("a == b");
+if (a > b) {
+    println("true");
 }
 else {
-    println("a != b");
+    println("false");
 }
 
 println(a + b);

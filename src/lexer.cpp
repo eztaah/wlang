@@ -50,6 +50,27 @@ std::vector<Token> lexer(const std::string &code)
                 i++;
             }
         }
+        else if (code[i] == '!' && code[i + 1] == '=') {
+            tokens.push_back(Token(NOT_EQUALS, ""));
+            i += 2;
+        }
+        else if (code[i] == '<' && code[i + 1] == '=') {
+            tokens.push_back(Token(LESS_THAN_EQUALS, ""));
+            i += 2;
+        }
+        else if (code[i] == '<') {
+            tokens.push_back(Token(LESS_THAN, ""));
+            i++;
+        }
+        else if (code[i] == '>' && code[i + 1] == '=') {
+            tokens.push_back(Token(GREATER_THAN_EQUALS, ""));
+            i += 2;
+        }
+        else if (code[i] == '>') {
+            tokens.push_back(Token(GREATER_THAN, ""));
+            i++;
+        }
+
         else if (code[i] == ';') {
             tokens.push_back(Token(SEMICOLON, ""));
             i++;
@@ -119,7 +140,8 @@ std::vector<Token> lexer(const std::string &code)
         }
         // Error otherwise
         else {
-            throw std::runtime_error("Unknown character: " + std::string(1, code[i]));
+            std::cout << "\033[31m[!] Lexer error : Unknown character: " + std::string(1, code[i]) + "\033[0m" << std::endl;
+            exit(-1);
         }
     }
     // Adding end-of-file character
@@ -150,6 +172,16 @@ std::string tokenTypeToString(TokenType type)
         return "EQUALS";
     case EQUALS_EQUALS:
         return "EQUALS_EQUALS";
+    case NOT_EQUALS:
+        return "NOT_EQUALS";
+    case LESS_THAN:
+        return "LESS_THAN";
+    case LESS_THAN_EQUALS:
+        return "LESS_THAN_EQUALS";
+    case GREATER_THAN:
+        return "GREATER_THAN";
+    case GREATER_THAN_EQUALS:
+        return "GREATER_THAN_EQUALS";
     case LPAREN:
         return "LPAREN";
     case RPAREN:
@@ -171,7 +203,8 @@ std::string tokenTypeToString(TokenType type)
     case COMMA:
         return "COMMA";
     default:
-        return "UNKNOWN";
+        std::cout << "\033[31m[!] Internal lexer error : Error in tokenTypeToString: " + std::to_string(type) + " does not have string equivalent" + "\033[0m" << std::endl;
+        exit(-1);
     }
 }
 
