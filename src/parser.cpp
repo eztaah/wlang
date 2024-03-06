@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-#include "lexer.hpp"
+#include "global.hpp"
 #include "nodes.hpp"
 
 std::vector<Token> tokens;
@@ -24,7 +24,7 @@ Token consume(const TokenType expected_type = UNDEFINED)
     if (tokenIndex < tokens.size()) {
         Token current_token = tokens[tokenIndex++];
         if (expected_type != UNDEFINED && current_token.first != expected_type) {
-            std::cout << "\033[31m[!] Parser error: Expected token type " + tokenTypeToString(expected_type) + ", got (" + tokenTypeToString(current_token.first) + ", " + current_token.second + ")\033[0m" << std::endl;
+            std::cout << "\033[31m[!] Parser error: Expected token type " + token_to_string(expected_type) + ", got (" + token_to_string(current_token.first) + ", " + current_token.second + ")\033[0m" << std::endl;
             exit(-1);
         }
         return current_token;
@@ -38,16 +38,16 @@ NodePtr parse_term()
         Token token = consume(NUMBER);
         return std::make_shared<NumberNode>(std::stoi(token.second));
     }
-    if (tokens[tokenIndex].first == QUOTE) {
+    else if (tokens[tokenIndex].first == IDENTIFIER) {
+        Token token = consume(IDENTIFIER);
+        return std::make_shared<VarRefNode>(token.second);
+    }
+    else if (tokens[tokenIndex].first == QUOTE) {
         consume(QUOTE);
         Token token = consume(IDENTIFIER);
         NodePtr res = std::make_shared<StringNode>(token.second);
         consume(QUOTE);
         return res;
-    }
-    if (tokens[tokenIndex].first == IDENTIFIER) {
-        Token token = consume(IDENTIFIER);
-        return std::make_shared<VarRefNode>(token.second);
     }
     return nullptr;
 }
@@ -63,31 +63,37 @@ NodePtr parse_factor()
     return node;
 }
 
-NodePtr parse_expr()
+NodePtr parse_add()
 {
-    Token currentToken = tokens[tokenIndex];
-    Token nextToken = tokens[tokenIndex + 1];
-    NodePtr left = parse_factor();
-
-    // Binary expression
+    NodePtr node = parse_factor();
     while (tokenIndex < tokens.size() && (tokens[tokenIndex].first == PLUS || tokens[tokenIndex].first == MINUS)) {
         TokenType op = consume().first;
         NodePtr right = parse_factor();
-        left = std::make_shared<BinOpNode>(left, op, right);
+        node = std::make_shared<BinOpNode>(node, op, right);
     }
-    // Boolean expression
-    if (tokens[tokenIndex].first == EQUALS_EQUALS || tokens[tokenIndex].first == NOT_EQUALS || tokens[tokenIndex].first == LESS_THAN || tokens[tokenIndex].first == LESS_THAN_EQUALS || tokens[tokenIndex].first == GREATER_THAN || tokens[tokenIndex].first == GREATER_THAN_EQUALS) {
-        TokenType op = consume().first;
-        NodePtr right = parse_factor();
-        left = std::make_shared<BoolOpNode>(left, op, right);
-    }
-    else if (currentToken.second == "input") {
+    return node;
+}
+
+NodePtr parse_expr()
+{
+    // handle input function
+    if (tokens[tokenIndex].second == "input") {
         // Input function
         // L'identifier est deja consommé dans parse_factor
+        consume(IDENTIFIER);
         consume(LPAREN);
         consume(RPAREN);
-        left = std::make_shared<FunctionCallNode>("input");
+        return std::make_shared<FunctionCallNode>("input");
     }
+
+    // Binary expression
+    NodePtr left = parse_add();
+    if (tokens[tokenIndex].first == EQUALS_EQUALS || tokens[tokenIndex].first == NOT_EQUALS || tokens[tokenIndex].first == LESS_THAN || tokens[tokenIndex].first == LESS_THAN_EQUALS || tokens[tokenIndex].first == GREATER_THAN || tokens[tokenIndex].first == GREATER_THAN_EQUALS) {
+        TokenType op = consume().first;
+        NodePtr right = parse_add();
+        left = std::make_shared<BinOpNode>(left, op, right);
+    }
+
     return left;
 }
 
@@ -118,6 +124,7 @@ NodePtr parse_if()
         return std::make_shared<IfNode>(condition, true_branch);
     }
 }
+
 NodePtr parse_while()
 {
     consume(WHILE);
@@ -128,15 +135,23 @@ NodePtr parse_while()
     return std::make_shared<WhileNode>(condition, block);
 }
 
+// NodePtr parse_assignement()
+// {
+//     // do to
+// }
+
 NodePtr parse_stmt()
 {
     // handle if statements
     if (tokens[tokenIndex].first == IF) {
         return parse_if();
     }
-    if (tokens[tokenIndex].first == WHILE) {
+
+    // handle while statement
+    else if (tokens[tokenIndex].first == WHILE) {
         return parse_while();
     }
+
     // handle variable declaration
     else if ((tokens[tokenIndex].first == VAR || tokens[tokenIndex].first == CST) && tokens[tokenIndex + 1].first == IDENTIFIER && tokens[tokenIndex + 2].first == EQUALS) {
         TokenType type = consume().first;
@@ -155,29 +170,26 @@ NodePtr parse_stmt()
         return std::make_shared<VarModifNode>(var_name, value);
     }
 
-    // Print
-    else if (tokens[tokenIndex].first == IDENTIFIER) {
-        if (tokens[tokenIndex].second == "print") {
-            Token token = consume(IDENTIFIER);
-            consume(LPAREN);
-            std::vector<NodePtr> args;
-            while (tokens[tokenIndex].first != RPAREN) {
-                args.push_back(parse_expr());
-                if (tokens[tokenIndex].first == COMMA) {
-                    consume(COMMA);
-                }
+    // handle print function
+    else if (tokens[tokenIndex].second == "print") {
+        Token token = consume(IDENTIFIER);
+        consume(LPAREN);
+        std::vector<NodePtr> args;
+        while (tokens[tokenIndex].first != RPAREN) {
+            args.push_back(parse_expr());
+            if (tokens[tokenIndex].first == COMMA) {
+                consume(COMMA);
             }
-            consume(RPAREN);
-            consume(SEMICOLON);
-            return std::make_shared<FunctionCallNode>(token.second, args);
         }
-        else {
-            std::cout << "\033[31m[!] Parser error: Unknow keyword: \"" + tokens[tokenIndex].second + "\"\033[0m" << std::endl;
-            exit(-1);
-        }
+        consume(RPAREN);
+        consume(SEMICOLON);
+        return std::make_shared<FunctionCallNode>(token.second, args);
     }
-
-    return nullptr;
+    
+    // Else, there is an error
+    std::cout << "\033[31m[!] Parser error: Unknow token: (" + token_to_string(tokens[tokenIndex].first) + ", " + tokens[tokenIndex].second + "\033[0m" << std::endl;
+    exit(1);
+    // return nullptr;
 }
 
 NodePtr parse_prog()
@@ -195,6 +207,16 @@ NodePtr parse(const std::vector<Token> &inputTokens)
     tokenIndex = 0;
     return parse_prog();
 }
+
+
+
+
+
+
+
+
+
+
 
 std::string &print_ast(const NodePtr &node, std::string &output, const std::string &indent = "", bool last = true, bool is_value = false)
 {
@@ -267,15 +289,7 @@ std::string &print_ast(const NodePtr &node, std::string &output, const std::stri
 
     else if (BinOpNode *bnode = dynamic_cast<BinOpNode *>(node.get())) {
         output += indent + branch + "BinOpNode" + "\n";
-        output += next_indent + "├─ op: " + tokenTypeToString(bnode->_op) + "\n";
-        output += next_indent + "├─ left: " + "\n";
-        print_ast(bnode->_left, output, next_indent + "│  ", false);
-        output += next_indent + "└─ right: " + "\n";
-        print_ast(bnode->_right, output, next_indent + "   ");
-    }
-    else if (BoolOpNode *bnode = dynamic_cast<BoolOpNode *>(node.get())) {
-        output += indent + branch + "BoolOpNode" + "\n";
-        output += next_indent + "├─ op: " + tokenTypeToString(bnode->_op) + "\n";
+        output += next_indent + "├─ op: " + token_to_string(bnode->_op) + "\n";
         output += next_indent + "├─ left: " + "\n";
         print_ast(bnode->_left, output, next_indent + "│  ", false);
         output += next_indent + "└─ right: " + "\n";
@@ -291,7 +305,7 @@ std::string &print_ast(const NodePtr &node, std::string &output, const std::stri
 
     else if (VarDeclNode *vnode = dynamic_cast<VarDeclNode *>(node.get())) {
         output += indent + branch + "VarDeclNode" + "\n";
-        output += next_indent + "├─ type: " + tokenTypeToString(vnode->_type) + "\n";
+        output += next_indent + "├─ type: " + token_to_string(vnode->_type) + "\n";
         output += next_indent + "├─ name: " + vnode->_name + "\n";
         output += next_indent + "└─ value: " + "\n";
         if (vnode->_value) {

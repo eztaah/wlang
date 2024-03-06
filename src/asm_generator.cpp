@@ -170,53 +170,63 @@ void generate_assembly_internal(const NodePtr &node)
         text_instructions.push_back("push rax");
         generate_assembly_internal(bnode->_left);
         text_instructions.push_back("pop rbx");
-        if (bnode->_op == PLUS) {
-            text_instructions.push_back("add rax, rbx");
-        }
-        else if (bnode->_op == MINUS) {
-            text_instructions.push_back("sub rax, rbx");
-        }
-        else if (bnode->_op == TIMES) {
-            text_instructions.push_back("imul rax, rbx");
-        }
-        else if (bnode->_op == DIVIDE) {
-            text_instructions.push_back("cqo");      // Convertit rax en rdx:rax, étendant le signe
-            text_instructions.push_back("idiv rbx"); // Division de rdx:rax par rbx
-        }
-    }
-
-    else if (BoolOpNode *bnode = dynamic_cast<BoolOpNode *>(node.get())) {
-        generate_assembly_internal(bnode->_right);
-        text_instructions.push_back("push rax");
-        generate_assembly_internal(bnode->_left);
-        text_instructions.push_back("pop rbx");
 
         std::string true_label = "if_true_" + std::to_string(label_count);
 
-        if (bnode->_op == EQUALS_EQUALS) {
-            text_instructions.push_back("cmp rax, rbx");
-            text_instructions.push_back("je " + true_label);
+        switch (bnode->_op) {
+            case PLUS:
+                text_instructions.push_back("add rax, rbx");
+                break;
+
+            case MINUS:
+                text_instructions.push_back("sub rax, rbx");
+                break;
+
+            case TIMES:
+                text_instructions.push_back("imul rax, rbx");
+                break;
+
+            case DIVIDE:
+                text_instructions.push_back("cqo");      // Convertit rax en rdx:rax, étendant le signe
+                text_instructions.push_back("idiv rbx"); // Division de rdx:rax par rbx
+                break;
+
+            case EQUALS_EQUALS:
+                text_instructions.push_back("cmp rax, rbx");
+                text_instructions.push_back("je " + true_label);
+                break;
+
+            case NOT_EQUALS:
+                text_instructions.push_back("cmp rax, rbx");
+                text_instructions.push_back("jne " + true_label);
+                break;
+
+            case LESS_THAN:
+                text_instructions.push_back("cmp rax, rbx");
+                text_instructions.push_back("jl " + true_label);
+                break;
+
+            case LESS_THAN_EQUALS:
+                text_instructions.push_back("cmp rax, rbx");
+                text_instructions.push_back("jle " + true_label);
+                break;
+
+            case GREATER_THAN:
+                text_instructions.push_back("cmp rax, rbx");
+                text_instructions.push_back("jg " + true_label);
+                break;
+
+            case GREATER_THAN_EQUALS:
+                text_instructions.push_back("cmp rax, rbx");
+                text_instructions.push_back("jge " + true_label);
+                break;
+
+            default:
+                std::cout << "generator error : " << std::endl;
+                exit(1);
+                break;
         }
-        else if (bnode->_op == NOT_EQUALS) {
-            text_instructions.push_back("cmp rax, rbx");
-            text_instructions.push_back("jne " + true_label);
-        }
-        else if (bnode->_op == LESS_THAN) {
-            text_instructions.push_back("cmp rax, rbx");
-            text_instructions.push_back("jl " + true_label);
-        }
-        else if (bnode->_op == LESS_THAN_EQUALS) {
-            text_instructions.push_back("cmp rax, rbx");
-            text_instructions.push_back("jle " + true_label);
-        }
-        else if (bnode->_op == GREATER_THAN) {
-            text_instructions.push_back("cmp rax, rbx");
-            text_instructions.push_back("jg " + true_label);
-        }
-        else if (bnode->_op == GREATER_THAN_EQUALS) {
-            text_instructions.push_back("cmp rax, rbx");
-            text_instructions.push_back("jge " + true_label);
-        }
+
     }
 
     else if (VarRefNode *vrefnode = dynamic_cast<VarRefNode *>(node.get())) {
