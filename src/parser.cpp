@@ -138,7 +138,7 @@ NodePtr parse_stmt()
         return parse_while();
     }
     // handle variable declaration
-    else if ((tokens[tokenIndex].first == VAR || tokens[tokenIndex].first == LET) && tokens[tokenIndex + 1].first == IDENTIFIER && tokens[tokenIndex + 2].first == EQUALS) {
+    else if ((tokens[tokenIndex].first == VAR || tokens[tokenIndex].first == CST) && tokens[tokenIndex + 1].first == IDENTIFIER && tokens[tokenIndex + 2].first == EQUALS) {
         TokenType type = consume().first;
         std::string var_name = consume(IDENTIFIER).second;
         consume(EQUALS);
