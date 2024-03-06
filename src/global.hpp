@@ -14,6 +14,11 @@ typedef enum {
     MINUS,
     TIMES,
     DIVIDE,
+    BIN_AND,
+    BIN_OR,
+    XOR,
+    SHIFT_LEFT,
+    SHIFT_RIGHT,
 
     WHILE,
     IF,
@@ -34,7 +39,7 @@ typedef enum {
     GREATER_THAN,
     GREATER_THAN_EQUALS,
 
-    UNDEFINED, 
+    UNDEFINED,
     EOF_TOKEN
 } TokenType;
 

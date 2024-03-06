@@ -2,7 +2,6 @@
 
 #include "global.hpp"
 
-
 std::string token_to_string(TokenType type)
 {
     switch (type) {
@@ -16,6 +15,16 @@ std::string token_to_string(TokenType type)
         return "NUMBER";
     case PLUS:
         return "PLUS";
+    case BIN_AND:
+        return "BIN_AND";
+    case BIN_OR:
+        return "BIN_OR";
+    case XOR:
+        return "XOR";
+    case SHIFT_LEFT:
+        return "SHIFT_LEFT";
+    case SHIFT_RIGHT:
+        return "SHIFT_RIGHT";
     case TIMES:
         return "TIMES";
     case MINUS:
