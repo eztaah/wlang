@@ -84,7 +84,8 @@ int main(int argc, char *argv[])
         if (!std::filesystem::create_directories(output_dirPath)) {
             std::cerr << "error: failed to create directory" << std::endl;
             return EXIT_FAILURE;
-        } else {
+        }
+        else {
             if (verbose) {
                 std::cout << "Created directory: " << output_dirPath << std::endl;
             }
@@ -108,11 +109,6 @@ int main(int argc, char *argv[])
     // LEXER
     std::vector<Token> tokens = lex(code);
     std::string lexer_output = get_printable_lexer_output(tokens);
-    // if (verbose) {
-    //     std::cout << "\n---- LEXER OUTPUT ----\n"
-    //               << std::endl;
-    //     std::cout << lexer_output << std::endl;
-    // }
     // Write result to file
     std::ofstream output1(build_directory + "1_lexer_output.txt");
     output1 << lexer_output;
@@ -123,12 +119,6 @@ int main(int argc, char *argv[])
     std::string parser_output1;
     std::string parser_output2 = print_ast(ast, parser_output1, "", false, false);
 
-    // PARSER OUTPUT
-    // if (verbose) {
-    //     std::cout << "\n\n---- PARSER OUTPUT ----\n"
-    //               << std::endl;
-    //     std::cout << parser_output2 << std::endl;
-    // }
     // Write result to file
     std::ofstream output2(build_directory + "2_parser_output.txt");
     output2 << parser_output2;
@@ -148,16 +138,6 @@ int main(int argc, char *argv[])
     }
 
     std::string cpp_final_output = "";
-
-    // Print if verbose
-    // if (verbose) {
-    //     // ASSEMBLY
-    //     std::cout << "\n\n---- ASM_GENERATOR OUTPUT ----\n"
-    //               << std::endl;
-    //     std::cout << asm_final_output << std::endl;
-    //     std::cout << "------------------------------\n"
-    //               << std::endl;
-    // }
 
     // assembling with nasm
     std::string nasm_command = "nasm -f elf64 " + build_directory + "3_generator_output.asm -o " + build_directory + "4_nasm_output.o";

@@ -30,6 +30,17 @@
                 {
                     "name": "comment.line.cp",
                     "match": "#.+"
+                },
+                {
+                    "name": "comment.block.cp",
+                    "begin": "\"\"\"",
+                    "end": "\"\"\"",
+                    "patterns": [
+                        {
+                            "name": "comment.block.cp",
+                            "match": ".|\n"
+                        }
+                    ]
                 }
             ]
         },

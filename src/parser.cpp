@@ -1,3 +1,4 @@
+#include <functional>
 #include <iostream>
 #include <memory>
 #include <stdexcept>
@@ -52,26 +53,45 @@ NodePtr parse_term()
     return nullptr;
 }
 
-NodePtr parse_factor()
+NodePtr parse_expression_with_priority(std::function<NodePtr()> parseLowerPriority, const std::vector<TokenType> &operators)
 {
-    NodePtr node = parse_term();
-    while (tokenIndex < tokens.size() && (tokens[tokenIndex].first == TIMES || tokens[tokenIndex].first == DIVIDE)) {
+    NodePtr node = parseLowerPriority();
+    while (tokenIndex < tokens.size() && std::find(operators.begin(), operators.end(), tokens[tokenIndex].first) != operators.end()) {
         TokenType op = consume().first;
-        NodePtr right = parse_term();
+        NodePtr right = parseLowerPriority();
         node = std::make_shared<BinOpNode>(node, op, right);
     }
     return node;
 }
 
+NodePtr parse_factor()
+{
+    return parse_expression_with_priority(parse_term, {TIMES, DIVIDE});
+}
+
 NodePtr parse_add()
 {
-    NodePtr node = parse_factor();
-    while (tokenIndex < tokens.size() && (tokens[tokenIndex].first == PLUS || tokens[tokenIndex].first == MINUS)) {
-        TokenType op = consume().first;
-        NodePtr right = parse_factor();
-        node = std::make_shared<BinOpNode>(node, op, right);
-    }
-    return node;
+    return parse_expression_with_priority(parse_factor, {PLUS, MINUS});
+}
+
+NodePtr parse_shift()
+{
+    return parse_expression_with_priority(parse_add, {SHIFT_RIGHT, SHIFT_LEFT});
+}
+
+NodePtr parse_bin_and()
+{
+    return parse_expression_with_priority(parse_shift, {BIN_AND});
+}
+
+NodePtr parse_xor()
+{
+    return parse_expression_with_priority(parse_bin_and, {XOR});
+}
+
+NodePtr parse_bin_or()
+{
+    return parse_expression_with_priority(parse_xor, {BIN_OR});
 }
 
 NodePtr parse_expr()
@@ -79,7 +99,6 @@ NodePtr parse_expr()
     // handle input function
     if (tokens[tokenIndex].second == "input") {
         // Input function
-        // L'identifier est deja consommé dans parse_factor
         consume(IDENTIFIER);
         consume(LPAREN);
         consume(RPAREN);
@@ -87,14 +106,7 @@ NodePtr parse_expr()
     }
 
     // Binary expression
-    NodePtr left = parse_add();
-    if (tokens[tokenIndex].first == EQUALS_EQUALS || tokens[tokenIndex].first == NOT_EQUALS || tokens[tokenIndex].first == LESS_THAN || tokens[tokenIndex].first == LESS_THAN_EQUALS || tokens[tokenIndex].first == GREATER_THAN || tokens[tokenIndex].first == GREATER_THAN_EQUALS) {
-        TokenType op = consume().first;
-        NodePtr right = parse_add();
-        left = std::make_shared<BinOpNode>(left, op, right);
-    }
-
-    return left;
+    return parse_expression_with_priority(parse_bin_or, {EQUALS_EQUALS, NOT_EQUALS, LESS_THAN, LESS_THAN_EQUALS, GREATER_THAN, GREATER_THAN_EQUALS});
 }
 
 std::vector<NodePtr> parse_block()
@@ -185,7 +197,7 @@ NodePtr parse_stmt()
         consume(SEMICOLON);
         return std::make_shared<FunctionCallNode>(token.second, args);
     }
-    
+
     // Else, there is an error
     std::cout << "\033[31m[!] Parser error: Unknow token: (" + token_to_string(tokens[tokenIndex].first) + ", " + tokens[tokenIndex].second + "\033[0m" << std::endl;
     exit(1);
@@ -207,16 +219,6 @@ NodePtr parse(const std::vector<Token> &inputTokens)
     tokenIndex = 0;
     return parse_prog();
 }
-
-
-
-
-
-
-
-
-
-
 
 std::string &print_ast(const NodePtr &node, std::string &output, const std::string &indent = "", bool last = true, bool is_value = false)
 {

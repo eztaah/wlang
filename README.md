@@ -9,8 +9,18 @@
 ```python
 # this is a comment
 
+"""
+this is a 
+multi-line 
+comment
+"""
+
 # declare variables
-var a = 0;  
+# all of these operators are supported and follow this order ( ./docs/operator-order.txt )
+var a = 3 ^ 4 | 8 + 7 * 4 << 1 - 8 >> 2 & 4 // 2;
+
+# modify variables
+a = 0
 
 # declare constants
 cst b = 9; 
