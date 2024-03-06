@@ -1,0 +1,86 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "cp",
+    "patterns": [
+        {
+            "include": "#comment"
+        },
+        {
+            "include": "#variable"
+        },
+        {
+            "include": "#constant"
+        },
+        {
+            "include": "#functions"
+        },
+        {
+            "include": "#control-structures"
+        },
+        {
+            "include": "#number"
+        },
+        {
+            "include": "#string"
+        }
+    ],    
+    "repository": {
+        "comment": {
+            "patterns": [
+                {
+                    "name": "comment.line.cp",
+                    "match": "#.+"
+                }
+            ]
+        },
+        "variable": {
+            "patterns": [
+                {
+                    "name": "keyword.declaration.var.sd",
+                    "match": "\\bvar\\b(?=\\s+\\w+\\s*=)"
+                }
+            ]
+        },
+        "constant": {
+            "patterns": [
+                {
+                    "name": "keyword.declaration.cst.sd",
+                    "match": "\\bcst\\b(?=\\s+\\w+\\s*=)"
+                }
+            ]
+        },
+        "functions": {
+            "patterns": [
+                {
+                    "name": "support.function.cp",
+                    "match": "\\b(print|input)\\b"
+                }
+            ]
+        },
+        "control-structures": {
+            "patterns": [
+                {
+                    "name": "keyword.control.cp",
+                    "match": "\\b(if|else|while)\\b"
+                }
+            ]
+        },
+        "number": {
+            "patterns": [
+                {
+                    "name": "constant.numeric.cp",
+                    "match": "\\b\\d+\\.?\\d*\\b"
+                }
+            ]
+        },
+        "string": {
+            "patterns": [
+                {
+                    "name": "string.quoted.double.cp",
+                    "match": "\".*?\""
+                }
+            ]
+        }
+    },
+	"scopeName": "source.cp"
+}

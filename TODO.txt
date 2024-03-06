@@ -1,8 +1,0 @@
-# TODO
-
-- faire un global.hpp
-- output l'ast en json ?
-- verifier const analyse semantique
-- syntax highlighting vscode 
-
-- mettre license
