@@ -11,8 +11,6 @@
 
 int main(int argc, char *argv[])
 {
-
-
     if (argc < 2 || std::string(argv[1]) == "--help") {
         std::cout << "Usage:" << std::endl;
         std::cout << "    compiler <file.cp> [options]    compile a source file with optional flags." << std::endl;
@@ -28,6 +26,7 @@ int main(int argc, char *argv[])
     }
     else if (std::string(argv[1]) == "--version") {
         std::cout << "compiler version 0.1" << std::endl;
+        std::cout << std::endl;
         return EXIT_SUCCESS;
     }
 
@@ -77,6 +76,7 @@ int main(int argc, char *argv[])
     }
 
     // handle output location
+    output_location = "./" + output_location;
     std::filesystem::path outputPath(output_location);
     std::filesystem::path output_dirPath = outputPath.parent_path();
 

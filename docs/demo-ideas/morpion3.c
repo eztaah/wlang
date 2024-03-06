@@ -55,22 +55,24 @@ int main() {
 
         if (tour == 0) {
             // Tour du joueur
-            int x, y;
-            do {
+            int x = -1, y = -1;
+            while (x < 0 || x > 2 || y < 0 || y > 2 || grille[x][y] != VIDE) {
                 printf("Entrez votre coup (ligne colonne): ");
                 scanf("%d %d", &x, &y);
                 x--; y--; // Ajustement pour l'indexation à base de zéro
-            } while (x < 0 || x > 2 || y < 0 || y > 2 || grille[x][y] != VIDE);
+            }
 
             grille[x][y] = JOUEUR;
             tour = 1;
         } else {
             // Tour de l'IA
             int x, y;
-            do {
+            x = rand() % 3;
+            y = rand() % 3;
+            while (grille[x][y] != VIDE) {
                 x = rand() % 3;
                 y = rand() % 3;
-            } while (grille[x][y] != VIDE);
+            }
 
             grille[x][y] = IA;
             tour = 0;
