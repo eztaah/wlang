@@ -6,7 +6,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/compiler",
-            "args": ["demo.cp", "-v"],
+            "args": ["test.cp"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],

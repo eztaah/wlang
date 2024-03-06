@@ -1,11 +1,18 @@
-var a = 3;
 
-print("A est égal à ", a, "\n");
+# print("Hello World");
 
-print("Entrez un nombre : ");
-var b = input();
 
-print("Le nombre que vous avez entré est : ", b);
+# var a = 3;
+
+# print("A est égal à ", a, "\n");
+
+# print("Entrez un nombre : ");
+# var b = input();
+
+# print("Le nombre que vous avez entré est : ", b);
+
+
+
 
 
 # while (a < b) {

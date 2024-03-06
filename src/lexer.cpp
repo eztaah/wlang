@@ -1,18 +1,18 @@
-#include "lexer.hpp"
-
 #include <cctype>
 #include <iostream>
 #include <set>
 #include <stdexcept>
 
-std::vector<Token> lexer(const std::string &code)
+#include "lexer.hpp"
+
+
+std::vector<Token> lex(const std::string &code)
 {
     std::vector<Token> tokens;
     size_t i = 0;
-    std::set<std::string> int_sizes = {"8", "16", "32", "64", "128"};
-    std::set<std::string> float_sizes = {"32", "64"};
 
     while (i < code.length()) {
+
         // Ignoring comments
         if (code[i] == '#') {
             while (i < code.length() && code[i] != '\n') {
@@ -21,7 +21,7 @@ std::vector<Token> lexer(const std::string &code)
         }
 
         // Handling numbers
-        if (isdigit(code[i])) {
+        else if (isdigit(code[i])) {
             std::string num;
             while (i < code.length() && isdigit(code[i])) {
                 num += code[i];
@@ -47,6 +47,8 @@ std::vector<Token> lexer(const std::string &code)
             tokens.push_back(Token(DIVIDE, ""));
             i++;
         }
+
+        // Handling =, ==, >, <=, etc
         else if (code[i] == '=') {
             if (i + 1 < code.length() && code[i + 1] == '=') {
                 tokens.push_back(Token(EQUALS_EQUALS, ""));
@@ -61,29 +63,32 @@ std::vector<Token> lexer(const std::string &code)
             tokens.push_back(Token(NOT_EQUALS, ""));
             i += 2;
         }
-        else if (code[i] == '<' && code[i + 1] == '=') {
-            tokens.push_back(Token(LESS_THAN_EQUALS, ""));
-            i += 2;
-        }
         else if (code[i] == '<') {
-            tokens.push_back(Token(LESS_THAN, ""));
-            i++;
-        }
-        else if (code[i] == '>' && code[i + 1] == '=') {
-            tokens.push_back(Token(GREATER_THAN_EQUALS, ""));
-            i += 2;
+            if (i + 1 < code.length() && code[i + 1] == '=') {
+                tokens.push_back(Token(LESS_THAN_EQUALS, ""));
+                i += 2;
+            }
+            else {
+                tokens.push_back(Token(LESS_THAN, ""));
+                i++;
+            }
         }
         else if (code[i] == '>') {
-            tokens.push_back(Token(GREATER_THAN, ""));
-            i++;
+            if (i + 1 < code.length() && code[i + 1] == '=') {
+                tokens.push_back(Token(GREATER_THAN_EQUALS, ""));
+                i += 2;
+            }
+            else {
+                tokens.push_back(Token(GREATER_THAN, ""));
+                i++;
+            }
         }
 
+        // Handling symbols
         else if (code[i] == ';') {
             tokens.push_back(Token(SEMICOLON, ""));
             i++;
         }
-
-        // Handling parentheses, braces and symbols
         else if (code[i] == '(') {
             tokens.push_back(Token(LPAREN, ""));
             i++;
@@ -104,6 +109,8 @@ std::vector<Token> lexer(const std::string &code)
             tokens.push_back(Token(COMMA, ""));
             i++;
         }
+
+        // Handling strings
         else if (code[i] == '"') {
             tokens.push_back(Token(QUOTE, ""));
             i++;
@@ -163,73 +170,12 @@ std::vector<Token> lexer(const std::string &code)
     return tokens;
 }
 
-std::string tokenTypeToString(TokenType type)
-{
-    switch (type) {
-    case QUOTE:
-        return "QUOTE";
-    case CST:
-        return "CST";
-    case VAR:
-        return "VAR";
-    case NUMBER:
-        return "NUMBER";
-    case PLUS:
-        return "PLUS";
-    case TIMES:
-        return "TIMES";
-    case MINUS:
-        return "MINUS";
-    case DIVIDE:
-        return "DIVIDE";
-    case EQUALS:
-        return "EQUALS";
-    case EQUALS_EQUALS:
-        return "EQUALS_EQUALS";
-    case NOT_EQUALS:
-        return "NOT_EQUALS";
-    case LESS_THAN:
-        return "LESS_THAN";
-    case LESS_THAN_EQUALS:
-        return "LESS_THAN_EQUALS";
-    case GREATER_THAN:
-        return "GREATER_THAN";
-    case GREATER_THAN_EQUALS:
-        return "GREATER_THAN_EQUALS";
-    case LPAREN:
-        return "LPAREN";
-    case RPAREN:
-        return "RPAREN";
-    case LBRACE:
-        return "LBRACE";
-    case RBRACE:
-        return "RBRACE";
-    case COMMA:
-        return "COMMA";
-    case IF:
-        return "IF";
-    case WHILE:
-        return "WHILE";
-    case ELSE:
-        return "ELSE";
-    case IDENTIFIER:
-        return "IDENTIFIER";
-    case EOF_TOKEN:
-        return "EOF_TOKEN";
-    case SEMICOLON:
-        return "SEMICOLON";
-    default:
-        std::cout << "\033[31m[!] Internal lexer error : Error in tokenTypeToString: " + std::to_string(type) + " does not have string equivalent" + "\033[0m" << std::endl;
-        exit(-1);
-    }
-}
-
-std::string get_lexer_output(const std::vector<Token> &tokens)
+std::string get_printable_lexer_output(const std::vector<Token> &tokens)
 {
     std::string output;
     output += "[\n";
     for (const Token &token : tokens) {
-        std::string tokenTypeName = tokenTypeToString(token.first);
+        std::string tokenTypeName = token_to_string(token.first);
         output += "    ('" + tokenTypeName + "', '" + token.second + "'),\n";
         if (token.first == SEMICOLON) {
             output += "\n";
@@ -238,60 +184,3 @@ std::string get_lexer_output(const std::vector<Token> &tokens)
     output += "]";
     return output;
 }
-
-/*
-        else if (code[i] == '&') {
-            tokens.push_back(Token(REFERENCE, ""));
-            i++;
-        }
-        else if (code[i] == ':') {
-            tokens.push_back(Token(COLON, ""));
-            i++;
-        }
-        else if (code[i] == ';') {
-            tokens.push_back(Token(SEMICOLON", ""));
-            i++;
-        }
-
-        else if (code[i] == '[') {
-            tokens.push_back(Token(LSQUARE, ""));
-            i++;
-        }
-        else if (code[i] == ']') {
-            tokens.push_back(Token(RSQUARE, ""));
-            i++;
-        }
-
-            else if (ident == "while") {
-                tokens.push_back(Token(WHILE, ""));
-            }
-            else if (ident == "for") {
-                tokens.push_back(Token(FOR, ""));
-            }
-            else if (ident == "in") {
-                tokens.push_back(Token(IN, ""));
-            }
-            else if (ident == "struct") {
-                tokens.push_back(Token(STRUCT, ""));
-            }
-            else if (ident == "fun") {
-                tokens.push_back(Token(FUNCTION, ""));
-            }
-
-            //handling datatypes
-            else if (ident == "char") {
-                tokens.push_back(Token(CHARDECLAR, ""));
-            }
-            else if (ident[0] == 'u' && (int_sizes.find(ident.substr(1,
-   ident.length()-1)) != int_sizes.end())) { tokens.push_back(Token(UDECLAR,
-   ident.substr(1, ident.length()-1)));
-            }
-            else if (ident[0] == 'i' && (int_sizes.find(ident.substr(1,
-   ident.length()-1)) != int_sizes.end())) { tokens.push_back(Token(IDECLAR,
-   ident.substr(1, ident.length()-1)));
-            }
-            else if (ident[0] == 'f' && (float_sizes.find(ident.substr(1,
-   ident.length()-1)) != float_sizes.end())) { tokens.push_back(Token(FDECLAR,
-   ident.substr(1, ident.length()-1)));
-            }
-*/
