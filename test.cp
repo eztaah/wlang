@@ -1,8 +1,8 @@
 
-# print("Hello World");
+var a = 2 * 4 + 3 ^ 5 | 6 - 1 << 2 >> 1 & 7 // 1;
 
+print(a);
 
-# var a = 3;
 
 # print("A est égal à ", a, "\n");
 
@@ -13,19 +13,19 @@
 
 
 
+"""
+while (a < b) {
+    a = a + 1;
+    print("valeur de a : ");
+    print(a);
+    print("\n");
+}
 
 
-# while (a < b) {
-#     a = a + 1;
-#     print("valeur de a : ");
-#     print(a);
-#     print("\n");
-# }
-
-
-# if (a > b) {
-#     println("true");
-# }
-# else {
-#     println("false");
-# }
+if (a > b) {
+    println("true");
+}
+else {
+    println("false");
+}
+"""

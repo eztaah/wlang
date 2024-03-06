@@ -1,5 +1,6 @@
-#include "asm_generator.hpp"
 #include <iostream>
+
+#include "asm_generator.hpp"
 
 std::unordered_map<std::string, std::string> variables;
 int offset;
@@ -174,59 +175,80 @@ void generate_assembly_internal(const NodePtr &node)
         std::string true_label = "if_true_" + std::to_string(label_count);
 
         switch (bnode->_op) {
-            case PLUS:
-                text_instructions.push_back("add rax, rbx");
-                break;
+        case EQUALS_EQUALS:
+            text_instructions.push_back("cmp rax, rbx");
+            text_instructions.push_back("je " + true_label);
+            break;
 
-            case MINUS:
-                text_instructions.push_back("sub rax, rbx");
-                break;
+        case NOT_EQUALS:
+            text_instructions.push_back("cmp rax, rbx");
+            text_instructions.push_back("jne " + true_label);
+            break;
 
-            case TIMES:
-                text_instructions.push_back("imul rax, rbx");
-                break;
+        case LESS_THAN:
+            text_instructions.push_back("cmp rax, rbx");
+            text_instructions.push_back("jl " + true_label);
+            break;
 
-            case DIVIDE:
-                text_instructions.push_back("cqo");      // Convertit rax en rdx:rax, étendant le signe
-                text_instructions.push_back("idiv rbx"); // Division de rdx:rax par rbx
-                break;
+        case LESS_THAN_EQUALS:
+            text_instructions.push_back("cmp rax, rbx");
+            text_instructions.push_back("jle " + true_label);
+            break;
 
-            case EQUALS_EQUALS:
-                text_instructions.push_back("cmp rax, rbx");
-                text_instructions.push_back("je " + true_label);
-                break;
+        case GREATER_THAN:
+            text_instructions.push_back("cmp rax, rbx");
+            text_instructions.push_back("jg " + true_label);
+            break;
 
-            case NOT_EQUALS:
-                text_instructions.push_back("cmp rax, rbx");
-                text_instructions.push_back("jne " + true_label);
-                break;
+        case GREATER_THAN_EQUALS:
+            text_instructions.push_back("cmp rax, rbx");
+            text_instructions.push_back("jge " + true_label);
+            break;
 
-            case LESS_THAN:
-                text_instructions.push_back("cmp rax, rbx");
-                text_instructions.push_back("jl " + true_label);
-                break;
+        case BIN_OR:
+            text_instructions.push_back("or rax, rbx");
+            break;
 
-            case LESS_THAN_EQUALS:
-                text_instructions.push_back("cmp rax, rbx");
-                text_instructions.push_back("jle " + true_label);
-                break;
+        case XOR:
+            text_instructions.push_back("xor rax, rbx");
+            break;
 
-            case GREATER_THAN:
-                text_instructions.push_back("cmp rax, rbx");
-                text_instructions.push_back("jg " + true_label);
-                break;
+        case BIN_AND:
+            text_instructions.push_back("and rax, rbx");
+            break;
 
-            case GREATER_THAN_EQUALS:
-                text_instructions.push_back("cmp rax, rbx");
-                text_instructions.push_back("jge " + true_label);
-                break;
+        case SHIFT_LEFT:
+            text_instructions.push_back("mov cl, bl");
+            text_instructions.push_back("shl rax, cl"); // cl est un registre 8 bits
+            break;
 
-            default:
-                std::cout << "generator error : " << std::endl;
-                exit(1);
-                break;
+        case SHIFT_RIGHT:
+            text_instructions.push_back("mov cl, bl");
+            text_instructions.push_back("shr rax, cl"); // cl est un registre 8 bits
+            break;
+
+        case PLUS:
+            text_instructions.push_back("add rax, rbx");
+            break;
+
+        case MINUS:
+            text_instructions.push_back("sub rax, rbx");
+            break;
+
+        case TIMES:
+            text_instructions.push_back("imul rax, rbx");
+            break;
+
+        case DIVIDE:
+            text_instructions.push_back("cqo");      // Convertit rax en rdx:rax, étendant le signe
+            text_instructions.push_back("idiv rbx"); // Division de rdx:rax par rbx
+            break;
+
+        default:
+            std::cout << "generator error : " << std::endl;
+            exit(1);
+            break;
         }
-
     }
 
     else if (VarRefNode *vrefnode = dynamic_cast<VarRefNode *>(node.get())) {

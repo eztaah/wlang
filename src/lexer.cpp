@@ -5,7 +5,6 @@
 
 #include "lexer.hpp"
 
-
 std::vector<Token> lex(const std::string &code)
 {
     std::vector<Token> tokens;
@@ -17,6 +16,17 @@ std::vector<Token> lex(const std::string &code)
         if (code[i] == '#') {
             while (i < code.length() && code[i] != '\n') {
                 i++;
+            }
+        }
+
+        // Ignoring multi-lines comments
+        else if (i + 2 < code.length() && code[i] == '"' && code[i + 1] == '"' && code[i + 2] == '"') {
+            i += 3;
+            while (i + 2 < code.length() && !(code[i] == '"' && code[i + 1] == '"' && code[i + 2] == '"')) {
+                i++;
+            }
+            if (i + 2 < code.length()) {
+                i += 3;
             }
         }
 
@@ -43,8 +53,33 @@ std::vector<Token> lex(const std::string &code)
             tokens.push_back(Token(MINUS, ""));
             i++;
         }
-        else if (code[i] == '/') {
+        else if (code[i] == '/' && code[i + 1] == '/') {
             tokens.push_back(Token(DIVIDE, ""));
+            i += 2;
+        }
+        else if (code[i] == '&') {
+            // if (i + 1 < code.length() && code[i + 1] == '&') {
+            //     tokens.push_back(Token(AND, ""));
+            //     i += 2;
+            // }
+            // else {
+            // }
+            tokens.push_back(Token(BIN_AND, ""));
+            i++;
+        }
+        else if (code[i] == '|') {
+            // if (i + 1 < code.length() && code[i + 1] == '|') {
+            //     tokens.push_back(Token(OR, ""));
+            //     i += 2;
+            // }
+            // else {
+
+            // }
+            tokens.push_back(Token(BIN_OR, ""));
+            i++;
+        }
+        else if (code[i] == '^') {
+            tokens.push_back(Token(XOR, ""));
             i++;
         }
 
@@ -68,6 +103,10 @@ std::vector<Token> lex(const std::string &code)
                 tokens.push_back(Token(LESS_THAN_EQUALS, ""));
                 i += 2;
             }
+            else if (i + 1 < code.length() && code[i + 1] == '<') {
+                tokens.push_back(Token(SHIFT_LEFT, ""));
+                i += 2;
+            }
             else {
                 tokens.push_back(Token(LESS_THAN, ""));
                 i++;
@@ -76,6 +115,10 @@ std::vector<Token> lex(const std::string &code)
         else if (code[i] == '>') {
             if (i + 1 < code.length() && code[i + 1] == '=') {
                 tokens.push_back(Token(GREATER_THAN_EQUALS, ""));
+                i += 2;
+            }
+            else if (i + 1 < code.length() && code[i + 1] == '>') {
+                tokens.push_back(Token(SHIFT_RIGHT, ""));
                 i += 2;
             }
             else {
