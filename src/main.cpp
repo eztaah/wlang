@@ -106,8 +106,8 @@ int main(int argc, char *argv[])
     }
 
     // LEXER
-    std::vector<Token> tokens = lexer(code);
-    std::string lexer_output = get_lexer_output(tokens);
+    std::vector<Token> tokens = lex(code);
+    std::string lexer_output = get_printable_lexer_output(tokens);
     // if (verbose) {
     //     std::cout << "\n---- LEXER OUTPUT ----\n"
     //               << std::endl;
