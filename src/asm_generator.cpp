@@ -42,12 +42,12 @@ void generate_assembly_internal(const NodePtr &node)
         data_instructions.push_back("endp_str: db 10, 0");
         data_instructions.push_back("input_format: db \"%d\", 0");
 
-        // setup bss instructions 
+        // setup bss instructions
         bss_instructions.push_back("\nsection .bss");
         bss_instructions.push_back("box resb 64");
         bss_instructions.push_back("buffer resb 8");
 
-        // setup text instructions 
+        // setup text instructions
         text_instructions.push_back("\nsection .text");
         text_instructions.push_back("global _start");
         text_instructions.push_back("extern printf");
@@ -141,7 +141,7 @@ void generate_assembly_internal(const NodePtr &node)
                     text_instructions.push_back("call printf");
                 }
             }
-        } 
+        }
 
         // gestion de la fonction input
         else if (fnode->_name == "input") {
@@ -150,11 +150,10 @@ void generate_assembly_internal(const NodePtr &node)
             std::string var_address = "box+" + std::to_string(std::abs(offset)); // Exemple, dépend de votre implémentation.
 
             text_instructions.push_back("mov rdi, input_format"); // Adresse du format.
-            text_instructions.push_back("mov rsi, buffer");  // Adresse de la variable 'a'.
-            text_instructions.push_back("xor rax, rax"); // Parce que scanf est une fonction variadique.
+            text_instructions.push_back("mov rsi, buffer");       // Adresse de la variable 'a'.
+            text_instructions.push_back("xor rax, rax");          // Parce que scanf est une fonction variadique.
             text_instructions.push_back("call scanf");
             text_instructions.push_back("mov rax, [buffer]");
-
         }
         else {
             std::cout << "\033[31m[!] Generator error 1\033[0m" << std::endl;

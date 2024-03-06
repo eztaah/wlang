@@ -126,8 +126,8 @@ std::vector<Token> lexer(const std::string &code)
                 i++;
             }
             // Handling keywords
-            if (ident == "let") {
-                tokens.push_back(Token(LET, ""));
+            if (ident == "cst") {
+                tokens.push_back(Token(CST, ""));
             }
             else if (ident == "var") {
                 tokens.push_back(Token(VAR, ""));
@@ -168,8 +168,8 @@ std::string tokenTypeToString(TokenType type)
     switch (type) {
     case QUOTE:
         return "QUOTE";
-    case LET:
-        return "LET";
+    case CST:
+        return "CST";
     case VAR:
         return "VAR";
     case NUMBER:

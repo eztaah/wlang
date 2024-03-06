@@ -1,6 +1,6 @@
 https://clang.llvm.org/docs/ClangFormatStyleOptions.html
 
-
+$ clang-format -i ./src/*
 
 
 

@@ -9,7 +9,7 @@ typedef enum {
     UNDEFINED,
     QUOTE,
 
-    LET,
+    CST,
     VAR,
 
     NUMBER,

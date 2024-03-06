@@ -1,64 +1,68 @@
-see first approximative BNF [first-approximative-BNF](./docs/first-approximative-BNF.txt)
+```
+- the exension name is cp
+- check the vscode extension for syntax highlighting
+```
+
 
 TODO : [TODO.txt](TODO.txt)
 
 
 ## Syntax 
 
-see full syntax here : [SYNTAX.md](./docs/SYNTAX.md)
-
-- try with the test.sh files
-
 ```python
-# comments are not supported yet
-# else statements are not supported yet
+# this is a comment
+
+# declare variables
+var a = 0;  
 
 # declare constants
-let i = 0;  
+cst b = 9; 
 
-# declare variable
-var a = 2; 
+# print function
+print(a);
+print("b is equal to : ", b, "\n");
 
-# if 
-if (a == i) {
-  let r = 0;
+# input function
+a = input();        # for exemple we enter 5
+
+# if statement
+if (a == 5) {
+    print("wow, a is equal to 5\n");
 }
-```
+else {
+    print("...")
+}
 
-
-## How to use the compiler
-```shell
---asm   # compile for asm only
---cpp   # compile for cpp only
-# if you put nothing or both il will compile for both
-
--o
---output-dir "mydirectory"  # put output files in ./mydirectory ()
-# if nothing is provided, it will put output files in the build
-# the directory is automaticaly created
-
--v
---verbose # display in the terminal all the outputs
-
-# Exemples
-compiler test.sh
-compiler test.sh --asm -v --output-dir "build"
-compiler test.sh --asm --cpp --output-dir "mydirectory" 
+# while loop
+while (a < b) {
+    a = a + 1;
+}
 ``` 
 
 <br>
 
-## Developpement
+## How to use the compiler
+```
+$ compiler --help                                    
+Usage:
+    compiler <file.cp> [options]    compile a source file with optional flags.
+    compiler --version              display compiler version and exit.
+    compiler --help                 display this help message and exit.
 
-### Build 
-```shell
-$ make
+Options:
+    -o, --output <executable>       Specify the location and name of the output executable (default: ./prog).
+    -b, --build-dir <directory>     Specify the build directory for intermediate files. (default: ./build/)
+    -v, --verbose                   be verbose
 ``` 
 
-### Codind style
+<br>
 
+## Building from source
+Ensure you have `nasm` and `GNU ld` installed on your Linux system.
+
+Execute this command
 ```shell
-$ clang-format -i ./src/*
+make release
 ``` 
 
-check this file : [coding-style.txt](./docs/coding-style.txt)
+A binary named `compiler` will be generated in the project's root directory.
