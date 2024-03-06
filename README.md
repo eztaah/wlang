@@ -4,9 +4,6 @@
 ```
 
 
-TODO : [TODO.txt](TODO.txt)
-
-
 ## Syntax 
 
 ```python
@@ -30,7 +27,7 @@ if (a == 5) {
     print("wow, a is equal to 5\n");
 }
 else {
-    print("...")
+    print("...");
 }
 
 # while loop
