@@ -1,15 +1,14 @@
-
-cst a: i64 = 1 + 8 * 2;
-
-print(a, "i64, var\n");
-
+cst a: i64 = 1 + 8 * 2 ; print(a, "i64, var\n")
 
 if (2) {
-    print("ok\n");
+    print("ok\n")
+    a = 4;
 }
 else {
-    print("pas ok\n");
+    print("pas ok\n")
 }
+
+print("hello")
 
 
 
