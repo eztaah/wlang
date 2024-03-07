@@ -236,9 +236,8 @@ std::vector<Token> lex(const std::string &code)
         }
         // Error otherwise
         else {
-            display_and_trow_error("lexer",
-                                   line_number,
-                                   "character '" + std::to_string(code[i]) + "' (ASCII: " + std::to_string(static_cast<int>(code[i])) + ") is not valid");
+            display_and_throw_error("character '" + std::to_string(code[i]) + "' (ASCII: " + std::to_string(static_cast<int>(code[i])) + ") is not valid",
+                                    line_number);
             exit(1);
         }
     }

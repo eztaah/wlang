@@ -7,9 +7,9 @@ bool runtime_error_flag = false;
 std::string build_directory = "build";
 std::string output_location = "prog";
 
-void display_and_trow_internal_error(std::string area, std::string error_message)
+void display_and_throw_internal_error(std::string error_message)
 {
-    std::cerr << "\n\033[1m\033[31minternal error (" << area << "): \033[0m" << error_message << "\n"
+    std::cerr << "\n\033[1m\033[31minternal error: \033[0m" << error_message << "\n"
               << std::endl;
 
     if (runtime_error_flag) {
@@ -17,48 +17,31 @@ void display_and_trow_internal_error(std::string area, std::string error_message
     }
 }
 
-void display_and_trow_base_error(std::string error_message)
+void display_and_throw_error(std::string error_message, int line_number)
 {
-    std::cerr << "\033[1m\033[31merror: \033[0m" << error_message << "\n"
-              << std::endl;
-
-    if (runtime_error_flag) {
-        throw std::runtime_error(error_message);
-    }
-}
-
-void display_and_trow_error(std::string area, int line_number, std::string error_message)
-{
-    std::string block1;
     std::string block2 = "";
-    // handle area
-    if (area == "none") {
-        block1 = "error: ";
-    }
-    else {
-        block1 = area + " error: ";
-    }
+
     // handle line number
     if (line_number != -1) {
-        block2 = "\033[1mline " + std::to_string(line_number) + ": \033[0m";
+        block2 = "line " + std::to_string(line_number) + ":";
     }
 
-    std::cerr << "\n\033[1m\033[31m" << block1 << "\033[0m" << block2 << error_message << std::endl;
+    std::cerr << "\n\033[1m" << block2 << "\033[31m error: " << "\033[0m"  << error_message << "\n" << std::endl;
 
     // handle build files
-    if (debug_flag) {
-        if (area == "parser") {
-            std::cout << "  -> find lexer output in \"" << build_directory << "\"\n"
-                      << std::endl;
-        }
-        else if (area == "generator") {
-            std::cout << "  -> find lexer and parser outputs in \"" << build_directory << "\"\n"
-                      << std::endl;
-        }
-    }
-    else {
-        std::cout << std::endl;
-    }
+    // if (debug_flag) {
+    //     if (area == "parser") {
+    //         std::cout << "  -> find lexer output in \"" << build_directory << "\"\n"
+    //                   << std::endl;
+    //     }
+    //     else if (area == "generator") {
+    //         std::cout << "  -> find lexer and parser outputs in \"" << build_directory << "\"\n"
+    //                   << std::endl;
+    //     }
+    // }
+    // else {
+    //     std::cout << std::endl;
+    // }
 
     // runtimes errors
     if (runtime_error_flag) {
@@ -136,8 +119,7 @@ std::string token_to_string(TokenType type)
     case SEMICOLON:
         return "SEMICOLON";
     default:
-        display_and_trow_internal_error("lexer",
-                                        "in token_to_string(): \'" + std::to_string(type) + "\' does not have string equivalent");
+        display_and_throw_internal_error("in token_to_string(): \'" + std::to_string(type) + "\' does not have string equivalent");
         exit(1);
     }
 }

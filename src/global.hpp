@@ -55,9 +55,8 @@ typedef enum {
 
 std::string token_to_string(TokenType type);
 
-void display_and_trow_internal_error(std::string area, std::string error_message);
-void display_and_trow_base_error(std::string error_message);
-void display_and_trow_error(std::string area, int line_number, std::string error_message);
+void display_and_throw_internal_error(std::string error_message);
+void display_and_throw_error(std::string error_message, int line_number = -1);
 
 struct Token {
     TokenType type;

@@ -1,20 +1,21 @@
-var saisie = 0;
-var nombreDeCoups = 0;
-var nombreMystere = 10;
+var input_number: i64 = 0
+var attempts: i64 = 0
+var mystery_number: i64 = 10
 
-print("Devinez le nombre (entre 1 et 100) : \n");
 
-while (saisie != nombreMystere) {
-    saisie = input();
-    nombreDeCoups = nombreDeCoups + 1;
+print("Guess the number (between 1 and 100): \n")
 
-    if (saisie < nombreMystere) {
-        print("C'est plus !\n");
+while (input_number != mystery_number) {
+    input_number = input()
+    attempts = attempts + 1
+
+    if (input_number < mystery_number) {
+        print("It's more!\n")
     } 
-    if (saisie > nombreMystere) {
-        print("C'est moins !\n");
+    if (input_number > mystery_number) {
+        print("It's less!\n")
     } 
-    if (saisie == nombreMystere) {
-        print("Bravo, vous avez trouvé le nombre mystère en ", nombreDeCoups, " coups !\n");
+    if (input_number == mystery_number) {
+        print("Congratulations, you've found the mystery number in ", attempts, " attempts!\n")
     }
 }

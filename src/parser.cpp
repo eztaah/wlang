@@ -9,6 +9,7 @@
 
 std::vector<Token> tokens;
 size_t tokenIndex = 0;
+std::unordered_map<std::string, bool> variableInfos;
 
 // Ensures all functions are defined before execution
 NodePtr parse_prog();
@@ -24,16 +25,14 @@ Token consume(const TokenType expected_type = UNDEFINED)
     if (tokenIndex < tokens.size()) {
         Token current_token = tokens[tokenIndex++];
         if (expected_type != UNDEFINED && current_token.type != expected_type) {
-            display_and_trow_error("parser",
-                                   current_token.line_number,
-                                   "expected token type : \"" + token_to_string(expected_type) + "\", got (" + token_to_string(current_token.type) + ", \"" + current_token.value + "\")");
+            display_and_throw_error("expected token type : \"" + token_to_string(expected_type) + "\", got (" + token_to_string(current_token.type) + ", \"" + current_token.value + "\")", 
+                                    current_token.line_number);
             exit(1);
         }
         return current_token;
     }
     // handle internal error
-    display_and_trow_internal_error("parser",
-                                    "attempted to consume a token, but no more tokens are available");
+    display_and_throw_internal_error("attempted to consume a token, but no more tokens are available");
     exit(1);
 }
 
@@ -55,8 +54,7 @@ NodePtr parse_term()
         return res;
     }
     // handle errors
-    display_and_trow_internal_error("parser",
-                                    "internal parser error: return nullptr in parse_term()");
+    display_and_throw_internal_error("internal parser error: return nullptr in parse_term()");
     exit(1);
 }
 
@@ -189,24 +187,32 @@ NodePtr parse_stmt()
             consume(CST);
             constant = true;
         }
-
         // handling name
         std::string var_name = consume(IDENTIFIER).value;
-
         consume(COLON);
-
         // handling type
         std::string type = consume(TYPE).value;
-
         // handling content
         consume(EQUALS);
         NodePtr value = parse_expr();
         consume(SEMICOLON);
+        // add variable to the map
+        variableInfos.insert({var_name, constant});
+
         return std::make_shared<VarDeclNode>(constant, type, var_name, value);
     }
     // handle variable modifiaction
     else if (tokens[tokenIndex].type == IDENTIFIER && tokens[tokenIndex + 1].type == EQUALS) {
         std::string var_name = consume(IDENTIFIER).value;
+
+        // check if the variable is declared as cst 
+        auto varIt = variableInfos.find(var_name);
+        if (varIt != variableInfos.end() && varIt->second) {
+            display_and_throw_error("assignment of read-only variable '" + var_name + "'", 
+                                    tokens[tokenIndex].line_number);
+            exit(1);
+        }
+
         consume(EQUALS);
         NodePtr value = parse_expr();
         consume(SEMICOLON);
@@ -230,9 +236,8 @@ NodePtr parse_stmt()
     }
 
     // Else, there is an error
-    display_and_trow_error("parser",
-                           tokens[tokenIndex].line_number,
-                           "the provided code does not match any known statement pattern");
+    display_and_throw_error("the provided code does not match any known statement pattern", 
+                            tokens[tokenIndex].line_number);
     exit(1);
 }
 
@@ -369,8 +374,7 @@ std::string &print_ast(const NodePtr &node, std::string &output, const std::stri
             indent + branch + "VarRefNode(name=" + vrefnode->_name + ")" + "\n";
     }
     else {
-        display_and_trow_internal_error("parser",
-                                        "unknow node encontered while displaying the ast");
+        display_and_throw_internal_error("unknow node encontered while displaying the ast");
         exit(1);
     }
 

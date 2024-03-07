@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
                 i++;
             }
             else {
-                display_and_trow_base_error("-b or --build-dir argument used, but no directory specified");
+                display_and_throw_error("-b or --build-dir argument used, but no directory specified");
                 return EXIT_FAILURE;
             }
         }
@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
                 i++;
             }
             else {
-                display_and_trow_base_error("-o or --output argument used, but no output specified");
+                display_and_throw_error("-o or --output argument used, but no output specified");
                 return EXIT_FAILURE;
             }
         }
@@ -69,7 +69,7 @@ int main(int argc, char *argv[])
         }
         // if a wrong argument is given
         else {
-            display_and_trow_base_error(std::string(argv[i]) + " is not a valid argument");
+            display_and_throw_error(std::string(argv[i]) + " is not a valid argument");
             print_usage();
             return EXIT_FAILURE;
         }
@@ -81,7 +81,7 @@ int main(int argc, char *argv[])
     std::filesystem::path build_dirPath(build_directory);
     if (!std::filesystem::exists(build_dirPath)) {
         if (!std::filesystem::create_directories(build_dirPath)) {
-            display_and_trow_base_error("failed to create build directory");
+            display_and_throw_error("failed to create build directory");
             return (EXIT_FAILURE);
         }
     }
@@ -92,7 +92,7 @@ int main(int argc, char *argv[])
     std::filesystem::path output_dirPath = outputPath.parent_path();
     if (!std::filesystem::exists(output_dirPath)) {
         if (!std::filesystem::create_directories(output_dirPath)) {
-            display_and_trow_base_error("failed to create output directory");
+            display_and_throw_error("failed to create output directory");
             return (EXIT_FAILURE);
         }
     }
@@ -107,7 +107,7 @@ int main(int argc, char *argv[])
         code = buffer.str();
     }
     else {
-        display_and_trow_base_error("unable to open file : " + filePath);
+        display_and_throw_error("unable to open file : " + filePath);
         return (EXIT_FAILURE);
     }
 
