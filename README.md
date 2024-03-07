@@ -10,20 +10,22 @@
 # this is a comment
 
 """
-this is a 
-multi-line 
-comment
+this is a multi-line comment
+
+- negative number are not supported
+- i64 is the only type supported
+- for loops are not supported
 """
 
 # declare variables
 # all of these operators are supported and follow this order ( ./docs/operator-order.txt )
-var a = 3 ^ 4 | 8 + 7 * 4 << 1 - 8 >> 2 & 4 // 2;
+var a: i64 = 3 ^ 4 | 8 + 7 * 4 << 1 - 8 >> 2 & 4 // 2;
 
 # modify variables
 a = 0
 
 # declare constants
-cst b = 9; 
+cst b: i64 = (1 + 2) * 3; 
 
 # print function
 print(a);

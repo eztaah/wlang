@@ -12,6 +12,9 @@
             "include": "#constant"
         },
         {
+            "include": "#type"
+        },
+        {
             "include": "#functions"
         },
         {
@@ -47,19 +50,27 @@
         "variable": {
             "patterns": [
                 {
-                    "name": "keyword.declaration.var.sd",
-                    "match": "\\bvar\\b(?=\\s+\\w+\\s*=)"
+                    "name": "keyword.declaration.var.cp",
+                    "match": "\\bvar\\b"
                 }
             ]
         },
         "constant": {
             "patterns": [
                 {
-                    "name": "keyword.declaration.cst.sd",
-                    "match": "\\bcst\\b(?=\\s+\\w+\\s*=)"
+                    "name": "keyword.declaration.cst.cp",
+                    "match": "\\bcst\\b"
                 }
             ]
         },
+        "type": {
+            "patterns": [
+                {
+                    "name": "entity.name.type",
+                    "match": "\\bi64\\b"
+                }
+            ]
+        },        
         "functions": {
             "patterns": [
                 {
