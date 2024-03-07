@@ -7,6 +7,9 @@
 
 // define flags
 extern bool debug_flag;
+extern bool runtime_error_flag;
+extern std::string build_directory;
+extern std::string output_location;
 
 typedef enum {
     CST,
@@ -49,6 +52,12 @@ typedef enum {
     UNDEFINED,
     EOF_TOKEN
 } TokenType;
+
+std::string token_to_string(TokenType type);
+
+void display_and_trow_internal_error(std::string area, std::string error_message);
+void display_and_trow_base_error(std::string error_message);
+void display_and_trow_error(std::string area, int line_number, std::string error_message);
 
 struct Token {
     TokenType type;
@@ -153,8 +162,5 @@ class ProgramNode : public Node {
         : _statements(statements) {}
     std::vector<NodePtr> _statements;
 };
-
-
-std::string token_to_string(TokenType type);
 
 #endif // GLOBAL_HPP
