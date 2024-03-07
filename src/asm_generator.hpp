@@ -5,7 +5,7 @@
 #include <unordered_map>
 #include <vector>
 
-#include "nodes.hpp"
+#include "global.hpp"
 
 std::string generate_assembly(const NodePtr &node);
 

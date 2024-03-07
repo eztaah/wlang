@@ -175,79 +175,85 @@ void generate_assembly_internal(const NodePtr &node)
         std::string true_label = "if_true_" + std::to_string(label_count);
 
         switch (bnode->_op) {
-        case EQUALS_EQUALS:
-            text_instructions.push_back("cmp rax, rbx");
-            text_instructions.push_back("je " + true_label);
-            break;
+            case EQUALS_EQUALS:
+                text_instructions.push_back("cmp rax, rbx");
+                text_instructions.push_back("sete al");          // met 1 dans al (partie basse de rax), sinon 0
+                text_instructions.push_back("movzx rax, al");    // etend la valeur de al à rax
+                break;
 
-        case NOT_EQUALS:
-            text_instructions.push_back("cmp rax, rbx");
-            text_instructions.push_back("jne " + true_label);
-            break;
+            case NOT_EQUALS:
+                text_instructions.push_back("cmp rax, rbx");
+                text_instructions.push_back("setne al");
+                text_instructions.push_back("movzx rax, al");
+                break;
 
-        case LESS_THAN:
-            text_instructions.push_back("cmp rax, rbx");
-            text_instructions.push_back("jl " + true_label);
-            break;
+            case LESS_THAN:
+                text_instructions.push_back("cmp rax, rbx");
+                text_instructions.push_back("setl al");
+                text_instructions.push_back("movzx rax, al");
+                break;
 
-        case LESS_THAN_EQUALS:
-            text_instructions.push_back("cmp rax, rbx");
-            text_instructions.push_back("jle " + true_label);
-            break;
+            case LESS_THAN_EQUALS:
+                text_instructions.push_back("cmp rax, rbx");
+                text_instructions.push_back("setle al");
+                text_instructions.push_back("movzx rax, al");
+                break;
 
-        case GREATER_THAN:
-            text_instructions.push_back("cmp rax, rbx");
-            text_instructions.push_back("jg " + true_label);
-            break;
+            case GREATER_THAN:
+                text_instructions.push_back("cmp rax, rbx");
+                text_instructions.push_back("setg al");
+                text_instructions.push_back("movzx rax, al");
+                break;
 
-        case GREATER_THAN_EQUALS:
-            text_instructions.push_back("cmp rax, rbx");
-            text_instructions.push_back("jge " + true_label);
-            break;
+            case GREATER_THAN_EQUALS:
+                text_instructions.push_back("cmp rax, rbx");
+                text_instructions.push_back("setge al");
+                text_instructions.push_back("movzx rax, al");
+                break;
 
-        case BIN_OR:
-            text_instructions.push_back("or rax, rbx");
-            break;
+            case BIN_OR:
+                text_instructions.push_back("or rax, rbx");
+                break;
 
-        case XOR:
-            text_instructions.push_back("xor rax, rbx");
-            break;
+            case XOR:
+                text_instructions.push_back("xor rax, rbx");
+                break;
 
-        case BIN_AND:
-            text_instructions.push_back("and rax, rbx");
-            break;
+            case BIN_AND:
+                text_instructions.push_back("and rax, rbx");
+                break;
 
-        case SHIFT_LEFT:
-            text_instructions.push_back("mov cl, bl");
-            text_instructions.push_back("shl rax, cl"); // cl est un registre 8 bits
-            break;
+            case SHIFT_LEFT:
+                text_instructions.push_back("mov cl, bl");
+                text_instructions.push_back("shl rax, cl"); // cl est un registre 8 bits
+                break;
 
-        case SHIFT_RIGHT:
-            text_instructions.push_back("mov cl, bl");
-            text_instructions.push_back("shr rax, cl"); // cl est un registre 8 bits
-            break;
+            case SHIFT_RIGHT:
+                text_instructions.push_back("mov cl, bl");
+                text_instructions.push_back("shr rax, cl"); // cl est un registre 8 bits
+                break;
 
-        case PLUS:
-            text_instructions.push_back("add rax, rbx");
-            break;
+            case PLUS:
+                text_instructions.push_back("add rax, rbx");
+                break;
 
-        case MINUS:
-            text_instructions.push_back("sub rax, rbx");
-            break;
+            case MINUS:
+                text_instructions.push_back("sub rax, rbx");
+                break;
 
-        case TIMES:
-            text_instructions.push_back("imul rax, rbx");
-            break;
+            case TIMES:
+                text_instructions.push_back("imul rax, rbx");
+                break;
 
-        case DIVIDE:
-            text_instructions.push_back("cqo");      // Convertit rax en rdx:rax, étendant le signe
-            text_instructions.push_back("idiv rbx"); // Division de rdx:rax par rbx
-            break;
+            case DIVIDE:
+                text_instructions.push_back("cqo");      // Convertit rax en rdx:rax, étendant le signe
+                text_instructions.push_back("idiv rbx"); // Division de rdx:rax par rbx
+                break;
 
-        default:
-            std::cout << "generator error : " << std::endl;
-            exit(1);
-            break;
+            default:
+                std::cout << "generator error : " << std::endl;
+                exit(1);
+                break;
         }
     }
 
@@ -267,8 +273,11 @@ void generate_assembly_internal(const NodePtr &node)
         std::string end_label = "if_end_" + std::to_string(label_count);
         std::string else_label = "else_" + std::to_string(label_count);
 
-        text_instructions.push_back("\n; if statement");
+        text_instructions.push_back("\n; if statement");        
         generate_assembly_internal(inode->_condition);
+
+        text_instructions.push_back("cmp rax, 1");
+        text_instructions.push_back("je " + true_label);
 
         // si il y a un else
         if (inode->_false_block.empty() == false) {
@@ -294,7 +303,6 @@ void generate_assembly_internal(const NodePtr &node)
                 generate_assembly_internal(stmt);
             }
         }
-        text_instructions.push_back("jmp " + end_label);
 
         // end
         text_instructions.push_back(end_label + ":");
@@ -304,12 +312,14 @@ void generate_assembly_internal(const NodePtr &node)
         std::string while_label = "while_label_" + std::to_string(label_count);
         std::string true_label = "if_true_" + std::to_string(label_count);
         std::string end_label = "if_end_" + std::to_string(label_count);
-        std::string else_label = "else_" + std::to_string(label_count);
 
         text_instructions.push_back("\n; while statement");
         text_instructions.push_back(while_label + ":");
         generate_assembly_internal(wnode->_condition);
-        text_instructions.push_back("jmp " + else_label);
+
+        text_instructions.push_back("cmp rax, 1");
+        text_instructions.push_back("je " + true_label);
+        text_instructions.push_back("jmp " + end_label);
 
         // true block
         text_instructions.push_back(true_label + ":");
@@ -318,10 +328,6 @@ void generate_assembly_internal(const NodePtr &node)
             generate_assembly_internal(stmt);
         }
         text_instructions.push_back("jmp " + while_label);
-
-        // else block
-        text_instructions.push_back(else_label + ":");
-        text_instructions.push_back("jmp " + end_label);
 
         // end
         text_instructions.push_back(end_label + ":");

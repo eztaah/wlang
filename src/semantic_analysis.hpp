@@ -1,7 +1,7 @@
 #ifndef SEMANTIC_ANALYSIS_HPP
 #define SEMANTIC_ANALYSIS_HPP
 
-#include "nodes.hpp"
+#include "global.hpp"
 
 void analyzeAST(const NodePtr &node);
 
