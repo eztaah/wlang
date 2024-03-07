@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
         std::cout << "\nOptions:" << std::endl;
         std::cout << "    -o, --output <executable>       Specify the location and name of the output executable (default: ./prog)." << std::endl;
         std::cout << "    -b, --build-dir <directory>     Specify the build directory for intermediate files. (default: ./build/)" << std::endl;
-        std::cout << "    -v, --verbose                   be verbose" << std::endl;
+        std::cout << "    -d, --debug                     activate debug mode" << std::endl;
 
         std::cout << std::endl;
         return EXIT_FAILURE;
@@ -29,7 +29,6 @@ int main(int argc, char *argv[])
         return EXIT_SUCCESS;
     }
 
-    bool verbose = false;
     std::string build_directory = "build";
     std::string output_location = "prog";
 
@@ -54,8 +53,8 @@ int main(int argc, char *argv[])
                 return EXIT_FAILURE;
             }
         }
-        else if (std::string(argv[i]) == "-v" || std::string(argv[i]) == "--verbose") {
-            verbose = true;
+        else if (std::string(argv[i]) == "-d" || std::string(argv[i]) == "--debug") {
+            debug_flag = true;
         }
     }
 
@@ -68,7 +67,7 @@ int main(int argc, char *argv[])
             return EXIT_FAILURE;
         }
         else {
-            if (verbose) {
+            if (debug_flag) {
                 std::cout << "Created directory: " << build_directory << std::endl;
             }
         }
@@ -85,7 +84,7 @@ int main(int argc, char *argv[])
             return EXIT_FAILURE;
         }
         else {
-            if (verbose) {
+            if (debug_flag) {
                 std::cout << "Created directory: " << output_dirPath << std::endl;
             }
         }
@@ -107,7 +106,10 @@ int main(int argc, char *argv[])
 
     // LEXER
     std::vector<Token> tokens = lex(code);
-    std::string lexer_output = get_printable_lexer_output(tokens);
+    std::string lexer_output;
+    lexer_output += "LEXER OUTPUT\n";
+    lexer_output += "=> output type : std::vector<std::pair<TokenType, std::string>>\n\n";
+    lexer_output += get_printable_lexer_output(tokens);
     // Write result to file
     std::ofstream output1(build_directory + "1_lexer_output.txt");
     output1 << lexer_output;

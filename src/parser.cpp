@@ -23,8 +23,8 @@ Token consume(const TokenType expected_type = UNDEFINED)
 {
     if (tokenIndex < tokens.size()) {
         Token current_token = tokens[tokenIndex++];
-        if (expected_type != UNDEFINED && current_token.first != expected_type) {
-            std::cout << "\033[31m[!] Parser error: Expected token type " + token_to_string(expected_type) + ", got (" + token_to_string(current_token.first) + ", " + current_token.second + ")\033[0m" << std::endl;
+        if (expected_type != UNDEFINED && current_token.type != expected_type) {
+            std::cout << "\033[31m[!] Parser error: Expected token type " + token_to_string(expected_type) + ", got (" + token_to_string(current_token.type) + ", " + current_token.value + ")\033[0m" << std::endl;
             throw std::runtime_error("Parser error: Unknown token encountered.");
 
             exit(1);
@@ -36,18 +36,18 @@ Token consume(const TokenType expected_type = UNDEFINED)
 
 NodePtr parse_term()
 {
-    if (tokens[tokenIndex].first == NUMBER) {
+    if (tokens[tokenIndex].type == NUMBER) {
         Token token = consume(NUMBER);
-        return std::make_shared<NumberNode>(std::stoi(token.second));
+        return std::make_shared<NumberNode>(std::stoi(token.value));
     }
-    else if (tokens[tokenIndex].first == IDENTIFIER) {
+    else if (tokens[tokenIndex].type == IDENTIFIER) {
         Token token = consume(IDENTIFIER);
-        return std::make_shared<VarRefNode>(token.second);
+        return std::make_shared<VarRefNode>(token.value);
     }
-    else if (tokens[tokenIndex].first == QUOTE) {
+    else if (tokens[tokenIndex].type == QUOTE) {
         consume(QUOTE);
         Token token = consume(IDENTIFIER);
-        NodePtr res = std::make_shared<StringNode>(token.second);
+        NodePtr res = std::make_shared<StringNode>(token.value);
         consume(QUOTE);
         return res;
     }
@@ -57,8 +57,8 @@ NodePtr parse_term()
 NodePtr parse_expression_with_priority(std::function<NodePtr()> parseLowerPriority, const std::vector<TokenType> &operators)
 {
     NodePtr left = parseLowerPriority();
-    while (tokenIndex < tokens.size() && std::find(operators.begin(), operators.end(), tokens[tokenIndex].first) != operators.end()) {
-        TokenType op = consume().first;
+    while (tokenIndex < tokens.size() && std::find(operators.begin(), operators.end(), tokens[tokenIndex].type) != operators.end()) {
+        TokenType op = consume().type;
         NodePtr right = parseLowerPriority();
         left = std::make_shared<BinOpNode>(left, op, right);
     }
@@ -67,7 +67,7 @@ NodePtr parse_expression_with_priority(std::function<NodePtr()> parseLowerPriori
 
 NodePtr parse_parentheses()
 {
-    if (tokens[tokenIndex].first == LPAREN) {
+    if (tokens[tokenIndex].type == LPAREN) {
         consume(LPAREN);
         NodePtr expr = parse_expr();
         consume(RPAREN);
@@ -109,7 +109,7 @@ NodePtr parse_bin_or()
 NodePtr parse_expr()
 {
     // handle input function
-    if (tokens[tokenIndex].second == "input") {
+    if (tokens[tokenIndex].value == "input") {
         // Input function
         consume(IDENTIFIER);
         consume(LPAREN);
@@ -125,7 +125,7 @@ std::vector<NodePtr> parse_block()
 {
     consume(LBRACE);
     std::vector<NodePtr> statements;
-    while (tokenIndex < tokens.size() && tokens[tokenIndex].first != RBRACE) {
+    while (tokenIndex < tokens.size() && tokens[tokenIndex].type != RBRACE) {
         statements.push_back(parse_stmt());
     }
     consume(RBRACE);
@@ -139,7 +139,7 @@ NodePtr parse_if()
     NodePtr condition = parse_expr();
     consume(RPAREN);
     std::vector<NodePtr> true_branch = parse_block();
-    if (tokens[tokenIndex].first == ELSE) {
+    if (tokens[tokenIndex].type == ELSE) {
         consume(ELSE);
         std::vector<NodePtr> false_branch = parse_block();
         return std::make_shared<IfNode>(condition, true_branch, false_branch);
@@ -167,20 +167,20 @@ NodePtr parse_while()
 NodePtr parse_stmt()
 {
     // handle if statements
-    if (tokens[tokenIndex].first == IF) {
+    if (tokens[tokenIndex].type == IF) {
         return parse_if();
     }
 
     // handle while statement
-    else if (tokens[tokenIndex].first == WHILE) {
+    else if (tokens[tokenIndex].type == WHILE) {
         return parse_while();
     }
 
     // handle variable declaration
-    else if ((tokens[tokenIndex].first == VAR || tokens[tokenIndex].first == CST)) {
+    else if ((tokens[tokenIndex].type == VAR || tokens[tokenIndex].type == CST)) {
         // handling constant
         bool constant;
-        if (tokens[tokenIndex].first == VAR) {
+        if (tokens[tokenIndex].type == VAR) {
             consume(VAR);
             constant = false;
         }
@@ -190,12 +190,12 @@ NodePtr parse_stmt()
         }
 
         // handling name
-        std::string var_name = consume(IDENTIFIER).second;
+        std::string var_name = consume(IDENTIFIER).value;
 
         consume(COLON);
 
         // handling type
-        std::string type = consume(TYPE).second;
+        std::string type = consume(TYPE).value;
 
         // handling content
         consume(EQUALS);
@@ -204,8 +204,8 @@ NodePtr parse_stmt()
         return std::make_shared<VarDeclNode>(constant, type, var_name, value);
     }
     // handle variable modifiaction
-    else if (tokens[tokenIndex].first == IDENTIFIER && tokens[tokenIndex + 1].first == EQUALS) {
-        std::string var_name = consume(IDENTIFIER).second;
+    else if (tokens[tokenIndex].type == IDENTIFIER && tokens[tokenIndex + 1].type == EQUALS) {
+        std::string var_name = consume(IDENTIFIER).value;
         consume(EQUALS);
         NodePtr value = parse_expr();
         consume(SEMICOLON);
@@ -213,23 +213,23 @@ NodePtr parse_stmt()
     }
 
     // handle print function
-    else if (tokens[tokenIndex].second == "print") {
+    else if (tokens[tokenIndex].value == "print") {
         Token token = consume(IDENTIFIER);
         consume(LPAREN);
         std::vector<NodePtr> args;
-        while (tokens[tokenIndex].first != RPAREN) {
+        while (tokens[tokenIndex].type != RPAREN) {
             args.push_back(parse_expr());
-            if (tokens[tokenIndex].first == COMMA) {
+            if (tokens[tokenIndex].type == COMMA) {
                 consume(COMMA);
             }
         }
         consume(RPAREN);
         consume(SEMICOLON);
-        return std::make_shared<FunctionCallNode>(token.second, args);
+        return std::make_shared<FunctionCallNode>(token.value, args);
     }
 
     // Else, there is an error
-    std::cout << "\033[31m[!] Parser error: Unknow token: (" + token_to_string(tokens[tokenIndex].first) + ", " + tokens[tokenIndex].second + "\033[0m" << std::endl;
+    std::cout << "\033[31m[!] Parser error: Unknow token: (" + token_to_string(tokens[tokenIndex].type) + ", " + tokens[tokenIndex].value + "\033[0m" << std::endl;
     exit(1);
     // return nullptr;
 }
@@ -237,7 +237,7 @@ NodePtr parse_stmt()
 NodePtr parse_prog()
 {
     std::vector<NodePtr> statements;
-    while (tokenIndex < tokens.size() && tokens[tokenIndex].first != EOF_TOKEN) {
+    while (tokenIndex < tokens.size() && tokens[tokenIndex].type != EOF_TOKEN) {
         statements.push_back(parse_stmt());
     }
     return std::make_shared<ProgramNode>(statements);
