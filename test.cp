@@ -1,5 +1,5 @@
 
-var a = 1 == 1;
+var a = 1 + 3 * 2;
 
 print(a);
 

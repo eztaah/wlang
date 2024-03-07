@@ -25,7 +25,9 @@ Token consume(const TokenType expected_type = UNDEFINED)
         Token current_token = tokens[tokenIndex++];
         if (expected_type != UNDEFINED && current_token.first != expected_type) {
             std::cout << "\033[31m[!] Parser error: Expected token type " + token_to_string(expected_type) + ", got (" + token_to_string(current_token.first) + ", " + current_token.second + ")\033[0m" << std::endl;
-            exit(-1);
+            throw std::runtime_error("Parser error: Unknown token encountered.");
+
+            exit(1);
         }
         return current_token;
     }
@@ -54,18 +56,29 @@ NodePtr parse_term()
 
 NodePtr parse_expression_with_priority(std::function<NodePtr()> parseLowerPriority, const std::vector<TokenType> &operators)
 {
-    NodePtr node = parseLowerPriority();
+    NodePtr left = parseLowerPriority();
     while (tokenIndex < tokens.size() && std::find(operators.begin(), operators.end(), tokens[tokenIndex].first) != operators.end()) {
         TokenType op = consume().first;
         NodePtr right = parseLowerPriority();
-        node = std::make_shared<BinOpNode>(node, op, right);
+        left = std::make_shared<BinOpNode>(left, op, right);
     }
-    return node;
+    return left;
+}
+
+NodePtr parse_parentheses()
+{
+    if (tokens[tokenIndex].first == LPAREN) {
+        consume(LPAREN);
+        NodePtr expr = parse_expr();
+        consume(RPAREN);
+        return expr;
+    }
+    return parse_term();
 }
 
 NodePtr parse_factor()
 {
-    return parse_expression_with_priority(parse_term, {TIMES, DIVIDE});
+    return parse_expression_with_priority(parse_parentheses, {TIMES, DIVIDE});
 }
 
 NodePtr parse_add()
