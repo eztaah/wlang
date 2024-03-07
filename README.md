@@ -51,6 +51,8 @@ while (a < b) {
 <br>
 
 ## How to use the compiler
+
+Ensure you have `nasm` and `GNU ld` installed on your Linux system.
 ```
 $ compiler --help                                    
 Usage:
@@ -61,15 +63,15 @@ Usage:
 Options:
     -o, --output <executable>       Specify the location and name of the output executable (default: ./prog).
     -b, --build-dir <directory>     Specify the build directory for intermediate files. (default: ./build/)
-    -v, --verbose                   be verbose
+    -d, --dev-mode                  activate dev mode
+    -r, --runtime-error             throw runtime errors when an error occur
 ``` 
 
 <br>
 
 ## Building from source
-Ensure you have `nasm` and `GNU ld` installed on your Linux system.
 
-Execute this command
+Navigate to the projet directory and execute this command :
 ```shell
 make release
 ``` 

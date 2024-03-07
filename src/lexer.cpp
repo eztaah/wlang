@@ -56,7 +56,6 @@ std::vector<Token> lex(const std::string &code)
             i++;
         }
 
-
         // Handling numbers
         else if (isdigit(code[i])) {
             std::string num;
@@ -237,28 +236,25 @@ std::vector<Token> lex(const std::string &code)
         }
         // Error otherwise
         else {
-            std::cerr << "\033[31m[!] Lexer error | Unknown character at line " << line_number << ": '" << code[i] << "' (ASCII: " << code[i] << ")\033[0m" << std::endl;
-            if (debug_flag) {
-                throw std::runtime_error("Lexer error | Unknown character");
-            }
+            display_and_trow_error("lexer",
+                                   line_number,
+                                   "character '" + std::to_string(code[i]) + "' (ASCII: " + std::to_string(static_cast<int>(code[i])) + ") is not valid");
             exit(1);
         }
     }
     // Adding end-of-file character
     tokens.push_back(Token(EOF_TOKEN, "", line_number));
-
-    std::cout << "\033[32m> Lexing succeeded\033[0m" << std::endl;
-
     return tokens;
 }
 
-std::string get_printable_lexer_output(const std::vector<Token>& tokens) {
+std::string get_printable_lexer_output(const std::vector<Token> &tokens)
+{
     std::string output;
     int indentLevel = 0;
     output += "[\n";
 
     for (size_t i = 0; i < tokens.size(); ++i) {
-        const Token& token = tokens[i];
+        const Token &token = tokens[i];
         std::string tokenTypeName = token_to_string(token.type);
         std::string indent = std::string(indentLevel * 4, ' '); // 4 spaces per indentation
 
@@ -282,9 +278,8 @@ std::string get_printable_lexer_output(const std::vector<Token>& tokens) {
         }
 
         if (token.type == LBRACE) {
-            indentLevel++;      // valable pour le prochain token
+            indentLevel++; // valable pour le prochain token
         }
-
     }
     // remove last comma and \n
     if (!tokens.empty()) {

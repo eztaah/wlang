@@ -251,9 +251,9 @@ void generate_assembly_internal(const NodePtr &node)
             break;
 
         default:
-            std::cout << "generator error : " << std::endl;
+            display_and_trow_internal_error("generator",
+                                            "unknow operator in BinOpNode");
             exit(1);
-            break;
         }
     }
 
@@ -263,7 +263,8 @@ void generate_assembly_internal(const NodePtr &node)
             text_instructions.push_back("mov rax, " + var_offset->second);
         }
         else {
-            std::cout << "Undefined variable " + vrefnode->_name << std::endl;
+            display_and_trow_internal_error("generator",
+                                            "undefined variable");
             exit(1);
         }
     }
@@ -331,5 +332,11 @@ void generate_assembly_internal(const NodePtr &node)
 
         // end
         text_instructions.push_back(end_label + ":");
+    }
+
+    else {
+        display_and_trow_internal_error("generator",
+                                        "unknow node encontered");
+        exit(1);
     }
 }
