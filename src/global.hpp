@@ -5,6 +5,9 @@
 #include <string>
 #include <vector>
 
+// define flags
+extern bool debug_flag;
+
 typedef enum {
     CST,
     VAR,
@@ -46,6 +49,14 @@ typedef enum {
     UNDEFINED,
     EOF_TOKEN
 } TokenType;
+
+struct Token {
+    TokenType type;
+    std::string value;
+    int line_number;
+
+    Token(TokenType type, std::string value, int line_number) : type(type), value(value), line_number(line_number) {}
+};
 
 class Node {
   public:
@@ -143,7 +154,6 @@ class ProgramNode : public Node {
     std::vector<NodePtr> _statements;
 };
 
-typedef std::pair<TokenType, std::string> Token;
 
 std::string token_to_string(TokenType type);
 

@@ -2,6 +2,8 @@
 
 #include "global.hpp"
 
+bool debug_flag = false;
+
 std::string token_to_string(TokenType type)
 {
     switch (type) {
