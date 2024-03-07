@@ -24,14 +24,17 @@ Token consume(const TokenType expected_type = UNDEFINED)
     if (tokenIndex < tokens.size()) {
         Token current_token = tokens[tokenIndex++];
         if (expected_type != UNDEFINED && current_token.type != expected_type) {
-            std::cout << "\033[31m[!] Parser error: Expected token type " + token_to_string(expected_type) + ", got (" + token_to_string(current_token.type) + ", " + current_token.value + ")\033[0m" << std::endl;
-            throw std::runtime_error("Parser error: Unknown token encountered.");
-
+            display_and_trow_error("parser",
+                                   current_token.line_number,
+                                   "expected token type : \"" + token_to_string(expected_type) + "\", got (" + token_to_string(current_token.type) + ", \"" + current_token.value + "\")");
             exit(1);
         }
         return current_token;
     }
-    throw std::runtime_error("No more tokens");
+    // handle internal error
+    display_and_trow_internal_error("parser",
+                                    "attempted to consume a token, but no more tokens are available");
+    exit(1);
 }
 
 NodePtr parse_term()
@@ -51,7 +54,10 @@ NodePtr parse_term()
         consume(QUOTE);
         return res;
     }
-    return nullptr;
+    // handle errors
+    display_and_trow_internal_error("parser",
+                                    "internal parser error: return nullptr in parse_term()");
+    exit(1);
 }
 
 NodePtr parse_expression_with_priority(std::function<NodePtr()> parseLowerPriority, const std::vector<TokenType> &operators)
@@ -159,11 +165,6 @@ NodePtr parse_while()
     return std::make_shared<WhileNode>(condition, block);
 }
 
-// NodePtr parse_assignement()
-// {
-//     // do to
-// }
-
 NodePtr parse_stmt()
 {
     // handle if statements
@@ -229,9 +230,10 @@ NodePtr parse_stmt()
     }
 
     // Else, there is an error
-    std::cout << "\033[31m[!] Parser error: Unknow token: (" + token_to_string(tokens[tokenIndex].type) + ", " + tokens[tokenIndex].value + "\033[0m" << std::endl;
+    display_and_trow_error("parser",
+                           tokens[tokenIndex].line_number,
+                           "the provided code does not match any known statement pattern");
     exit(1);
-    // return nullptr;
 }
 
 NodePtr parse_prog()
@@ -279,8 +281,7 @@ std::string &print_ast(const NodePtr &node, std::string &output, const std::stri
     if (ProgramNode *pnode = dynamic_cast<ProgramNode *>(node.get())) {
         output += indent + "ProgramNode" + "\n";
         for (size_t i = 0; i < pnode->_statements.size(); ++i) {
-            print_ast(pnode->_statements[i], output, next_indent,
-                      i == pnode->_statements.size() - 1);
+            print_ast(pnode->_statements[i], output, next_indent, i == pnode->_statements.size() - 1);
         }
     }
 
@@ -368,8 +369,9 @@ std::string &print_ast(const NodePtr &node, std::string &output, const std::stri
             indent + branch + "VarRefNode(name=" + vrefnode->_name + ")" + "\n";
     }
     else {
-        std::cout << "\033[31m[!] Parser internal error: Unknow node encontered when displaying the ast \033[0m" << std::endl;
-        exit(-1);
+        display_and_trow_internal_error("parser",
+                                        "unknow node encontered while displaying the ast");
+        exit(1);
     }
 
     return output;
