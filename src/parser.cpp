@@ -177,13 +177,31 @@ NodePtr parse_stmt()
     }
 
     // handle variable declaration
-    else if ((tokens[tokenIndex].first == VAR || tokens[tokenIndex].first == CST) && tokens[tokenIndex + 1].first == IDENTIFIER && tokens[tokenIndex + 2].first == EQUALS) {
-        TokenType type = consume().first;
+    else if ((tokens[tokenIndex].first == VAR || tokens[tokenIndex].first == CST)) {
+        // handling constant
+        bool constant;
+        if (tokens[tokenIndex].first == VAR) {
+            consume(VAR);
+            constant = false;
+        }
+        else {
+            consume(CST);
+            constant = true;
+        }
+
+        // handling name
         std::string var_name = consume(IDENTIFIER).second;
+
+        consume(COLON);
+
+        // handling type
+        std::string type = consume(TYPE).second;
+
+        // handling content
         consume(EQUALS);
         NodePtr value = parse_expr();
         consume(SEMICOLON);
-        return std::make_shared<VarDeclNode>(type, var_name, value);
+        return std::make_shared<VarDeclNode>(constant, type, var_name, value);
     }
     // handle variable modifiaction
     else if (tokens[tokenIndex].first == IDENTIFIER && tokens[tokenIndex + 1].first == EQUALS) {
@@ -319,8 +337,9 @@ std::string &print_ast(const NodePtr &node, std::string &output, const std::stri
 
     else if (VarDeclNode *vnode = dynamic_cast<VarDeclNode *>(node.get())) {
         output += indent + branch + "VarDeclNode" + "\n";
-        output += next_indent + "├─ type: " + token_to_string(vnode->_type) + "\n";
+        output += next_indent + "├─ constant: " + std::to_string(vnode->_constant) + "\n";
         output += next_indent + "├─ name: " + vnode->_name + "\n";
+        output += next_indent + "├─ type: " + vnode->_type + "\n";
         output += next_indent + "└─ value: " + "\n";
         if (vnode->_value) {
             print_ast(vnode->_value, output, next_indent + "   ", true, true);

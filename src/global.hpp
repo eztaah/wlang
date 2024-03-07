@@ -1,8 +1,8 @@
 #ifndef GLOBAL_HPP
 #define GLOBAL_HPP
 
-#include <string>
 #include <memory>
+#include <string>
 #include <vector>
 
 typedef enum {
@@ -33,6 +33,8 @@ typedef enum {
     RPAREN,
     LBRACE,
     RBRACE,
+    COLON,
+    TYPE,
 
     EQUALS_EQUALS,
     NOT_EQUALS,
@@ -87,9 +89,10 @@ class ExpressionNode : public Node {
 
 class VarDeclNode : public Node { // VarDeclStatement
   public:
-    VarDeclNode(TokenType type, const std::string &name, NodePtr value)
-        : _type(type), _name(name), _value(value) {}
-    TokenType _type;
+    VarDeclNode(bool constant, std::string type, const std::string &name, NodePtr value)
+        : _constant(constant), _type(type), _name(name), _value(value) {}
+    bool _constant;
+    std::string _type;
     std::string _name;
     NodePtr _value;
 };
@@ -139,8 +142,6 @@ class ProgramNode : public Node {
         : _statements(statements) {}
     std::vector<NodePtr> _statements;
 };
-
-
 
 typedef std::pair<TokenType, std::string> Token;
 
