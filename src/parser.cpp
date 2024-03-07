@@ -6,7 +6,6 @@
 #include <vector>
 
 #include "global.hpp"
-#include "nodes.hpp"
 
 std::vector<Token> tokens;
 size_t tokenIndex = 0;
