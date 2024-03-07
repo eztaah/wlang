@@ -55,6 +55,10 @@ std::string token_to_string(TokenType type)
         return "RBRACE";
     case COMMA:
         return "COMMA";
+    case COLON:
+        return "COLON";
+    case TYPE:
+        return "TYPE";
     case IF:
         return "IF";
     case WHILE:

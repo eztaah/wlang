@@ -152,6 +152,10 @@ std::vector<Token> lex(const std::string &code)
             tokens.push_back(Token(COMMA, ""));
             i++;
         }
+        else if (code[i] == ':') {
+            tokens.push_back(Token(COLON, ""));
+            i++;
+        }
 
         // Handling strings
         else if (code[i] == '"') {
@@ -170,8 +174,7 @@ std::vector<Token> lex(const std::string &code)
         // Handling variables and keywords
         else if (isalpha(code[i])) {
             std::string ident;
-            while (i < code.length() &&
-                   (isalpha(code[i]) || isdigit(code[i]) || code[i] == '_')) {
+            while (i < code.length() && (isalpha(code[i]) || isdigit(code[i]) || code[i] == '_')) {
                 ident += code[i];
                 i++;
             }
@@ -190,6 +193,9 @@ std::vector<Token> lex(const std::string &code)
             }
             else if (ident == "else") {
                 tokens.push_back(Token(ELSE, ""));
+            }
+            else if (ident == "i64") {
+                tokens.push_back(Token(TYPE, "i64"));
             }
 
             // handling var names

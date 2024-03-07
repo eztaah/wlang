@@ -1,8 +1,15 @@
 
-var a = 1 + 3 * 2;
+cst a: i64 = 1 + 8 * 2;
 
-print(a);
+print(a, "i64, var\n");
 
+
+if (2) {
+    print("ok\n");
+}
+else {
+    print("pas ok\n");
+}
 
 
 
