@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "global.hpp"
+#include "global.hh"
 
 bool debug_flag = false;
 bool runtime_error_flag = false;

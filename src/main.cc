@@ -3,10 +3,10 @@
 #include <iostream>
 #include <sstream>
 
-#include "asm_generator.hpp"
-#include "lexer.hpp"
-#include "parser.hpp"
-#include "semantic_analysis.hpp"
+#include "asm_generator.hh"
+#include "lexer.hh"
+#include "parser.hh"
+#include "semantic_analysis.hh"
 
 void print_usage()
 {
@@ -143,24 +143,24 @@ int main(int argc, char *argv[])
     std::string asm_final_output = "";
     asm_final_output = generate_assembly(ast);
     // Write result to file
-    std::ofstream output(build_directory + "3_generator_output.asm");
+    std::ofstream output(build_directory + "3_generator_output.s");
     output << asm_final_output;
     output.close();
     std::cout << "\033[96mdone\033[0m" << std::endl;
 
     // ASSEMBLING
     // assembling with nasm
-    std::cout << "\033[96m4. assembling with nasm... \033[0m" << std::flush;
-    std::string nasm_command = "nasm -f elf64 " + build_directory + "3_generator_output.asm -o " + build_directory + "4_nasm_output.o";
-    if (system(nasm_command.c_str()) != 0) {
-        display_and_throw_error("nasm error");
+    std::cout << "\033[96m4. assembling with as... \033[0m" << std::flush;
+    std::string gas_command = "as -o " + build_directory + "4_gas_output.o " + build_directory + "3_generator_output.s";
+    if (system(gas_command.c_str()) != 0) {
+        display_and_throw_error("gas error");
         return EXIT_FAILURE;
     }
     std::cout << "\033[96mdone\033[0m" << std::endl;
 
     // liking with gnu ld
     std::cout << "\033[96m5. linking with gnu ld... \033[0m" << std::flush;
-    std::string ld_command = "ld -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o" + output_location + " " + build_directory + "4_nasm_output.o -lc";
+    std::string ld_command = "ld -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o" + output_location + " " + build_directory + "4_gas_output.o -lc";
     if (system(ld_command.c_str()) != 0) {
         display_and_throw_error("GNU ld error");
         return EXIT_FAILURE;
@@ -173,3 +173,7 @@ int main(int argc, char *argv[])
 
     return 0;
 }
+
+// as -o object.o code.s
+
+// ld -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o prog object.o -lc

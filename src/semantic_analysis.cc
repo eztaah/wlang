@@ -1,4 +1,4 @@
-#include "semantic_analysis.hpp"
+#include "semantic_analysis.hh"
 #include <stdexcept>
 #include <vector>
 

@@ -1,5 +1,5 @@
-#ifndef GLOBAL_HPP
-#define GLOBAL_HPP
+#ifndef GLOBAL_HH
+#define GLOBAL_HH
 
 #include <memory>
 #include <string>
@@ -163,4 +163,4 @@ class ProgramNode : public Node {
     std::vector<NodePtr> _statements;
 };
 
-#endif // GLOBAL_HPP
+#endif // GLOBAL_HH
