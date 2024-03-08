@@ -1,6 +1,6 @@
 TARGET = compiler
 SRC_DIR = src
-SOURCES = $(SRC_DIR)/main.cpp $(SRC_DIR)/global.cpp $(SRC_DIR)/lexer.cpp $(SRC_DIR)/parser.cpp $(SRC_DIR)/asm_generator.cpp $(SRC_DIR)/semantic_analysis.cpp
+SOURCES = $(SRC_DIR)/main.cc $(SRC_DIR)/global.cc $(SRC_DIR)/lexer.cc $(SRC_DIR)/parser.cc $(SRC_DIR)/asm_generator.cc $(SRC_DIR)/semantic_analysis.cc
 CFLAGS = -Wall -Wextra -std=c++23
 DEBUG_FLAGS = -g
 RELEASE_FLAGS = -O3
