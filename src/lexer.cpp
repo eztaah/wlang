@@ -56,7 +56,22 @@ std::vector<Token> lex(const std::string &code)
             i++;
         }
 
-        // Handling numbers
+        // Handling numbers and minus operator
+        else if (code[i] == '-') {
+            if (i + 1 < code.length() && isdigit(code[i + 1])) {
+                std::string num = "-";
+                i++;
+                while (i < code.length() && isdigit(code[i])) {
+                    num += code[i];
+                    i++;
+                }
+                tokens.push_back(Token(NUMBER, num, line_number));
+            }
+            else {
+                tokens.push_back(Token(MINUS, "", line_number));
+                i++;
+            }
+        }
         else if (isdigit(code[i])) {
             std::string num;
             while (i < code.length() && isdigit(code[i])) {
@@ -75,32 +90,19 @@ std::vector<Token> lex(const std::string &code)
             tokens.push_back(Token(TIMES, "", line_number));
             i++;
         }
-        else if (code[i] == '-') {
-            tokens.push_back(Token(MINUS, "", line_number));
-            i++;
-        }
         else if (code[i] == '/' && code[i + 1] == '/') {
             tokens.push_back(Token(DIVIDE, "", line_number));
             i += 2;
         }
+        else if (code[i] == '%') {
+            tokens.push_back(Token(MODULO, "", line_number));
+            i++;
+        }
         else if (code[i] == '&') {
-            // if (i + 1 < code.length() && code[i + 1] == '&') {
-            //     tokens.push_back(Token(AND, "", line_number));
-            //     i += 2;
-            // }
-            // else {
-            // }
             tokens.push_back(Token(BIN_AND, "", line_number));
             i++;
         }
         else if (code[i] == '|') {
-            // if (i + 1 < code.length() && code[i + 1] == '|') {
-            //     tokens.push_back(Token(OR, "", line_number));
-            //     i += 2;
-            // }
-            // else {
-
-            // }
             tokens.push_back(Token(BIN_OR, "", line_number));
             i++;
         }
