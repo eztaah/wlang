@@ -22,6 +22,7 @@ typedef enum {
     MINUS,
     TIMES,
     DIVIDE,
+    MODULO,
     BIN_AND,
     BIN_OR,
     XOR,
