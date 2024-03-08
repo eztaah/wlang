@@ -152,13 +152,19 @@ int main(int argc, char *argv[])
     // assembling with nasm
     std::cout << "\033[96m4. assembling with nasm... \033[0m" << std::flush;
     std::string nasm_command = "nasm -f elf64 " + build_directory + "3_generator_output.asm -o " + build_directory + "4_nasm_output.o";
-    system(nasm_command.c_str());
+    if (system(nasm_command.c_str()) != 0) {
+        display_and_throw_error("nasm error");
+        return EXIT_FAILURE;
+    }
     std::cout << "\033[96mdone\033[0m" << std::endl;
 
     // liking with gnu ld
     std::cout << "\033[96m5. linking with gnu ld... \033[0m" << std::flush;
     std::string ld_command = "ld -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o" + output_location + " " + build_directory + "4_nasm_output.o -lc";
-    system(ld_command.c_str());
+    if (system(ld_command.c_str()) != 0) {
+        display_and_throw_error("GNU ld error");
+        return EXIT_FAILURE;
+    }
     std::cout << "\033[96mdone\033[0m" << std::endl;
 
     std::cout << "\n-> compilation artifacts location : \"" << build_directory << "\"" << std::endl;

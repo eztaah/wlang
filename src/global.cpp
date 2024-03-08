@@ -26,7 +26,9 @@ void display_and_throw_error(std::string error_message, int line_number)
         block2 = "line " + std::to_string(line_number) + ":";
     }
 
-    std::cerr << "\n\033[1m" << block2 << "\033[31m error: " << "\033[0m"  << error_message << "\n" << std::endl;
+    std::cerr << "\n\033[1m" << block2 << "\033[31m error: "
+              << "\033[0m" << error_message << "\n"
+              << std::endl;
 
     // handle build files
     // if (debug_flag) {
@@ -78,6 +80,8 @@ std::string token_to_string(TokenType type)
         return "MINUS";
     case DIVIDE:
         return "DIVIDE";
+    case MODULO:
+        return "MODULO";
     case EQUALS:
         return "EQUALS";
     case EQUALS_EQUALS:

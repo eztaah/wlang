@@ -25,7 +25,7 @@ Token consume(const TokenType expected_type = UNDEFINED)
     if (tokenIndex < tokens.size()) {
         Token current_token = tokens[tokenIndex++];
         if (expected_type != UNDEFINED && current_token.type != expected_type) {
-            display_and_throw_error("expected token type : \"" + token_to_string(expected_type) + "\", got (" + token_to_string(current_token.type) + ", \"" + current_token.value + "\")", 
+            display_and_throw_error("expected token type : \"" + token_to_string(expected_type) + "\", got (" + token_to_string(current_token.type) + ", \"" + current_token.value + "\")",
                                     current_token.line_number);
             exit(1);
         }
@@ -82,7 +82,7 @@ NodePtr parse_parentheses()
 
 NodePtr parse_factor()
 {
-    return parse_expression_with_priority(parse_parentheses, {TIMES, DIVIDE});
+    return parse_expression_with_priority(parse_parentheses, {TIMES, DIVIDE, MODULO});
 }
 
 NodePtr parse_add()
@@ -205,10 +205,10 @@ NodePtr parse_stmt()
     else if (tokens[tokenIndex].type == IDENTIFIER && tokens[tokenIndex + 1].type == EQUALS) {
         std::string var_name = consume(IDENTIFIER).value;
 
-        // check if the variable is declared as cst 
+        // check if the variable is declared as cst
         auto varIt = variableInfos.find(var_name);
         if (varIt != variableInfos.end() && varIt->second) {
-            display_and_throw_error("assignment of read-only variable '" + var_name + "'", 
+            display_and_throw_error("assignment of read-only variable '" + var_name + "'",
                                     tokens[tokenIndex].line_number);
             exit(1);
         }
@@ -236,7 +236,7 @@ NodePtr parse_stmt()
     }
 
     // Else, there is an error
-    display_and_throw_error("the provided code does not match any known statement pattern", 
+    display_and_throw_error("the provided code does not match any known statement pattern",
                             tokens[tokenIndex].line_number);
     exit(1);
 }

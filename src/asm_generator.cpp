@@ -4,12 +4,15 @@
 
 std::unordered_map<std::string, std::string> variables;
 int offset;
-int label_count;
+int string_label_count;
+int if_label_count;
 std::vector<std::string> data_instructions;
 std::vector<std::string> bss_instructions;
 std::vector<std::string> text_instructions;
 std::vector<std::string> start_function_instructions;
 bool printf_is_used = false;
+bool print_string = false;
+bool print_number = false;
 bool scanf_is_used = false;
 
 void generate_assembly_internal(const NodePtr &node);
@@ -20,6 +23,8 @@ std::string generate_assembly(const NodePtr &node)
     text_instructions.clear();
     bss_instructions.clear();
     offset = 0;
+    string_label_count = 0;
+    if_label_count = 0;
 
     generate_assembly_internal(node);
 
@@ -55,24 +60,27 @@ void generate_assembly_internal(const NodePtr &node)
 
         for (const NodePtr &stmt : pnode->_statements) {
             generate_assembly_internal(stmt);
-            offset -= 8;
+            // offset += 8;
         }
 
         // add extern printf or/and scanf if used
         if (printf_is_used) {
             text_instructions.push_back("extern printf");
-            data_instructions.push_back("endp_printf_content: db \"%s\", 0");
-            data_instructions.push_back("endp_str: db 10, 0");
+            data_instructions.push_back("string_placeholder: db \"%s\", 0");
 
             // printf final (bug \n)
+            data_instructions.push_back("endp_str: db 10, 0");
             start_function_instructions.push_back("; print \\n before exiting to prevent display bug");
-            start_function_instructions.push_back("mov rdi, endp_printf_content");
+            start_function_instructions.push_back("mov rdi, string_placeholder");
             start_function_instructions.push_back("mov rsi, endp_str");
             start_function_instructions.push_back("xor rax, rax");
             start_function_instructions.push_back("call printf");
         }
+
+        if (scanf_is_used || print_number) {
+            data_instructions.push_back("number_placeholder: db \"%d\", 0");
+        }
         if (scanf_is_used) {
-            data_instructions.push_back("input_format: db \"%d\", 0");
             bss_instructions.push_back("scanf_buffer resb 8");
             text_instructions.push_back("extern scanf");
         }
@@ -87,6 +95,7 @@ void generate_assembly_internal(const NodePtr &node)
     else if (VarDeclNode *vnode = dynamic_cast<VarDeclNode *>(node.get())) {
         start_function_instructions.push_back("\n; variables declaration");
         std::string var_offset = "qword [box+" + std::to_string(abs(offset)) + "]";
+        offset += 8;
         variables[vnode->_name] = var_offset;
         generate_assembly_internal(vnode->_value);
         start_function_instructions.push_back("mov " + var_offset + ", rax");
@@ -113,8 +122,8 @@ void generate_assembly_internal(const NodePtr &node)
             // Gestion de println
             for (const NodePtr &arg : fnode->_args) {
                 if (StringNode *snode = dynamic_cast<StringNode *>(arg.get())) {
-                    std::string str_label = "str_" + std::to_string(label_count++);
-                    std::string format_label = "printf_content_" + std::to_string(label_count++);
+                    std::string str_label = "str_" + std::to_string(string_label_count);
+                    string_label_count++;
 
                     // handle \n
                     std::string processed_content;
@@ -127,23 +136,20 @@ void generate_assembly_internal(const NodePtr &node)
                             processed_content.push_back(snode->_content[i]);
                         }
                     }
-
-                    data_instructions.push_back(format_label + ": db \"%s\", 0");
                     data_instructions.push_back(str_label + ": db \"" + processed_content + "\", 0");
 
                     // printf
-                    start_function_instructions.push_back("mov rdi, " + format_label);
+                    start_function_instructions.push_back("mov rdi, string_placeholder");
                     start_function_instructions.push_back("mov rsi, " + str_label);
                     start_function_instructions.push_back("xor rax, rax");
                     start_function_instructions.push_back("call printf");
                 }
                 else {
                     generate_assembly_internal(arg); // traite la numbernode
-                    std::string format_label = "printf_content_" + std::to_string(label_count++);
-                    data_instructions.push_back(format_label + ": db \"%d\", 0");
+                    print_number = true;
 
                     // printf
-                    start_function_instructions.push_back("mov rdi, " + format_label);
+                    start_function_instructions.push_back("mov rdi, number_placeholder");
                     start_function_instructions.push_back("mov rsi, rax");
                     start_function_instructions.push_back("xor rax, rax");
                     start_function_instructions.push_back("call printf");
@@ -157,11 +163,11 @@ void generate_assembly_internal(const NodePtr &node)
             scanf_is_used = true;
             start_function_instructions.push_back("\n; input");
 
-            std::string var_address = "box+" + std::to_string(std::abs(offset)); // Exemple, dépend de votre implémentation.
+            std::string var_address = "box+" + std::to_string(offset);
 
-            start_function_instructions.push_back("mov rdi, input_format"); // Adresse du format.
-            start_function_instructions.push_back("mov rsi, scanf_buffer");       // Adresse de la variable 'a'.
-            start_function_instructions.push_back("xor rax, rax");          // Parce que scanf est une fonction variadique.
+            start_function_instructions.push_back("mov rdi, number_placeholder");
+            start_function_instructions.push_back("mov rsi, scanf_buffer");
+            start_function_instructions.push_back("xor rax, rax");
             start_function_instructions.push_back("call scanf");
             start_function_instructions.push_back("mov rax, [scanf_buffer]");
         }
@@ -181,8 +187,6 @@ void generate_assembly_internal(const NodePtr &node)
         start_function_instructions.push_back("push rax");
         generate_assembly_internal(bnode->_left);
         start_function_instructions.push_back("pop rbx");
-
-        std::string true_label = "if_true_" + std::to_string(label_count);
 
         switch (bnode->_op) {
         case EQUALS_EQUALS:
@@ -257,7 +261,13 @@ void generate_assembly_internal(const NodePtr &node)
 
         case DIVIDE:
             start_function_instructions.push_back("cqo");      // Convertit rax en rdx:rax, étendant le signe
-            start_function_instructions.push_back("idiv rbx"); // Division de rdx:rax par rbx
+            start_function_instructions.push_back("idiv rbx"); // Division de rdx:rax par rbx, resulat dans rax, reste dans rdx
+            break;
+
+        case MODULO:
+            start_function_instructions.push_back("cqo");          // Convertit rax en rdx:rax, étendant le signe
+            start_function_instructions.push_back("idiv rbx");     // Division de rdx:rax par rbx, resulat dans rax, reste dans rdx
+            start_function_instructions.push_back("mov rax, rdx"); // met reste division dans rax
             break;
 
         default:
@@ -279,9 +289,10 @@ void generate_assembly_internal(const NodePtr &node)
     }
 
     else if (IfNode *inode = dynamic_cast<IfNode *>(node.get())) {
-        std::string true_label = "if_true_" + std::to_string(label_count);
-        std::string end_label = "if_end_" + std::to_string(label_count);
-        std::string else_label = "else_" + std::to_string(label_count);
+        std::string true_label = "if_true_" + std::to_string(if_label_count);
+        std::string end_label = "if_end_" + std::to_string(if_label_count);
+        std::string else_label = "else_" + std::to_string(if_label_count);
+        if_label_count++;
 
         start_function_instructions.push_back("\n; if statement");
         generate_assembly_internal(inode->_condition);
@@ -301,7 +312,6 @@ void generate_assembly_internal(const NodePtr &node)
         // true block
         start_function_instructions.push_back(true_label + ":");
         for (const NodePtr &stmt : inode->_true_block) {
-            label_count++;
             generate_assembly_internal(stmt);
         }
         start_function_instructions.push_back("jmp " + end_label);
@@ -309,7 +319,6 @@ void generate_assembly_internal(const NodePtr &node)
         if (inode->_false_block.empty() == false) {
             start_function_instructions.push_back(else_label + ":");
             for (const NodePtr &stmt : inode->_false_block) {
-                label_count++;
                 generate_assembly_internal(stmt);
             }
         }
@@ -320,9 +329,10 @@ void generate_assembly_internal(const NodePtr &node)
     }
 
     else if (WhileNode *wnode = dynamic_cast<WhileNode *>(node.get())) {
-        std::string while_label = "while_label_" + std::to_string(label_count);
-        std::string true_label = "if_true_" + std::to_string(label_count);
-        std::string end_label = "if_end_" + std::to_string(label_count);
+        std::string while_label = "while_label_" + std::to_string(if_label_count);
+        std::string true_label = "if_true_" + std::to_string(if_label_count);
+        std::string end_label = "if_end_" + std::to_string(if_label_count);
+        if_label_count++;
 
         start_function_instructions.push_back("\n; while statement");
         start_function_instructions.push_back(while_label + ":");
@@ -335,7 +345,6 @@ void generate_assembly_internal(const NodePtr &node)
         // true block
         start_function_instructions.push_back(true_label + ":");
         for (const NodePtr &stmt : wnode->_block) {
-            label_count++;
             generate_assembly_internal(stmt);
         }
         start_function_instructions.push_back("jmp " + while_label);

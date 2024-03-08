@@ -1,6 +1,10 @@
-cst a: i64 = 1
+var a: i64 = 3;
 
-print(a + 1)
+# modify variables
+a = -5
+
+print(a + 2)
+
 
 
 
