@@ -1,10 +1,10 @@
-var a: i64 = 3;
+var a: i64 = 10;
 
-# modify variables
-a = -5
+a = input()
 
-print(a + 2)
-
+print("bonjour\n")
+print(a)
+print("aurevoir\n")
 
 
 

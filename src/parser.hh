@@ -1,14 +1,14 @@
 // parser.hpp
-#ifndef PARSER_HPP
-#define PARSER_HPP
+#ifndef PARSER_HH
+#define PARSER_HH
 
 #include <memory>
 #include <string>
 #include <vector>
 
-#include "global.hpp"
+#include "global.hh"
 
 NodePtr parse(const std::vector<Token> &tokens);
 std::string &print_ast(const NodePtr &node, std::string &output, const std::string &indent = "", bool last = true, bool is_value = false);
 
-#endif // PARSER_HPP
+#endif // PARSER_HH

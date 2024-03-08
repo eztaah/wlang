@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-#include "global.hpp"
+#include "global.hh"
 
 std::vector<Token> tokens;
 size_t tokenIndex = 0;
