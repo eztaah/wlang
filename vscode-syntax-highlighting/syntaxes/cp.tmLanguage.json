@@ -25,6 +25,9 @@
         },
         {
             "include": "#string"
+        },
+        {
+            "include": "#symbols"
         }
     ],    
     "repository": {
@@ -75,7 +78,7 @@
             "patterns": [
                 {
                     "name": "support.function.cp",
-                    "match": "\\b(print|input)\\b"
+                    "match": "\\b(print|input|exit)\\b"
                 }
             ]
         },
@@ -100,6 +103,14 @@
                 {
                     "name": "string.quoted.double.cp",
                     "match": "\".*?\""
+                }
+            ]
+        },
+        "symbols": {
+            "patterns": [
+                {
+                    "name": "keyword.control.cp",
+                    "match": "[\\+\\-\\*/%&|^=!<>]"
                 }
             ]
         }

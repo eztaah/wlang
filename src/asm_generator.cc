@@ -94,7 +94,8 @@ void generate_assembly_internal(const NodePtr &node)
         }
 
         // exit
-        start_function_instructions.push_back("\n    # end of the program");
+        start_function_instructions.push_back("\n.ENDP:");
+        start_function_instructions.push_back("    # end of the program");
         start_function_instructions.push_back("    movq %rbp, %rsp");
         start_function_instructions.push_back("    pop %rbp");
         start_function_instructions.push_back("    # exit syscall");
@@ -177,6 +178,10 @@ void generate_assembly_internal(const NodePtr &node)
             start_function_instructions.push_back("    xor %rax, %rax");
             start_function_instructions.push_back("    call scanf");
             start_function_instructions.push_back("    movq buff(%rip), %rax");
+        }
+        // gestion de la fonction exit
+        else if (fnode->_name == "exit") {
+            start_function_instructions.push_back("    jmp .ENDP");
         }
         else {
             display_and_throw_internal_error("generator error");
