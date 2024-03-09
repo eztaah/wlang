@@ -114,8 +114,6 @@ int main(int argc, char *argv[])
     std::cout << "\033[96m1. lexing... \033[0m" << std::flush;
     std::vector<Token> tokens = lex(code);
     std::string lexer_output;
-    lexer_output += "LEXER OUTPUT\n";
-    lexer_output += "=> output type : std::vector<std::pair<TokenType, std::string>>\n\n";
     lexer_output += get_printable_lexer_output(tokens);
     // Write result to file
     std::ofstream output1(build_directory + "1_lexer_output.txt");
@@ -146,7 +144,7 @@ int main(int argc, char *argv[])
 
     // ASSEMBLING
     // assembling with gas ( as ./build/3_generator_output.s -o ./build/4_gas_output.o )
-    std::cout << "\033[96m4. assembling with as... \033[0m" << std::flush;
+    std::cout << "\033[96m4. assembling with gas... \033[0m" << std::flush;
     std::string gas_command = "as -o " + build_directory + "4_gas_output.o " + build_directory + "3_generator_output.s";
     if (system(gas_command.c_str()) != 0) {
         display_and_throw_error("gas error");
