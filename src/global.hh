@@ -49,6 +49,8 @@ typedef enum {
     LESS_THAN_EQUALS,
     GREATER_THAN,
     GREATER_THAN_EQUALS,
+    AND,
+    OR,
 
     UNDEFINED,
     EOF_TOKEN
