@@ -135,9 +135,6 @@ int main(int argc, char *argv[])
     output2.close();
     std::cout << "\033[96mdone\033[0m" << std::endl;
 
-    // SEMANTIC ANALYSIS
-    // analyzeAST(ast);
-
     // GENERATOR
     std::cout << "\033[96m3. generating assembly code... \033[0m" << std::flush;
     std::string asm_final_output = "";
@@ -149,7 +146,7 @@ int main(int argc, char *argv[])
     std::cout << "\033[96mdone\033[0m" << std::endl;
 
     // ASSEMBLING
-    // assembling with nasm
+    // assembling with gas ( as ./build/3_generator_output.s -o ./build/4_gas_output.o )
     std::cout << "\033[96m4. assembling with as... \033[0m" << std::flush;
     std::string gas_command = "as -o " + build_directory + "4_gas_output.o " + build_directory + "3_generator_output.s";
     if (system(gas_command.c_str()) != 0) {
@@ -158,7 +155,7 @@ int main(int argc, char *argv[])
     }
     std::cout << "\033[96mdone\033[0m" << std::endl;
 
-    // liking with gnu ld
+    // liking with gnu ld ( ld ./build/4_gas_output.o -lc -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o ./build/prog )
     std::cout << "\033[96m5. linking with gnu ld... \033[0m" << std::flush;
     std::string ld_command = "ld -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o" + output_location + " " + build_directory + "4_gas_output.o -lc";
     if (system(ld_command.c_str()) != 0) {
@@ -173,7 +170,3 @@ int main(int argc, char *argv[])
 
     return 0;
 }
-
-// as -o object.o code.s
-
-// ld -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o prog object.o -lc
