@@ -30,21 +30,6 @@ void display_and_throw_error(std::string error_message, int line_number)
               << "\033[0m" << error_message << "\n"
               << std::endl;
 
-    // handle build files
-    // if (debug_flag) {
-    //     if (area == "parser") {
-    //         std::cout << "  -> find lexer output in \"" << build_directory << "\"\n"
-    //                   << std::endl;
-    //     }
-    //     else if (area == "generator") {
-    //         std::cout << "  -> find lexer and parser outputs in \"" << build_directory << "\"\n"
-    //                   << std::endl;
-    //     }
-    // }
-    // else {
-    //     std::cout << std::endl;
-    // }
-
     // runtimes errors
     if (runtime_error_flag) {
         throw std::runtime_error(error_message);
@@ -96,6 +81,10 @@ std::string token_to_string(TokenType type)
         return "GREATER_THAN";
     case GREATER_THAN_EQUALS:
         return "GREATER_THAN_EQUALS";
+    case OR:
+        return "OR";
+    case AND:
+        return "AND";
     case LPAREN:
         return "LPAREN";
     case RPAREN:

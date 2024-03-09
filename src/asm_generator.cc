@@ -236,6 +236,14 @@ void generate_assembly_internal(const NodePtr &node)
             start_function_instructions.push_back("    or %rbx, %rax");
             break;
 
+        case AND:
+            start_function_instructions.push_back("    and %rbx, %rax");
+            break;
+
+        case OR:
+            start_function_instructions.push_back("    or %rbx, %rax");
+            break;
+
         case XOR:
             start_function_instructions.push_back("    xor %rbx, %rax");
             break;

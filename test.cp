@@ -1,6 +1,10 @@
 
-print("Hello world")
-
+if (1 == 1 || 0 == 1) {
+    print("true");
+}
+else {
+    print("false")
+}
 
 
 """

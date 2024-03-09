@@ -99,12 +99,24 @@ std::vector<Token> lex(const std::string &code)
             i++;
         }
         else if (code[i] == '&') {
-            tokens.push_back(Token(BIN_AND, "", line_number));
-            i++;
+            if (i + 1 < code.length() && code[i + 1] == '&') {
+                tokens.push_back(Token(AND, "", line_number));
+                i += 2;
+            }
+            else {
+                tokens.push_back(Token(BIN_AND, "", line_number));
+                i++;
+            }
         }
         else if (code[i] == '|') {
-            tokens.push_back(Token(BIN_OR, "", line_number));
-            i++;
+            if (i + 1 < code.length() && code[i + 1] == '|') {
+                tokens.push_back(Token(OR, "", line_number));
+                i += 2;
+            }
+            else {
+                tokens.push_back(Token(BIN_OR, "", line_number));
+                i++;
+            }
         }
         else if (code[i] == '^') {
             tokens.push_back(Token(XOR, "", line_number));
