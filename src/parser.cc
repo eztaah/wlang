@@ -240,6 +240,15 @@ NodePtr parse_stmt()
         return std::make_shared<FunctionCallNode>(token.value, args);
     }
 
+    // handle exit function
+    else if (tokens[tokenIndex].value == "exit") {
+        Token token = consume(IDENTIFIER);
+        consume(LPAREN);
+        consume(RPAREN);
+        consume(SEMICOLON);
+        return std::make_shared<FunctionCallNode>("exit");
+    }
+
     // Else, there is an error
     display_and_throw_error("the provided code does not match any known statement pattern",
                             tokens[tokenIndex].line_number);
