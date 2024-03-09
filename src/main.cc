@@ -6,7 +6,6 @@
 #include "asm_generator.hh"
 #include "lexer.hh"
 #include "parser.hh"
-#include "semantic_analysis.hh"
 
 void print_usage()
 {

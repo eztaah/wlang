@@ -1,19 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 
-#define VIDE ' '
-#define JOUEUR 'X'
-#define IA 'O'
 
 int main() {
     char grille[3][3];
-    srand(time(NULL)); // Initialisation du générateur de nombres aléatoires
-    
+
     // Initialiser la grille
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 3; j++) {
-            grille[i][j] = VIDE;
+            grille[i][j] = ' ';
         }
     }
 
@@ -25,72 +20,73 @@ int main() {
         printf("\n");
     }
 
-    int tour = 0; // 0 pour le joueur, 1 pour l'IA
+    int tour = 0; // 0 pour le joueur 1, 1 pour le joueur 2
     int etatJeu = 0; // 0 pour jeu en cours, 1 pour gagné, -1 pour match nul
-    
+
     while (1) {
         // Vérification des lignes, des colonnes et des diagonales
         etatJeu = 0;
         for (int i = 0; i < 3; i++) {
-            if (grille[i][0] == grille[i][1] && grille[i][1] == grille[i][2] && grille[i][0] != VIDE) etatJeu = 1;
-            if (grille[0][i] == grille[1][i] && grille[1][i] == grille[2][i] && grille[0][i] != VIDE) etatJeu = 1;
+            if (grille[i][0] == grille[i][1] && grille[i][1] == grille[i][2] && grille[i][0] != ' ') {
+                etatJeu = 1;
+            }
+            if (grille[0][i] == grille[1][i] && grille[1][i] == grille[2][i] && grille[0][i] != ' ') {
+                etatJeu = 1;
+            }
         }
-        if (grille[0][0] == grille[1][1] && grille[1][1] == grille[2][2] && grille[0][0] != VIDE) etatJeu = 1;
-        if (grille[0][2] == grille[1][1] && grille[1][1] == grille[2][0] && grille[0][2] != VIDE) etatJeu = 1;
+        if (grille[0][0] == grille[1][1] && grille[1][1] == grille[2][2] && grille[0][0] != ' ') {
+            etatJeu = 1;
+        } 
+        if (grille[0][2] == grille[1][1] && grille[1][1] == grille[2][0] && grille[0][2] != ' ') {
+            etatJeu = 1;
+        }
 
         // Vérification si la grille est pleine
         int grillePleine = 1;
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 3; j++) {
-                if (grille[i][j] == VIDE) {
+                if (grille[i][j] == ' ') {
                     grillePleine = 0;
                     break;
                 }
             }
-            if (!grillePleine) break;
+            if (!grillePleine) {
+                break;
+            }
         }
-        if (grillePleine) etatJeu = -1;
-        
-        if (etatJeu != 0) break; // Sortie si le jeu est terminé
+        if (grillePleine) {
+            etatJeu = -1;
+        }
 
-        if (tour == 0) {
-            // Tour du joueur
-            int x = -1, y = -1;
-            while (x < 0 || x > 2 || y < 0 || y > 2 || grille[x][y] != VIDE) {
-                printf("Entrez votre coup (ligne colonne): ");
-                scanf("%d %d", &x, &y);
-                x--; y--; // Ajustement pour l'indexation à base de zéro
+        if (etatJeu != 0) {
+            break; // Sortie si le jeu est terminé
+        }
+
+        // Tour du joueur 1 ou joueur 2
+        int x = -1, y = -1;
+        while (x < 0 || x > 2 || y < 0 || y > 2 || grille[x][y] != ' ') {
+            printf("Joueur %d, entrez votre coup (ligne colonne): ", tour + 1);
+            scanf("%d %d", &x, &y);
+            x--; y--; // Ajustement pour l'indexation à base de zéro
+        }
+
+        grille[x][y] = (tour == 0) ? 'X' : 'O';
+        tour = 1 - tour; // Changement de tour
+
+        // Afficher la grille à chaque tour
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                printf("[%c]", grille[i][j]);
             }
-
-            grille[x][y] = JOUEUR;
-            tour = 1;
-        } else {
-            // Tour de l'IA
-            int x, y;
-            x = rand() % 3;
-            y = rand() % 3;
-            while (grille[x][y] != VIDE) {
-                x = rand() % 3;
-                y = rand() % 3;
-            }
-
-            grille[x][y] = IA;
-            tour = 0;
-
-            // Afficher la grille à chaque tour de l'IA
-            for (int i = 0; i < 3; i++) {
-                for (int j = 0; j < 3; j++) {
-                    printf("[%c]", grille[i][j]);
-                }
-                printf("\n");
-            }
+            printf("\n");
         }
     }
 
     // Afficher le résultat final
     if (etatJeu == 1) {
-        printf("Fin du jeu ! Le %s gagne !\n", tour == 1 ? "joueur" : "IA");
-    } else {
+        printf("Fin du jeu ! Le joueur %d gagne !\n", (tour == 0) ? 2 : 1);
+    } 
+    else {
         printf("Match nul !\n");
     }
 

@@ -110,6 +110,11 @@ NodePtr parse_bin_or()
     return parse_expression_with_priority(parse_xor, {BIN_OR});
 }
 
+NodePtr par_bool_op()
+{
+    return parse_expression_with_priority(parse_bin_or, {EQUALS_EQUALS, NOT_EQUALS, LESS_THAN, LESS_THAN_EQUALS, GREATER_THAN, GREATER_THAN_EQUALS});
+}
+
 NodePtr parse_expr()
 {
     // handle input function
@@ -122,7 +127,7 @@ NodePtr parse_expr()
     }
 
     // Binary expression
-    return parse_expression_with_priority(parse_bin_or, {EQUALS_EQUALS, NOT_EQUALS, LESS_THAN, LESS_THAN_EQUALS, GREATER_THAN, GREATER_THAN_EQUALS});
+    return parse_expression_with_priority(par_bool_op, {AND, OR});
 }
 
 std::vector<NodePtr> parse_block()
