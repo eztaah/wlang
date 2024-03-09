@@ -1,10 +1,5 @@
-var a: i64 = 10;
 
-a = input()
-
-print("bonjour\n")
-print(a)
-print("aurevoir\n")
+print("Hello world")
 
 
 
