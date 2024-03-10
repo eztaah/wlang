@@ -1,6 +1,7 @@
 compiler
 prog
 .vscode/
+!docs/.vscode/
 build/
 
 # Prerequisites

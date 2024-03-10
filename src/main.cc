@@ -61,7 +61,7 @@ int main(int argc, char *argv[])
             }
         }
         else if (std::string(argv[i]) == "-d" || std::string(argv[i]) == "--dev-mode") {
-            debug_flag = true;
+            dev_mode = true;
         }
         else if (std::string(argv[i]) == "-r" || std::string(argv[i]) == "--runtime-error") {
             runtime_error_flag = true;

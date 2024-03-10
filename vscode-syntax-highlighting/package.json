@@ -1,9 +1,9 @@
 {
-  "name": "cp",
-  "displayName": ".cp",
-  "description": "syntax highlighting for .cp files",
+  "name": "w",
+  "displayName": ".w",
+  "description": "syntax highlighting for .w files",
   "publisher": "eztaah",
-  "license": "Apache-2.0 license",
+  "license": "MIT",
   "version": "1.0.0",
   "bugs": {
     "url": "https://github.com/eztaah/compiler/issues"
@@ -16,19 +16,19 @@
     "vscode": "^1.50.0"
   },
   "categories": [
-    "Other"
+    "Programming Languages"
   ],
   "contributes": {
     "languages": [{
-      "id": "cp",
-      "aliases": [".cp"],
-      "extensions": [".cp"],
+      "id": "w",
+      "aliases": [".w"],
+      "extensions": [".w"],
       "configuration": "./language-configuration.json"
     }],
     "grammars": [{
-      "language": "cp",
-      "scopeName": "source.cp",
-      "path": "./syntaxes/cp.tmLanguage.json"
+      "language": "w",
+      "scopeName": "source.w",
+      "path": "./syntaxes/w.tmLanguage.json"
     }]
   }
 }
