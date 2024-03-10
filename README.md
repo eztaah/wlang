@@ -1,51 +1,94 @@
-```
-- the exension name is cp
-- check the vscode extension for syntax highlighting
-```
+# Compiler
 
+This program can compile code (written with the syntax specified above) to x86_64 GNU assembly.
 
-## Syntax 
+A Visual Studio Code extension is available for syntax highlighting :    
+[https://marketplace.visualstudio.com/items?itemName=eztaah.w](https://marketplace.visualstudio.com/items?itemName=eztaah.w)
+
+<br>
+
+## Language syntax 
 
 ```python
-# this is a comment
+# ---- VARIABLES ----
 
-"""
-this is a multi-line comment
+# declare decimal variable
+var a: i64 = 2
 
-- negative number are not supported
-- i64 is the only type supported
-- for loops are not supported
-"""
-
-# declare variables
-# all of these operators are supported and follow this order ( ./docs/operator-order.txt )
-var a: i64 = 3 ^ 4 | 8 + 7 * 4 << 1 - 8 >> 2 & 4 // 2;
-
-# modify variables
-a = 0
+# declare binary variable
+var b: i64 = 0b1011
 
 # declare constants
-cst b: i64 = (1 + 2) * 3; 
+cst c: i64 = -7
 
-# print function
-print(a);
-print("b is equal to : ", b, "\n");
+# modify variable
+a = 3
 
-# input function
-a = input();        # for exemple we enter 5
+# i64 is the only supported type
+# you cannot initialize variables without assigning them a value.
 
-# if statement
-if (a == 5) {
-    print("wow, a is equal to 5\n");
+
+
+# ---- BLOCKS ----
+
+# if
+if (a == 1) {
+    # ...
 }
 else {
-    print("...");
+    # ...
 }
 
 # while loop
-while (a < b) {
-    a = a + 1;
+while (a < 12) {
+    # ...
 }
+
+# elif is not supported 
+# for loops are not supported
+
+
+
+# ---- LIBRARIE ----
+
+# you have access to 3 built in functions
+
+# print
+# -> print number, variable or string to the standard ouput, need to \n manually
+print(1 + 1)
+print("Hello")
+print(a)
+print("The value is ", a, "\n")
+
+# input
+# -> store the user input to a variable, only support integer
+a = input()
+
+# exit
+# exit the program with 0, (you can't specify an exit code)
+exit()
+
+
+
+# ---- OPERATIONS ----
+
+# basic
++    *
+-    //
+%    
+
+# binary
+&    |
+^
+
+# bool
+==    !=
+<=    >=
+<     >
+&&    ||
+
+# all of these operators are supported and follow this order ( ./docs/operator-order.txt )
+# you can use parentheses
 ``` 
 
 <br>

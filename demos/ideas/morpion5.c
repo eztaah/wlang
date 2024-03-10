@@ -10,7 +10,7 @@
 int main() {
     // Initialisation
     int i = 0;
-    int grille = 0b000000000000000000;
+    int grille = 0;
     int tour = 0;
     int etat_jeu = 0;
 
@@ -24,11 +24,13 @@ int main() {
         i = i + 1;
     }
 
+    // Game loop
     while (1) {
+
         // Demande à l'utilisateur de choisir la position de son coup
         int x = -1;
         int y = -1;
-        while (x < 0 || x > 2 || y < 0 || y > 2 || (((grille >> (2*(x*3+y))) & 3) != 0)) {
+        while (x < 0 || x > 2 || y < 0 || y > 2 || (((grille >> (2*(x*3+y))) & 0b11) != 0)) {
             printf("Joueur %d, entrez votre coup (ligne colonne): ", tour + 1);
             scanf("%d %d", &x, &y);
             x--; y--;
@@ -41,8 +43,8 @@ int main() {
         i = 0;
         while (i < 3) {
             // lignes
-            int ligne = (grille >> (2*i*3)) & 0b000000000000111111; // extrait les 6 bits représentant une ligne
-            if ((ligne == 0b000000000000010101) || (ligne == 0b000000000000101010)) {
+            int ligne = (grille >> (2*i*3)) & 0b111111; // extrait les 6 bits représentant une ligne
+            if ((ligne == 0b010101) || (ligne == 0b101010)) {
                 etat_jeu = 1;
             }
             // colonnes
@@ -62,12 +64,12 @@ int main() {
         // Afficher la grille à chaque tour
         i = 0;
         while (i < 9) {
-            int c;
-            if (((grille >> (2*i)) & 0b000000000000000011) == 0b000000000000000000) {
+            int c = -1;
+            if (((grille >> (2*i)) & 0b11) == 0) {
                 c = 0;
             }
             else {
-                if (((grille >> (2*i)) & 0b000000000000000011) == 0b000000000000000001) {
+                if (((grille >> (2*i)) & 0b11) == 1) {
                     c = 1;
                 }
                 else {

@@ -2,7 +2,7 @@
 
 #include "global.hh"
 
-bool debug_flag = false;
+bool dev_mode = false;
 bool runtime_error_flag = false;
 std::string build_directory = "build";
 std::string output_location = "prog";
