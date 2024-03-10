@@ -6,7 +6,7 @@
 #include <vector>
 
 // define flags
-extern bool debug_flag;
+extern bool dev_mode;
 extern bool runtime_error_flag;
 extern std::string build_directory;
 extern std::string output_location;
@@ -62,11 +62,11 @@ void display_and_throw_internal_error(std::string error_message);
 void display_and_throw_error(std::string error_message, int line_number = -1);
 
 struct Token {
+    int line_number;
     TokenType type;
     std::string value;
-    int line_number;
 
-    Token(TokenType type, std::string value, int line_number) : type(type), value(value), line_number(line_number) {}
+    Token(int line_number, TokenType type, std::string value) : line_number(line_number), type(type), value(value) {}
 };
 
 class Node {

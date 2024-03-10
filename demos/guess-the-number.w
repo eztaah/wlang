@@ -2,7 +2,6 @@ var input_number: i64 = 0
 var attempts: i64 = 0
 var mystery_number: i64 = 10
 
-
 print("Guess the number (between 1 and 100): \n")
 
 while (input_number != mystery_number) {

@@ -1,6 +1,6 @@
 {
 	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
-	"name": "cp",
+	"name": "w",
     "patterns": [
         {
             "include": "#comment"
@@ -34,16 +34,16 @@
         "comment": {
             "patterns": [
                 {
-                    "name": "comment.line.cp",
+                    "name": "comment.line.w",
                     "match": "#.+"
                 },
                 {
-                    "name": "comment.block.cp",
+                    "name": "comment.block.w",
                     "begin": "\"\"\"",
                     "end": "\"\"\"",
                     "patterns": [
                         {
-                            "name": "comment.block.cp",
+                            "name": "comment.block.w",
                             "match": ".|\n"
                         }
                     ]
@@ -53,7 +53,7 @@
         "variable": {
             "patterns": [
                 {
-                    "name": "keyword.declaration.var.cp",
+                    "name": "keyword.declaration.var.w",
                     "match": "\\bvar\\b"
                 }
             ]
@@ -61,7 +61,7 @@
         "constant": {
             "patterns": [
                 {
-                    "name": "keyword.declaration.cst.cp",
+                    "name": "keyword.declaration.cst.w",
                     "match": "\\bcst\\b"
                 }
             ]
@@ -77,7 +77,7 @@
         "functions": {
             "patterns": [
                 {
-                    "name": "support.function.cp",
+                    "name": "support.function.w",
                     "match": "\\b(print|input|exit)\\b"
                 }
             ]
@@ -85,7 +85,7 @@
         "control-structures": {
             "patterns": [
                 {
-                    "name": "keyword.control.cp",
+                    "name": "keyword.control.w",
                     "match": "\\b(if|else|while)\\b"
                 }
             ]
@@ -93,15 +93,15 @@
         "number": {
             "patterns": [
                 {
-                    "name": "constant.numeric.cp",
-                    "match": "\\b\\d+\\.?\\d*\\b"
+                    "name": "constant.numeric.w",
+                    "match": "\\b(0b[01]+|\\d+\\.?\\d*)\\b"
                 }
             ]
         },
         "string": {
             "patterns": [
                 {
-                    "name": "string.quoted.double.cp",
+                    "name": "string.quoted.double.w",
                     "match": "\".*?\""
                 }
             ]
@@ -109,11 +109,11 @@
         "symbols": {
             "patterns": [
                 {
-                    "name": "keyword.control.cp",
+                    "name": "keyword.control.w",
                     "match": "[\\+\\-\\*/%&|^=!<>]"
                 }
             ]
         }
     },
-	"scopeName": "source.cp"
+	"scopeName": "source.w"
 }
