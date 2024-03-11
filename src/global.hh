@@ -5,11 +5,13 @@
 #include <string>
 #include <vector>
 
+
 // define flags
 extern bool dev_mode;
+extern bool to_executable;
 extern bool runtime_error_flag;
-extern std::string build_directory;
-extern std::string output_location;
+extern std::string output_directory;
+extern int var_decl_count;
 
 typedef enum {
     CST,
@@ -33,7 +35,7 @@ typedef enum {
     IF,
     ELSE,
 
-    SEMICOLON,
+    END_LINE,
     COMMA,
     QUOTE,
     LPAREN,
@@ -70,49 +72,45 @@ struct Token {
 };
 
 class Node {
-  public:
+    public:
     virtual ~Node() = default;
 };
 
 typedef std::shared_ptr<Node> NodePtr;
 
 class NumberNode : public Node {
-  public:
+    public:
     NumberNode(int value) : _value(value) {}
     int _value;
 };
 
 class StringNode : public Node {
-  public:
+    public:
     StringNode(std::string content) : _content(content) {}
     std::string _content;
 };
 
 class VarRefNode : public Node {
-  public:
+    public:
     VarRefNode(const std::string &name) : _name(name) {}
     std::string _name;
 };
 
 class BinOpNode : public Node {
-  public:
-    BinOpNode(NodePtr left, const TokenType &op, NodePtr right)
-        : _left(left), _op(op), _right(right) {}
+    public:
+    BinOpNode(int line_number, NodePtr left, const TokenType &op, NodePtr right)
+        : _line_number(line_number), _left(left), _op(op), _right(right) {}
+    int _line_number;
     NodePtr _left;
     TokenType _op;
     NodePtr _right;
 };
 
-class ExpressionNode : public Node {
-  public:
-    ExpressionNode(NodePtr expression) : _expression(expression) {}
-    NodePtr _expression;
-};
-
-class VarDeclNode : public Node { // VarDeclStatement
-  public:
-    VarDeclNode(bool constant, std::string type, const std::string &name, NodePtr value)
-        : _constant(constant), _type(type), _name(name), _value(value) {}
+class VarDeclNode : public Node {
+    public:
+    VarDeclNode(int line_number, bool constant, std::string type, const std::string &name, NodePtr value)
+        : _line_number(line_number), _constant(constant), _type(type), _name(name), _value(value) {}
+    int _line_number;
     bool _constant;
     std::string _type;
     std::string _name;
@@ -120,15 +118,16 @@ class VarDeclNode : public Node { // VarDeclStatement
 };
 
 class VarModifNode : public Node {
-  public:
-    VarModifNode(const std::string &name, NodePtr value)
-        : _name(name), _value(value) {}
+    public:
+    VarModifNode(int line_number, const std::string &name, NodePtr value)
+        : _line_number(line_number), _name(name), _value(value) {}
+    int _line_number;
     std::string _name;
     NodePtr _value;
 };
 
-class IfNode : public Node { // IfStatement
-  public:
+class IfNode : public Node {
+    public:
     IfNode(NodePtr condition, std::vector<NodePtr> true_block, std::vector<NodePtr> false_block = {})
         : _condition(condition), _true_block(true_block), _false_block(false_block) {}
     NodePtr _condition;
@@ -137,29 +136,24 @@ class IfNode : public Node { // IfStatement
 };
 
 class WhileNode : public Node {
-  public:
+    public:
     WhileNode(NodePtr condition, std::vector<NodePtr> block)
         : _condition(condition), _block(block) {}
     NodePtr _condition;
     std::vector<NodePtr> _block;
 };
 
-class ExpressionStatementNode : public Node {
-  public:
-    ExpressionStatementNode(NodePtr expression) : _expression(expression) {}
-    NodePtr _expression;
-};
-
 class FunctionCallNode : public Node {
-  public:
-    FunctionCallNode(const std::string &name, const std::vector<NodePtr> &args = {})
-        : _name(name), _args(args) {}
+    public:
+    FunctionCallNode(int line_number, const std::string &name, const std::vector<NodePtr> &args = {})
+        : _line_number(line_number), _name(name), _args(args) {}
+    int _line_number;
     std::string _name;
     std::vector<NodePtr> _args;
 };
 
 class ProgramNode : public Node {
-  public:
+    public:
     ProgramNode(const std::vector<NodePtr> &statements)
         : _statements(statements) {}
     std::vector<NodePtr> _statements;

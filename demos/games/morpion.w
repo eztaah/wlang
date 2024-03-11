@@ -110,7 +110,7 @@ while (1) {
             }
         } 
         else {
-            print("It's a draw!\n");
+            print("It's a draw!\n")
         }
         exit()
     }

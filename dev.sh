@@ -5,7 +5,7 @@ make debug
 
 echo 
 echo "$ ./compiler test.w -b ./build -o ./build/prog --dev-mode"
-./compiler test.cp -b build -o build/prog
+./compiler test.w -b ./build -o ./build/prog --dev-mode
 
 echo
 echo "$ ./build/prog"

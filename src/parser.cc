@@ -7,11 +7,12 @@
 
 #include "global.hh"
 
+
 std::vector<Token> tokens;
-size_t tokenIndex = 0;
+size_t token_index = 0;
 std::unordered_map<std::string, bool> variableInfos;
 
-// Ensures all functions are defined before execution
+// define some functions 
 NodePtr parse_prog();
 NodePtr parse_stmt();
 NodePtr parse_if();
@@ -22,8 +23,8 @@ NodePtr parse_term();
 
 Token consume(const TokenType expected_type = UNDEFINED)
 {
-    if (tokenIndex < tokens.size()) {
-        Token current_token = tokens[tokenIndex++];
+    if (token_index < tokens.size()) {
+        Token current_token = tokens[token_index++];
         if (expected_type != UNDEFINED && current_token.type != expected_type) {
             display_and_throw_error("expected token type : \"" + token_to_string(expected_type) + "\", got (" + token_to_string(current_token.type) + ", \"" + current_token.value + "\")",
                                     current_token.line_number);
@@ -38,15 +39,15 @@ Token consume(const TokenType expected_type = UNDEFINED)
 
 NodePtr parse_term()
 {
-    if (tokens[tokenIndex].type == NUMBER) {
+    if (tokens[token_index].type == NUMBER) {
         Token token = consume(NUMBER);
         return std::make_shared<NumberNode>(std::stoi(token.value));
     }
-    else if (tokens[tokenIndex].type == IDENTIFIER) {
+    else if (tokens[token_index].type == IDENTIFIER) {
         Token token = consume(IDENTIFIER);
         return std::make_shared<VarRefNode>(token.value);
     }
-    else if (tokens[tokenIndex].type == QUOTE) {
+    else if (tokens[token_index].type == QUOTE) {
         consume(QUOTE);
         Token token = consume(IDENTIFIER);
         NodePtr res = std::make_shared<StringNode>(token.value);
@@ -58,20 +59,20 @@ NodePtr parse_term()
     exit(1);
 }
 
-NodePtr parse_expression_with_priority(std::function<NodePtr()> parseLowerPriority, const std::vector<TokenType> &operators)
+NodePtr parse_expression_with_priority(std::function<NodePtr()> parse_lower_priority, const std::vector<TokenType> &operators)
 {
-    NodePtr left = parseLowerPriority();
-    while (tokenIndex < tokens.size() && std::find(operators.begin(), operators.end(), tokens[tokenIndex].type) != operators.end()) {
-        TokenType op = consume().type;
-        NodePtr right = parseLowerPriority();
-        left = std::make_shared<BinOpNode>(left, op, right);
+    NodePtr left = parse_lower_priority();
+    while (token_index < tokens.size() && std::find(operators.begin(), operators.end(), tokens[token_index].type) != operators.end()) {
+        Token token = consume();
+        NodePtr right = parse_lower_priority();
+        left = std::make_shared<BinOpNode>(token.line_number, left, token.type, right);
     }
     return left;
 }
 
 NodePtr parse_parentheses()
 {
-    if (tokens[tokenIndex].type == LPAREN) {
+    if (tokens[token_index].type == LPAREN) {
         consume(LPAREN);
         NodePtr expr = parse_expr();
         consume(RPAREN);
@@ -118,15 +119,14 @@ NodePtr par_bool_op()
 NodePtr parse_expr()
 {
     // handle input function
-    if (tokens[tokenIndex].value == "input") {
-        // Input function
-        consume(IDENTIFIER);
+    if (tokens[token_index].value == "input") {
+        int line_number = consume(IDENTIFIER).line_number;
         consume(LPAREN);
         consume(RPAREN);
-        return std::make_shared<FunctionCallNode>("input");
+        return std::make_shared<FunctionCallNode>(line_number, "input");
     }
 
-    // Binary expression
+    // binary expression
     return parse_expression_with_priority(par_bool_op, {AND, OR});
 }
 
@@ -134,7 +134,7 @@ std::vector<NodePtr> parse_block()
 {
     consume(LBRACE);
     std::vector<NodePtr> statements;
-    while (tokenIndex < tokens.size() && tokens[tokenIndex].type != RBRACE) {
+    while (token_index < tokens.size() && tokens[token_index].type != RBRACE) {
         statements.push_back(parse_stmt());
     }
     consume(RBRACE);
@@ -148,7 +148,7 @@ NodePtr parse_if()
     NodePtr condition = parse_expr();
     consume(RPAREN);
     std::vector<NodePtr> true_branch = parse_block();
-    if (tokens[tokenIndex].type == ELSE) {
+    if (tokens[token_index].type == ELSE) {
         consume(ELSE);
         std::vector<NodePtr> false_branch = parse_block();
         return std::make_shared<IfNode>(condition, true_branch, false_branch);
@@ -171,20 +171,23 @@ NodePtr parse_while()
 NodePtr parse_stmt()
 {
     // handle if statements
-    if (tokens[tokenIndex].type == IF) {
+    if (tokens[token_index].type == IF) {
         return parse_if();
     }
 
     // handle while statement
-    else if (tokens[tokenIndex].type == WHILE) {
+    else if (tokens[token_index].type == WHILE) {
         return parse_while();
     }
 
     // handle variable declaration
-    else if ((tokens[tokenIndex].type == VAR || tokens[tokenIndex].type == CST)) {
+    else if ((tokens[token_index].type == VAR || tokens[token_index].type == CST)) {
+
+        var_decl_count++;
+        
         // handling constant
         bool constant;
-        if (tokens[tokenIndex].type == VAR) {
+        if (tokens[token_index].type == VAR) {
             consume(VAR);
             constant = false;
         }
@@ -200,65 +203,66 @@ NodePtr parse_stmt()
         // handling content
         consume(EQUALS);
         NodePtr value = parse_expr();
-        consume(SEMICOLON);
+        int line_number = consume(END_LINE).line_number;
         // add variable to the map
         variableInfos.insert({var_name, constant});
 
-        return std::make_shared<VarDeclNode>(constant, type, var_name, value);
+        return std::make_shared<VarDeclNode>(line_number, constant, type, var_name, value);
     }
+
     // handle variable modifiaction
-    else if (tokens[tokenIndex].type == IDENTIFIER && tokens[tokenIndex + 1].type == EQUALS) {
+    else if (tokens[token_index].type == IDENTIFIER && tokens[token_index + 1].type == EQUALS) {
         std::string var_name = consume(IDENTIFIER).value;
 
         // check if the variable is declared as cst
         auto varIt = variableInfos.find(var_name);
         if (varIt != variableInfos.end() && varIt->second) {
             display_and_throw_error("assignment of read-only variable '" + var_name + "'",
-                                    tokens[tokenIndex].line_number);
+                                    tokens[token_index].line_number);
             exit(1);
         }
 
-        consume(EQUALS);
+        int line_number = consume(EQUALS).line_number;
         NodePtr value = parse_expr();
-        consume(SEMICOLON);
-        return std::make_shared<VarModifNode>(var_name, value);
+        consume(END_LINE);
+        return std::make_shared<VarModifNode>(line_number, var_name, value);
     }
 
     // handle print function
-    else if (tokens[tokenIndex].value == "print") {
+    else if (tokens[token_index].value == "print") {
         Token token = consume(IDENTIFIER);
         consume(LPAREN);
         std::vector<NodePtr> args;
-        while (tokens[tokenIndex].type != RPAREN) {
+        while (tokens[token_index].type != RPAREN) {
             args.push_back(parse_expr());
-            if (tokens[tokenIndex].type == COMMA) {
+            if (tokens[token_index].type == COMMA) {
                 consume(COMMA);
             }
         }
         consume(RPAREN);
-        consume(SEMICOLON);
-        return std::make_shared<FunctionCallNode>(token.value, args);
+        consume(END_LINE);
+        return std::make_shared<FunctionCallNode>(token.line_number, token.value, args);
     }
 
     // handle exit function
-    else if (tokens[tokenIndex].value == "exit") {
+    else if (tokens[token_index].value == "exit") {
         Token token = consume(IDENTIFIER);
         consume(LPAREN);
         consume(RPAREN);
-        consume(SEMICOLON);
-        return std::make_shared<FunctionCallNode>("exit");
+        consume(END_LINE);
+        return std::make_shared<FunctionCallNode>(token.line_number, "exit");
     }
 
-    // Else, there is an error
+    // else, there is an error
     display_and_throw_error("the provided code does not match any known statement pattern",
-                            tokens[tokenIndex].line_number);
+                            tokens[token_index].line_number);
     exit(1);
 }
 
 NodePtr parse_prog()
 {
     std::vector<NodePtr> statements;
-    while (tokenIndex < tokens.size() && tokens[tokenIndex].type != EOF_TOKEN) {
+    while (token_index < tokens.size() && tokens[token_index].type != EOF_TOKEN) {
         statements.push_back(parse_stmt());
     }
     return std::make_shared<ProgramNode>(statements);
@@ -267,13 +271,13 @@ NodePtr parse_prog()
 NodePtr parse(const std::vector<Token> &inputTokens)
 {
     tokens = inputTokens;
-    tokenIndex = 0;
+    token_index = 0;
     return parse_prog();
 }
 
 std::string &print_ast(const NodePtr &node, std::string &output, const std::string &indent = "", bool last = true, bool is_value = false)
 {
-    // Branch symbol management
+    // branch symbol management
     std::string branch;
     if (is_value) {
         branch = "";
@@ -287,7 +291,7 @@ std::string &print_ast(const NodePtr &node, std::string &output, const std::stri
         }
     }
 
-    // Indentation management
+    // indentation management
     std::string next_indent = indent;
     if (last) {
         next_indent += "   ";
@@ -296,7 +300,7 @@ std::string &print_ast(const NodePtr &node, std::string &output, const std::stri
         next_indent += "│  ";
     }
 
-    // Checking the current node type
+    // checking the current node type
     if (ProgramNode *pnode = dynamic_cast<ProgramNode *>(node.get())) {
         output += indent + "ProgramNode" + "\n";
         for (size_t i = 0; i < pnode->_statements.size(); ++i) {
@@ -341,6 +345,7 @@ std::string &print_ast(const NodePtr &node, std::string &output, const std::stri
 
     else if (BinOpNode *bnode = dynamic_cast<BinOpNode *>(node.get())) {
         output += indent + branch + "BinOpNode" + "\n";
+        output += next_indent + "├─ line_number: " + std::to_string(bnode->_line_number) + "\n";
         output += next_indent + "├─ op: " + token_to_string(bnode->_op) + "\n";
         output += next_indent + "├─ left: " + "\n";
         print_ast(bnode->_left, output, next_indent + "│  ", false);
@@ -357,6 +362,7 @@ std::string &print_ast(const NodePtr &node, std::string &output, const std::stri
 
     else if (VarDeclNode *vnode = dynamic_cast<VarDeclNode *>(node.get())) {
         output += indent + branch + "VarDeclNode" + "\n";
+        output += next_indent + "├─ line_number: " + std::to_string(vnode->_line_number) + "\n";
         output += next_indent + "├─ constant: " + std::to_string(vnode->_constant) + "\n";
         output += next_indent + "├─ name: " + vnode->_name + "\n";
         output += next_indent + "├─ type: " + vnode->_type + "\n";
@@ -367,6 +373,7 @@ std::string &print_ast(const NodePtr &node, std::string &output, const std::stri
     }
     else if (VarModifNode *vnode = dynamic_cast<VarModifNode *>(node.get())) {
         output += indent + branch + "VarModifNode" + "\n";
+        output += next_indent + "├─ line_number: " + std::to_string(vnode->_line_number) + "\n";
         output += next_indent + "├─ name: " + vnode->_name + "\n";
         output += next_indent + "└─ value: " + "\n";
         if (vnode->_value) {
@@ -376,6 +383,7 @@ std::string &print_ast(const NodePtr &node, std::string &output, const std::stri
 
     else if (FunctionCallNode *funccallnode = dynamic_cast<FunctionCallNode *>(node.get())) {
         output += indent + branch + "FunctionCall" + "\n";
+        output += next_indent + "├─ line_number: " + std::to_string(funccallnode->_line_number) + "\n";
         output += next_indent + "├─ name: " + funccallnode->_name + "\n";
         output += next_indent + "├─ arguments: " + "\n";
         for (NodePtr arg : funccallnode->_args) {
