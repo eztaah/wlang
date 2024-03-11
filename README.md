@@ -95,7 +95,6 @@ exit()
 
 ## How to use the compiler
 
-Ensure you have `nasm` and `GNU ld` installed on your Linux system.
 ```
 $ compiler --help                                    
 Usage:
@@ -104,10 +103,13 @@ Usage:
     compiler --help                 display this help message and exit.
 
 Options:
-    -o, --output <executable>       Specify the location and name of the output executable (default: ./prog).
-    -b, --build-dir <directory>     Specify the build directory for intermediate files. (default: ./build/)
+    -o, --output-dir <directory>    specify the output directory. (default: ./out/)
     -d, --dev-mode                  activate dev mode
-    -r, --runtime-error             throw runtime errors when an error occur
+    -r, --runtime-error             throw runtime errors when an error occurs (useful for debugging)
+
+    -e, --to-executable             assemble and link the generated assembly code into an executable
+                                        - GNU assembler (as) and GNU linker (ld) will be needed during compilation time.
+                                        - the generated executable will only be able to run on x86_64 CPUs and in a Linux environment.
 ``` 
 
 <br>

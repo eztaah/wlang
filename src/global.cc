@@ -2,10 +2,12 @@
 
 #include "global.hh"
 
+
 bool dev_mode = false;
+bool to_executable = false;
 bool runtime_error_flag = false;
-std::string build_directory = "build";
-std::string output_location = "prog";
+std::string output_directory = "out";
+int var_decl_count = 0;
 
 void display_and_throw_internal_error(std::string error_message)
 {
@@ -109,8 +111,8 @@ std::string token_to_string(TokenType type)
         return "IDENTIFIER";
     case EOF_TOKEN:
         return "EOF_TOKEN";
-    case SEMICOLON:
-        return "SEMICOLON";
+    case END_LINE:
+        return "END_LINE";
     default:
         display_and_throw_internal_error("in token_to_string(): \'" + std::to_string(type) + "\' does not have string equivalent");
         exit(1);

@@ -7,6 +7,7 @@
 
 #include "global.hh"
 
+
 std::string generate_assembly(const NodePtr &node);
 
 #endif // ASSEMBLY_GENERATOR_HH

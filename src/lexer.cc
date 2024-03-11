@@ -7,6 +7,7 @@
 
 #include "lexer.hh"
 
+
 std::string binaryToDecimal(const std::string &binary)
 {
     int decimal = 0;
@@ -28,15 +29,14 @@ std::vector<Token> lex(const std::string &code)
 
     while (i < code.length()) {
 
-        // Ignoring comments
+        // ignoring comments
         if (code[i] == '#') {
             while (i < code.length() && code[i] != '\n') {
                 i++;
             }
-            line_number++;
         }
 
-        // Ignoring multi-lines comments
+        // ignoring multi-lines comments
         else if (i + 2 < code.length() && code[i] == '"' && code[i + 1] == '"' && code[i + 2] == '"') {
             i += 3;
             line_number++;
@@ -53,25 +53,19 @@ std::vector<Token> lex(const std::string &code)
 
         // handle \n
         else if (code[i] == '\n') {
-
-            // Vérifiez le token précédent pour décider si un point-virgule implicite est nécessaire
-            if (!tokens.empty() && tokens.back().type != LBRACE && tokens.back().type != SEMICOLON && tokens.back().type != RBRACE) {
-                // Ajoutez un point-virgule seulement si le dernier token n'était pas une accolade ouvrante,
-                // une accolade fermante ou déjà un point-virgule
-                tokens.push_back(Token(line_number, SEMICOLON, ""));
+            if (!tokens.empty() && tokens.back().type != LBRACE && tokens.back().type != END_LINE && tokens.back().type != RBRACE) {
+                tokens.push_back(Token(line_number, END_LINE, ""));
             }
-
-            // Passer les sauts de ligne supplémentaires
+            // Skip extra line breaks
             while (i + 1 < code.length() && code[i + 1] == '\n') {
                 i++;
                 line_number++;
             }
-
             line_number++;
             i++;
         }
 
-        // Handling binary and hexadecimal numbers
+        // handling binary and hexadecimal numbers
         else if (code[i] == '0' && i + 1 < code.length() && code[i + 1] == 'b') {
             std::string num = "";
             i += 2;
@@ -83,7 +77,7 @@ std::vector<Token> lex(const std::string &code)
             tokens.push_back(Token(line_number, NUMBER, num));
         }
 
-        // Handling numbers and minus operator
+        // handling numbers and minus operator
         else if (code[i] == '-') {
             if (i + 1 < code.length() && isdigit(code[i + 1])) {
                 std::string num = "-";
@@ -108,7 +102,7 @@ std::vector<Token> lex(const std::string &code)
             tokens.push_back(Token(line_number, NUMBER, num));
         }
 
-        // Handling operators
+        // handling operators
         else if (code[i] == '+') {
             tokens.push_back(Token(line_number, PLUS, ""));
             i++;
@@ -150,7 +144,7 @@ std::vector<Token> lex(const std::string &code)
             i++;
         }
 
-        // Handling =, ==, >, <=, etc
+        // handling =, ==, >, <=, etc
         else if (code[i] == '=') {
             if (i + 1 < code.length() && code[i + 1] == '=') {
                 tokens.push_back(Token(line_number, EQUALS_EQUALS, ""));
@@ -194,11 +188,7 @@ std::vector<Token> lex(const std::string &code)
             }
         }
 
-        // Handling symbols
-        else if (code[i] == ';') {
-            tokens.push_back(Token(line_number, SEMICOLON, ""));
-            i++;
-        }
+        // handling symbols
         else if (code[i] == '(') {
             tokens.push_back(Token(line_number, LPAREN, ""));
             i++;
@@ -224,7 +214,7 @@ std::vector<Token> lex(const std::string &code)
             i++;
         }
 
-        // Handling strings
+        // handling strings
         else if (code[i] == '"') {
             tokens.push_back(Token(line_number, QUOTE, ""));
             i++;
@@ -238,14 +228,14 @@ std::vector<Token> lex(const std::string &code)
             i++;
         }
 
-        // Handling variables and keywords
+        // handling variables and keywords
         else if (isalpha(code[i])) {
             std::string ident;
             while (i < code.length() && (isalpha(code[i]) || isdigit(code[i]) || code[i] == '_')) {
                 ident += code[i];
                 i++;
             }
-            // Handling keywords
+            // handling keywords
             if (ident == "cst") {
                 tokens.push_back(Token(line_number, CST, ""));
             }
@@ -271,18 +261,18 @@ std::vector<Token> lex(const std::string &code)
             }
         }
 
-        // Ignoring spaces, tabs, new lines
+        // ignoring spaces, tabs, new lines
         else if (code[i] == ' ' || code[i] == '\t') {
             i++;
         }
-        // Error otherwise
+
+        // error otherwise
         else {
-            display_and_throw_error("character '" + std::to_string(code[i]) + "' (ASCII: " + std::to_string(static_cast<int>(code[i])) + ") is not valid",
-                                    line_number);
+            display_and_throw_error("character '" + std::string(1, code[i]) + "' (ASCII: " + std::to_string(static_cast<int>(code[i])) + ") is not valid", line_number);
             exit(1);
         }
     }
-    // Adding end-of-file character
+    // adding end-of-file character
     tokens.push_back(Token(line_number, EOF_TOKEN, ""));
     return tokens;
 }
@@ -290,35 +280,35 @@ std::vector<Token> lex(const std::string &code)
 std::string get_printable_lexer_output(const std::vector<Token> &tokens)
 {
     std::string output;
-    int indentLevel = 0;
+    int ident_level = 0;
     output += "[\n";
 
     for (size_t i = 0; i < tokens.size(); ++i) {
         const Token &token = tokens[i];
-        std::string tokenTypeName = token_to_string(token.type);
-        std::string indent = std::string(indentLevel * 4, ' '); // 4 spaces per indentation
+        std::string token_type_name = token_to_string(token.type);
+        std::string indent = std::string(ident_level * 4, ' '); // 4 spaces per indentation
 
-        if (token.type == SEMICOLON) {
+        if (token.type == END_LINE) {
             if (i + 1 < tokens.size() && tokens[i + 1].type == RBRACE) {
-                output += indent + "    (" + std::to_string(token.line_number) + ", " + tokenTypeName + ", '" + token.value + "'),\n";
+                output += indent + "    (" + std::to_string(token.line_number) + ", " + token_type_name + ", '" + token.value + "'),\n";
             }
             else {
-                output += indent + "    (" + std::to_string(token.line_number) + ", " + tokenTypeName + ", '" + token.value + "'),\n\n";
+                output += indent + "    (" + std::to_string(token.line_number) + ", " + token_type_name + ", '" + token.value + "'),\n\n";
             }
         }
         else if (token.type == RBRACE) {
-            indentLevel--;
-            indent = std::string(indentLevel * 4, ' ');
+            ident_level--;
+            indent = std::string(ident_level * 4, ' ');
 
-            output += indent + "    (" + std::to_string(token.line_number) + ", " + tokenTypeName + ", '" + token.value + "'),\n\n";
+            output += indent + "    (" + std::to_string(token.line_number) + ", " + token_type_name + ", '" + token.value + "'),\n\n";
         }
         else {
             // classic tokens
-            output += indent + "    (" + std::to_string(token.line_number) + ", " + tokenTypeName + ", '" + token.value + "'),\n";
+            output += indent + "    (" + std::to_string(token.line_number) + ", " + token_type_name + ", '" + token.value + "'),\n";
         }
 
         if (token.type == LBRACE) {
-            indentLevel++; // valable pour le prochain token
+            ident_level++;
         }
     }
     // remove last comma and \n

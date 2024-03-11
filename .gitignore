@@ -2,7 +2,8 @@ compiler
 prog
 .vscode/
 !docs/.vscode/
-build/
+!vscode-syntax-highlighting/.vscode
+out/
 
 # Prerequisites
 *.d

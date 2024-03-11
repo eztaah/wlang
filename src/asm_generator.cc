@@ -2,6 +2,7 @@
 
 #include "asm_generator.hh"
 
+
 std::unordered_map<std::string, std::string> variables;
 int offset;
 int string_label_count;
@@ -27,7 +28,7 @@ std::string generate_assembly(const NodePtr &node)
 
     generate_assembly_internal(node);
 
-    // Combine data, bss and text sections
+    // combine data, bss and text sections
     std::vector<std::string> combined_instructions = data_instructions;
     combined_instructions.insert(combined_instructions.end(), bss_instructions.begin(), bss_instructions.end());
     combined_instructions.insert(combined_instructions.end(), text_instructions.begin(), text_instructions.end());
@@ -73,7 +74,13 @@ void generate_assembly_internal(const NodePtr &node)
         }
         start_function_instructions.push_back("    pushq   %rbp");
         start_function_instructions.push_back("    movq    %rsp, %rbp");
-        start_function_instructions.push_back("    subq    $88, %rsp"); //  you can store 11 variables
+
+        // handle space for variables
+        int stack_space = var_decl_count * 8;
+        if (var_decl_count % 2 == 0) {
+            stack_space += 8;
+        }
+        start_function_instructions.push_back("    subq    $" + std::to_string(stack_space) + ", %rsp"); //  you can store 11 variables
 
         for (const NodePtr &stmt : pnode->_statements) {
             generate_assembly_internal(stmt);
@@ -140,11 +147,11 @@ void generate_assembly_internal(const NodePtr &node)
         if (dev_mode) {
             start_function_instructions.push_back("\n    # variables modification");
         }
-        // recuperation de l'adresse de la variable
+        // retrieving the address of the variable
         auto var_offset = variables.find(mnode->_name);
-        // gere les erreurs
+        // handle errors
         if (var_offset == variables.end()) {
-            display_and_throw_error("undefined variable", -1);
+            display_and_throw_error("undefined variable", mnode->_line_number);
             exit(1);
         }
         generate_assembly_internal(mnode->_value);
@@ -152,11 +159,11 @@ void generate_assembly_internal(const NodePtr &node)
     }
 
     else if (FunctionCallNode *fnode = dynamic_cast<FunctionCallNode *>(node.get())) {
+        // print()
         if (fnode->_name == "print") {
             if (dev_mode) {
                 start_function_instructions.push_back("\n    # print");
             }
-            // Gestion de println
             for (const NodePtr &arg : fnode->_args) {
                 if (StringNode *snode = dynamic_cast<StringNode *>(arg.get())) {
                     print_string = true;
@@ -165,7 +172,6 @@ void generate_assembly_internal(const NodePtr &node)
 
                     // handle \n
                     std::string processed_content;
-
                     for (size_t i = 0; i < snode->_content.size(); ++i) {
                         processed_content.push_back(snode->_content[i]);
                     }
@@ -188,10 +194,9 @@ void generate_assembly_internal(const NodePtr &node)
                     start_function_instructions.push_back("    call    printf");
                 }
             }
-            // start_function_instructions.push_back("");
         }
 
-        // gestion de la fonction input
+        // input()
         else if (fnode->_name == "input") {
             scanf_is_used = true;
             if (dev_mode) {
@@ -203,10 +208,13 @@ void generate_assembly_internal(const NodePtr &node)
             start_function_instructions.push_back("    call    scanf");
             start_function_instructions.push_back("    movq    buff(%rip), %rax");
         }
-        // gestion de la fonction exit
+
+        // exit
         else if (fnode->_name == "exit") {
             start_function_instructions.push_back("    jmp    .ENDP");
         }
+
+        // else, there is an error
         else {
             display_and_throw_internal_error("generator error");
             exit(-1);
@@ -228,9 +236,9 @@ void generate_assembly_internal(const NodePtr &node)
 
         switch (bnode->_op) {
         case EQUALS_EQUALS:
-            start_function_instructions.push_back("    cmp     %rbx, %rax");
-            start_function_instructions.push_back("    sete    %al");       // met 1 dans %al (partie basse de rax), sinon 0
-            start_function_instructions.push_back("    movzbl  %al, %eax"); // etend la valeur de %al à rax
+            start_function_instructions.push_back("    cmp     %rbx, %rax"); 
+            start_function_instructions.push_back("    sete    %al");       // puts 1 in %al (lower part of rax), otherwise 0
+            start_function_instructions.push_back("    movzbl  %al, %eax"); // extends the value of %al to rax
             break;
 
         case NOT_EQUALS:
@@ -254,7 +262,7 @@ void generate_assembly_internal(const NodePtr &node)
         case GREATER_THAN:
             start_function_instructions.push_back("    cmp     %rbx, %rax");
             start_function_instructions.push_back("    setg    %al");
-            start_function_instructions.push_back("    movzbl  %al, %eax"); // movzbl deplace un registre 8 bits vers 32 bits
+            start_function_instructions.push_back("    movzbl  %al, %eax"); // movzbl moves the content of a 8-bit register to 32-bit
             break;
 
         case GREATER_THAN_EQUALS:
@@ -264,33 +272,27 @@ void generate_assembly_internal(const NodePtr &node)
             break;
 
         case BIN_OR:
-            start_function_instructions.push_back("    or      %rbx, %rax");
-            break;
-
-        case AND:
-            start_function_instructions.push_back("    and     %rbx, %rax");
-            break;
-
         case OR:
             start_function_instructions.push_back("    or      %rbx, %rax");
+            break;
+
+        case BIN_AND:
+        case AND:
+            start_function_instructions.push_back("    and     %rbx, %rax");
             break;
 
         case XOR:
             start_function_instructions.push_back("    xor     %rbx, %rax");
             break;
 
-        case BIN_AND:
-            start_function_instructions.push_back("    and     %rbx, %rax");
-            break;
-
         case SHIFT_LEFT:
             start_function_instructions.push_back("    mov     %bl, %cl");
-            start_function_instructions.push_back("    shl     %cl, %rax"); // cl est un registre 8 bits
+            start_function_instructions.push_back("    shl     %cl, %rax"); // cl is an 8 bits register
             break;
 
         case SHIFT_RIGHT:
             start_function_instructions.push_back("    mov     %bl, %cl");
-            start_function_instructions.push_back("    shr     %cl, %rax"); // cl est un registre 8 bits
+            start_function_instructions.push_back("    shr     %cl, %rax");
             break;
 
         case PLUS:
@@ -306,14 +308,14 @@ void generate_assembly_internal(const NodePtr &node)
             break;
 
         case DIVIDE:
-            start_function_instructions.push_back("    cqo");          // Convertit rax en rdx:rax, étendant le signe
-            start_function_instructions.push_back("    idiv    %rbx"); // Division de rdx:rax par rbx, resulat dans rax, reste dans rdx
+            start_function_instructions.push_back("    cqo");          // convert raw to rdx:rax, extending the sign
+            start_function_instructions.push_back("    idiv    %rbx"); // division of rdx:rax by rbx, result in rax, remainder in rdx
             break;
 
         case MODULO:
-            start_function_instructions.push_back("    cqo");                // Convertit rax en rdx:rax, étendant le signe
-            start_function_instructions.push_back("    idiv    %rbx");       // Division de rdx:rax par rbx, resulat dans rax, reste dans rdx
-            start_function_instructions.push_back("    mov     %rdx, %rax"); // met reste division dans rax
+            start_function_instructions.push_back("    cqo");
+            start_function_instructions.push_back("    idiv    %rbx");
+            start_function_instructions.push_back("    mov     %rdx, %rax");
             break;
 
         default:
@@ -350,12 +352,12 @@ void generate_assembly_internal(const NodePtr &node)
         start_function_instructions.push_back("    cmp     $0, %rax");
         start_function_instructions.push_back("    jne     " + true_label);
 
-        // si il y a un else
+        // if there is a "else"
         if (inode->_false_block.empty() == false) {
             start_function_instructions.push_back("    jmp     " + else_label);
         }
         else {
-            // si pas de else
+            // otherwise
             start_function_instructions.push_back("    jmp     " + end_label);
         }
 
@@ -375,7 +377,6 @@ void generate_assembly_internal(const NodePtr &node)
 
         // end
         start_function_instructions.push_back(end_label + ":");
-        // start_function_instructions.push_back("");
     }
 
     else if (WhileNode *wnode = dynamic_cast<WhileNode *>(node.get())) {
