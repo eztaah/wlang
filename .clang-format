@@ -1,9 +1,14 @@
+# https://clang.llvm.org/docs/ClangFormatStyleOptions.html
+# $ clang-format -i ./src/*
+
 BasedOnStyle: LLVM
 UseTab: Never
 TabWidth: 4
 IndentWidth: 4
 ColumnLimit: 0
 BreakBeforeBraces: Custom
+IndentCaseLabels: true
+
 BraceWrapping:
   AfterControlStatement: false
   AfterEnum: false
@@ -18,4 +23,3 @@ BraceWrapping:
   SplitEmptyFunction: true
   SplitEmptyRecord: true
   SplitEmptyNamespace: true
- 

@@ -1,4 +1,0 @@
-créer une chaine de caractere : 
-char my_string[] = "bonjour";
-
-strcmp()
