@@ -1,7 +1,6 @@
 compiler
 prog
 .vscode/
-!docs/.vscode/
 !vscode-syntax-highlighting/.vscode
 out/
 
