@@ -57,6 +57,11 @@ foo1(var1, var2)
 foo2(&var1, &var2)
 ```
 
+Vec2i -> struct {
+    I32 x, 
+    I32 y
+}
+
 
 Preprocessing: 
 ```c

@@ -1,16 +1,16 @@
 {
   "name": "w",
-  "displayName": ".w",
-  "description": "syntax highlighting for .w files",
+  "displayName": "W",
+  "description": "Language support for the W programming language.",
   "publisher": "eztaah",
   "license": "MIT",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "bugs": {
-    "url": "https://github.com/eztaah/compiler/issues"
+    "url": "https://github.com/eztaah/wlang/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/eztaah/compiler"
+    "url": "https://github.com/eztaah/wlang"
   },
   "engines": {
     "vscode": "^1.50.0"
@@ -21,14 +21,14 @@
   "contributes": {
     "languages": [{
       "id": "w",
-      "aliases": [".w"],
+      "aliases": ["W"],
       "extensions": [".w"],
       "configuration": "./language-configuration.json"
     }],
     "grammars": [{
       "language": "w",
       "scopeName": "source.w",
-      "path": "./syntaxes/w.tmLanguage.json"
+      "path": "./syntaxes/wlang.tmLanguage.json"
     }]
   }
 }

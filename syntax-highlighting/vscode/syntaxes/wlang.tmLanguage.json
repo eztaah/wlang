@@ -6,28 +6,22 @@
             "include": "#comment"
         },
         {
-            "include": "#variable"
+            "include": "#keyword"
         },
         {
-            "include": "#constant"
+            "include": "#symbol"
         },
         {
             "include": "#type"
         },
         {
-            "include": "#functions"
-        },
-        {
-            "include": "#control-structures"
+            "include": "#function_name"
         },
         {
             "include": "#number"
         },
         {
             "include": "#string"
-        },
-        {
-            "include": "#symbols"
         }
     ],    
     "repository": {
@@ -38,55 +32,59 @@
                     "match": "#.+"
                 },
                 {
-                    "name": "comment.block.w",
+                    "name": "comment.line.w",
                     "begin": "\"\"\"",
                     "end": "\"\"\"",
                     "patterns": [
                         {
-                            "name": "comment.block.w",
+                            "name": "comment.line.w",
                             "match": ".|\n"
                         }
                     ]
                 }
             ]
         },
-        "variable": {
+        "keyword": {
             "patterns": [
                 {
-                    "name": "keyword.declaration.var.w",
-                    "match": "\\bvar\\b"
+                    "name": "keyword.control.w",
+                    "match": "\\b(if|elif|else|while|for|cst|var|fun|return|from|import|export|replace|by)\\b"
                 }
             ]
         },
-        "constant": {
+        "symbol": {
             "patterns": [
                 {
-                    "name": "keyword.declaration.cst.w",
-                    "match": "\\bcst\\b"
+                    "name": "keyword.control.w",
+                    "match": "\\&\\&|\\|\\||[\\+\\-\\*/%|^=!<>]"
+                },
+                {
+                    "name": "keyword.control.w",
+                    "match": "(?<!&)\\&(?![a-zA-Z0-9_])"
                 }
             ]
-        },
+        },  
         "type": {
             "patterns": [
                 {
                     "name": "entity.name.type",
-                    "match": "\\bi64\\b"
+                    "match": "\\b(I32|B32|C8|Void)\\b"
+                },
+                {
+                    "name": "entity.name.type",
+                    "match": "&(?:I32|B32|C8|Void)"
                 }
             ]
-        },        
-        "functions": {
+        },    
+        "function_name": {
             "patterns": [
                 {
-                    "name": "support.function.w",
-                    "match": "\\b(print|input|exit)\\b"
-                }
-            ]
-        },
-        "control-structures": {
-            "patterns": [
+                    "name": "entity.name.function.w",
+                    "match": "\\b([a-zA-Z_][a-zA-Z0-9_]*)\\s*(?=\\()"
+                },
                 {
-                    "name": "keyword.control.w",
-                    "match": "\\b(if|else|while)\\b"
+                    "name": "entity.name.function.w",
+                    "match": "\\b[a-zA-Z_][a-zA-Z0-9_]*\\b(?=\\s*from\\b|\\s*\\b%import)"
                 }
             ]
         },
@@ -101,16 +99,8 @@
         "string": {
             "patterns": [
                 {
-                    "name": "string.quoted.double.w",
+                    "name": "string.w",
                     "match": "\".*?\""
-                }
-            ]
-        },
-        "symbols": {
-            "patterns": [
-                {
-                    "name": "keyword.control.w",
-                    "match": "[\\+\\-\\*/%&|^=!<>]"
                 }
             ]
         }
