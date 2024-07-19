@@ -7,17 +7,27 @@ $ sudo npm install -g @vscode/vsce
 # créer le package
 $ vsce package --no-yarn 
 
-
-
-CODING STYLE : 
-# installer clang-format
-
-# formatter le code
-$ clang-format -i ./src/*
-
+# edit l'extension 
+https://marketplace.visualstudio.com/manage/publishers/eztaah
 
 
 créer une chaine de caractere : 
 char my_string[] = "bonjour";
 
 strcmp()
+
+
+
+LINUX SYSTEM CALL : 
+https://blog.rchapman.org/posts/Linux_System_Call_Table_for_x86_64/
+
+
+GLIBC IMPLEMETATION : 
+
+https://codebrowser.dev/glibc/glibc/string/strcat.c.html
+
+
+
+TABLEAU : 
+
+Un tableau statique a une taille fixe connue à la compilation et est généralement alloué sur la pile (pour les tableaux locaux) ou dans la section de données (.data ou .bss) du programme (pour les tableaux globaux ou statiques).

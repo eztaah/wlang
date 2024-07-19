@@ -1,6 +1,6 @@
-# Compiler
+# wlang
 
-This program can compile code (written with the syntax specified above) to x86_64 GNU assembly.
+The compiler transform your high level code (written with the syntax specified above) to x86_64 GNU assembly.
 
 A Visual Studio Code extension is available for syntax highlighting :    
 [https://marketplace.visualstudio.com/items?itemName=eztaah.w](https://marketplace.visualstudio.com/items?itemName=eztaah.w)
@@ -118,7 +118,8 @@ Options:
 
 Navigate to the projet directory and execute this command :
 ```shell
+cd compiler
 make release
 ``` 
 
-A binary named `compiler` will be generated in the project's root directory.
+A binary named `compiler` will be generated in your current directory.

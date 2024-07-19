@@ -11,7 +11,7 @@ B32 dev_mode = false;
 B32 runtime_error_flag = false;
 Char* output_path;
 
-static void print_usage(void) {
+static Void print_usage(Void) {
     printf("Usage:\n");
     printf("    compiler <file.cp> [options]    compile a source file with optional flags.\n");
     printf("    compiler --version              display compiler version and exit.\n");
@@ -27,7 +27,7 @@ static void print_usage(void) {
     printf("\n");
 }
 
-static void handle_arguments(const I32 argc, Char* argv[])
+static Void handle_arguments(const I32 argc, Char* argv[])
 {
     // handle base arguments
     if (argc < 2) {

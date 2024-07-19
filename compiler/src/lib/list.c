@@ -11,7 +11,7 @@ List* init_list(I32 item_size)
     return list;
 }
 
-void list_push(List* list, void* item)
+Void list_push(List* list, Void* item)
 {
     list->size += 1;
 
