@@ -3,7 +3,7 @@ CFLAGS = -Wall -Wextra -std=c23
 DEBUG_FLAG = -g
 
 debug: 
-	gcc $(SOURCE_FILES) $(CFLAGS) $(DEBUG_FLAG) -o compiler
+	gcc $(SOURCE_FILES) $(CFLAGS) $(DEBUG_FLAG) -o wcompiler
 
 clean: 
-	rm -f compiler
+	rm -f wcompiler

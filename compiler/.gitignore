@@ -33,4 +33,4 @@ out/
 *.out
 *.app
 
-compiler
+wcompiler

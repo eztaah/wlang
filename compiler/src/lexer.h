@@ -5,6 +5,6 @@
 #include "token.h"
 
 List* lex(Char* src);
-Char* convert_lexer_output_to_char(List* lexer_output);
+Char* convert_token_list_to_char(List* lexer_output);
 
 #endif
