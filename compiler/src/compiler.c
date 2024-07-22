@@ -10,6 +10,8 @@ static Void compile(Char* src)
     printf("Lexing...\n");
     List* token_list = lex(src);
 
+    // parser s
+
     // Write the output in a file
     write_file("out/lexer_output.txt", convert_token_list_to_char(token_list));
 }
