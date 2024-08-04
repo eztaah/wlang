@@ -1,5 +1,5 @@
 SOURCE_FILES = src/*.c src/lib/*.c
-CFLAGS = -Wall -Wextra -std=c23 
+CFLAGS = -Wall -Wextra -std=c2x
 DEBUG_FLAG = -g
 
 debug: 
