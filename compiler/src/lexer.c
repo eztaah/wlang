@@ -201,7 +201,7 @@ Char* convert_token_list_to_char(List* token_list)
         const Token* token = (Token*)token_list->items[i];
         const Char* token_type_name = token_to_string(*token);
         
-        char temp[1024];
+        Char temp[1024];
         snprintf(temp, sizeof(temp), "    ('%s', '%s'),\n", token_type_name, token->value);
         output = strcat_improved(output, temp);
 
