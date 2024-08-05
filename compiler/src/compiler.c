@@ -2,7 +2,9 @@
 #include "lib/lib.h"
 #include "io.h"
 #include "lexer.h"
-
+#include "parser.h"
+#include "global.h"
+#include <string.h>
 
 static Void compile(Char* src)
 {
@@ -10,10 +12,25 @@ static Void compile(Char* src)
     printf("Lexing...\n");
     List* token_list = lex(src);
 
-    // parser s
+    // Parsing
+    printf("Parsing...\n"); 
+    List* node_list = parse(token_list);
 
-    // Write the output in a file
+    // Convert AST to string
+    Char* output = strdup("");
+    for (I32 i = 0; i < node_list->size; ++i) {
+        StatementNode* stmt = (StatementNode*)node_list->items[i];
+        output = print_ast(stmt, output, "", true, false);
+    }
+
+    // Write the output to a file
     write_file("out/lexer_output.txt", convert_token_list_to_char(token_list));
+    write_file("out/parser_output.txt", output);
+
+    // Clean up
+    free(output);
+    // TODO: free other things
+
 }
 
 Void compile_file(const Char* filename)
