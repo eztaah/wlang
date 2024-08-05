@@ -1,15 +1,3 @@
-COMMANDS VS CODE EXTENSION : 
-
-# installer les outils
-$ sudo dnf install nodejs
-$ sudo npm install -g @vscode/vsce
-
-# créer le package
-$ vsce package --no-yarn 
-
-# edit l'extension 
-https://marketplace.visualstudio.com/manage/publishers/eztaah
-
 
 créer une chaine de caractere : 
 char my_string[] = "bonjour";
