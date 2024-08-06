@@ -3,6 +3,7 @@
 #include "token.h"
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 typedef struct {
     const List* token_list;
@@ -48,22 +49,19 @@ static Token parser_eat_assumes(Parser* parser, TokenType expected_token_type)
     return parser_eat(parser);
 }
 
-static ExprNode* parse_term(Parser* parser)
+static ExprNode* parse_number(Parser* parser)
 {
-    if (parser->current_token.type == TOKEN_INT) {
-        Token token = parser_eat_assumes(parser, TOKEN_INT);
-        return number_node_new(token.value);
-    }
-    return NULL;
+    Token token = parser_eat_assumes(parser, TOKEN_INT);
+    return number_node_new(token.value);
 }
 
 static ExprNode* parse_expr(Parser* parser)
 {
-    ExprNode* left = parse_term(parser);
+    ExprNode* left = parse_number(parser);
     while (parser->index < parser->token_list_size &&
            (parser->current_token.type == TOKEN_PLUS || parser->current_token.type == TOKEN_MINUS || parser->current_token.type == TOKEN_MUL || parser->current_token.type == TOKEN_DIV)) {
         Token op = parser_eat(parser);
-        ExprNode* right = parse_term(parser);
+        ExprNode* right = parse_number(parser);
         left = binop_node_new(left, op.type, right);
     }
     return left;

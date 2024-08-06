@@ -1,5 +1,6 @@
 #include "lib.h"
 #include <string.h>
+#include <stdlib.h>
 
 List* list_new(I32 item_size)
 {

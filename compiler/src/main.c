@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-B32 dev_mode = false;
+Bool dev_mode = FALSE;
 static Char* output_path;
 static Char* source_path;
 
@@ -31,11 +31,11 @@ static Void handle_arguments(const I32 argc, Char* argv[])
         print_usage();
         exit(EXIT_FAILURE);
     }
-    else if (str_cmp(argv[1], "--help")) {
+    else if (char_cmp(argv[1], "--help")) {
         print_usage();
         exit(EXIT_SUCCESS);
     }
-    else if (str_cmp(argv[1], "--version") || str_cmp(argv[1], "-v")) {
+    else if (char_cmp(argv[1], "--version") || char_cmp(argv[1], "-v")) {
         printf("compiler version 1.1\n");
         exit(EXIT_SUCCESS);
     }
@@ -45,7 +45,7 @@ static Void handle_arguments(const I32 argc, Char* argv[])
 
     // handle optional arguments
     for (I32 i = 2; i < argc; i++) {
-        if (str_cmp(argv[i], "-o") || str_cmp(argv[i], "--output")) {
+        if (char_cmp(argv[i], "-o") || char_cmp(argv[i], "--output")) {
             if (i + 1 < argc) {
                 output_path = argv[i + 1];
                 i++;
@@ -55,8 +55,8 @@ static Void handle_arguments(const I32 argc, Char* argv[])
                 exit(EXIT_FAILURE);
             }
         }
-        else if (str_cmp(argv[i], "-d") || str_cmp(argv[i], "--dev-mode")) {
-            dev_mode = true;
+        else if (char_cmp(argv[i], "-d") || char_cmp(argv[i], "--dev-mode")) {
+            dev_mode = TRUE;
         }
         // if a wrong argument is given
         else {
@@ -71,19 +71,25 @@ static Void compile_file(const Char* filename)
 {
     Char* src = read_file(filename);
 
+    // Lexing
     List* token_list = lex(src);
-    write_file("out/lexer_output.txt", print_tokenlist(token_list));
+    Str* token_list_printable = print_tokenlist(token_list);
+    write_file("out/lexer_output.txt", str_to_char(token_list_printable));
+    str_free(token_list_printable);
 
+    // Parsing
     List* node_list = parse(token_list);
-    write_file("out/parser_output.txt", print_nodelist(node_list));
-
-    Char* asm_code = generate(node_list); // TOFIX: This function change the content of node_list and this is not normal
-    write_file("out/generator_output.s", asm_code);
-
-    // Clean up
     list_free(token_list);
+    Str* node_list_printable = print_nodelist(node_list);
+    write_file("out/parser_output.txt", str_to_char(node_list_printable));
+    str_free(node_list_printable);
+
+    // Generator
+    Str* asm_code = generate(node_list); // TOFIX: This function change the content of node_list and this is not normal
     list_free(node_list);
-    free(asm_code);
+    write_file("out/generator_output.s", str_to_char(asm_code));
+    str_free(asm_code);
+
     free(src);
 }
 
