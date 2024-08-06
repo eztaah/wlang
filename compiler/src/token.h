@@ -10,8 +10,7 @@ typedef enum {
     TOKEN_MUL,
 
     TOKEN_INT,
-    TOKEN_CST,
-    TOKEN_VAR,
+    TOKEN_MUT,
     TOKEN_ID,
     TOKEN_TYPE,
 
@@ -27,7 +26,9 @@ typedef struct {
     TokenType type;
 } Token;
 
-Char* token_to_string(Token token);
 Token* instanciate_token(const Char* value, I32 type);
+Void destroy_token(Token* token);
+
+Char* tokentype_to_string(TokenType tokentype);
 
 #endif

@@ -1,8 +1,8 @@
+#include "token.h"
+#include "global.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "global.h"
-#include "token.h"
 
 Token* instanciate_token(const Char* value, I32 type)
 {
@@ -12,9 +12,14 @@ Token* instanciate_token(const Char* value, I32 type)
     return new_token;
 }
 
-Char* token_to_string(Token token)
+Void destroy_token(Token* token)
 {
-    switch (token.type) {
+    free(token);
+}
+
+Char* tokentype_to_string(TokenType tokentype)
+{
+    switch (tokentype) {
         case TOKEN_PLUS:
             return "TOKEN_PLUS";
             break;
@@ -30,11 +35,8 @@ Char* token_to_string(Token token)
         case TOKEN_INT:
             return "TOKEN_INT";
             break;
-        case TOKEN_CST:
-            return "TOKEN_CST";
-            break;
-        case TOKEN_VAR:
-            return "TOKEN_VAR";
+        case TOKEN_MUT:
+            return "TOKEN_MUT";
             break;
         case TOKEN_ID:
             return "TOKEN_ID";
@@ -55,7 +57,7 @@ Char* token_to_string(Token token)
             return "TOKEN_EOF";
             break;
         default:
-            printf("in token_to_string(): a token does not have string equivalent");
-            abort();
+            PANIC("in tokentype_to_string(): TokenType '%d' does not have string equivalent", tokentype);
+            return NULL;
     }
 }

@@ -1,10 +1,10 @@
 #define _GNU_SOURCE
 
+#include "global.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include "global.h"
 
 Char* read_file(const Char* filename)
 {
@@ -16,7 +16,7 @@ Char* read_file(const Char* filename)
     fp = fopen(filename, "rb");
     if (fp == NULL) {
         printf("Could not read file `%s`\n", filename);
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     Char* buffer = (Char*)calloc(1, sizeof(Char));
@@ -42,7 +42,7 @@ Void write_file(const Char* filename, Char* outbuffer)
     fp = fopen(filename, "wb");
     if (fp == NULL) {
         printf("Could not open file for writing `%s`\n", filename);
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     fputs(outbuffer, fp);
@@ -62,7 +62,7 @@ Char* sh(const Char* cmd)
 
     if (fp == NULL) {
         printf("Failed to run command\n");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     while (fgets(path, sizeof(path), fp) != NULL) {
