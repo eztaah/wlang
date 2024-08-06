@@ -5,11 +5,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-Char* print_tokenlist(const List* token_list)
+Str* print_tokenlist(const List* token_list)
 {
-    Char* output = str_new("");
-
-    output = str_cat(output, "[\n");
+    Str* output = str_new("[\n");
 
     for (I32 i = 0; i < token_list->size; i++) {
         const Token* token = (Token*)token_list->items[i];
@@ -17,77 +15,79 @@ Char* print_tokenlist(const List* token_list)
 
         Char temp[1024];
         snprintf(temp, sizeof(temp), "    {%s, \"%s\"},\n", token_type_name, token->value);
-        output = str_cat(output, temp);
+        str_cat(output, temp);
 
         if (token->type == TOKEN_END_STATEMENT) {
-            output = str_cat(output, "\n");
+            str_cat(output, "\n");
         }
     }
-    output = str_cat(output, "]");
+    str_cat(output, "]");
 
     return output;
 }
 
-static Void print_indent(Char* output, I32 pos_x)
+static Void print_indent(Str* output, I32 pos_x)
 {
     for (I32 i = 0; i < pos_x; ++i) {
-        output = str_cat(output, " ");
+        str_cat(output, " ");
     }
 }
 
-static Void print_expression_node(ExprNode* node, Char* output, I32 pos_x)
+static Void print_expression_node(ExprNode* node, Str* output, I32 pos_x)
 {
-    if (!node)
+    if (!node) {
         return;
+    }
 
     Char buffer[256];
 
     switch (node->type) {
         case NODE_NUMBER:
-            snprintf(buffer, sizeof(buffer), "NumberNode\n");
-            output = str_cat(output, buffer);
+            str_cat(output, "NumberNode\n");
             print_indent(output, pos_x);
             snprintf(buffer, sizeof(buffer), "└─ value: %s\n", node->number_node.value);
-            output = str_cat(output, buffer);
+            str_cat(output, buffer);
             break;
         case NODE_BINOP:
             snprintf(buffer, sizeof(buffer), "BinopNode\n");
-            output = str_cat(output, buffer);
+            str_cat(output, buffer);
             print_indent(output, pos_x);
             snprintf(buffer, sizeof(buffer), "├─ op: %s\n", tokentype_to_string(node->bin_op_node.op));
-            output = str_cat(output, buffer);
+            str_cat(output, buffer);
             print_indent(output, pos_x);
-            output = str_cat(output, "├─ left:  ");
+            str_cat(output, "├─ left:  ");
             print_expression_node(node->bin_op_node.left, output, pos_x + 10);
             print_indent(output, pos_x);
-            output = str_cat(output, "└─ right: ");
+            str_cat(output, "└─ right: ");
             print_expression_node(node->bin_op_node.right, output, pos_x + 10);
             break;
         default:
-            output = str_cat(output, "Unknown ExprNode type\n");
+            UNREACHABLE();
             break;
     }
 }
 
-static Void print_var_decl_node(VarDeclNode* node, Char* output, I32 pos_x)
+static Void print_var_decl_node(VarDeclNode* node, Str* output, I32 pos_x)
 {
-    Char buffer[256];
+    Char buffer[256];    
 
     print_indent(output, pos_x);
-    snprintf(buffer, sizeof(buffer), "VarDeclNode\n");
-    output = str_cat(output, buffer);
+    str_cat(output, "VarDeclNode\n");
+
     print_indent(output, pos_x);
     snprintf(buffer, sizeof(buffer), "├─ type: \"%s\"\n", node->type);
-    output = str_cat(output, buffer);
+    str_cat(output, buffer);
+
     print_indent(output, pos_x);
     snprintf(buffer, sizeof(buffer), "├─ name: \"%s\"\n", node->name);
-    output = str_cat(output, buffer);
+    str_cat(output, buffer);
+
     print_indent(output, pos_x);
-    output = str_cat(output, "└─ value: ");
+    str_cat(output, "└─ value: ");
     print_expression_node(node->value, output, pos_x + 10);
 }
 
-static Void print_statement_node(StmtNode* node, Char* output, I32 pos_x)
+static Void print_statement_node(StmtNode* node, Str* output, I32 pos_x)
 {
     if (!node)
         return;
@@ -98,17 +98,14 @@ static Void print_statement_node(StmtNode* node, Char* output, I32 pos_x)
             break;
 
         default:
-            PANIC("unknown statement type");
+            UNREACHABLE();
             break;
     }
 }
 
-Char* print_nodelist(const List* node_list)
+Str* print_nodelist(const List* node_list)
 {
-    Char* output = malloc(1);
-    output[0] = '\0';
-
-    output = str_cat(output, "[\n");
+    Str* output = str_new("[\n");
 
     for (I32 i = 0; i < node_list->size; ++i) {
         StmtNode* node = (StmtNode*)node_list->items[i];
@@ -116,11 +113,11 @@ Char* print_nodelist(const List* node_list)
 
         // Saute une ligne après chaque statement node
         if (i < node_list->size - 1) {
-            output = str_cat(output, "    ,\n");
+            str_cat(output, "    ,\n");
         }
     }
 
-    output = str_cat(output, "\n]");
+    str_cat(output, "\n]");
 
     return output;
 }

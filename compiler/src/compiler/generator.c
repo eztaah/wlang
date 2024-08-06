@@ -7,11 +7,11 @@
 typedef struct Generator {
     const List* node_list;
     I32 var_decl_offset;
-    List* asm_data;
-    List* asm_bss;
-    List* asm_text;
-    List* asm_start;
     List* variables; // List of strings (variable offsets)
+    Str* asm_data;
+    Str* asm_bss;
+    Str* asm_text;
+    Str* asm_start;
 } Generator;
 
 // Function prototypes
@@ -21,76 +21,67 @@ static Generator* generator_new(const List* node_list)
 {
     Generator* generator = calloc(1, sizeof(Generator));
     generator->node_list = node_list;
-    generator->asm_data = list_new(sizeof(Char*));
-    generator->asm_bss = list_new(sizeof(Char*));
-    generator->asm_text = list_new(sizeof(Char*));
-    generator->asm_start = list_new(sizeof(Char*));
     generator->variables = list_new(sizeof(Char*));
+
+    generator->asm_data = str_new("");
+    generator->asm_bss = str_new("");
+    generator->asm_text = str_new("");
+    generator->asm_start = str_new("");
+
     return generator;
 }
 
 static Void generator_free(Generator* generator)
 {
-    list_free(generator->asm_data);
-    list_free(generator->asm_bss);
-    list_free(generator->asm_text);
-    list_free(generator->asm_start);
     free(generator->variables);
+    str_free(generator->asm_data);
+    str_free(generator->asm_bss);
+    str_free(generator->asm_text);
+    str_free(generator->asm_start);
     free(generator);
-}
-
-static Char* concat_instructions(List* instructions)
-{
-    Char* result = str_new("");
-    for (I32 i = 0; i < instructions->size; i++) {
-        result = str_cat(result, (Char*)instructions->items[i]);
-        result = str_cat(result, "\n");
-    }
-    return result;
 }
 
 static Void generate_number_node(Generator* generator, const NumberNode* nnode)
 {
-    Char* instruction = str_new("    movq    $");
-    instruction = str_cat(instruction, nnode->value);
-    instruction = str_cat(instruction, ", %rax");
-
-    list_push(generator->asm_start, instruction);
+    str_cat(generator->asm_start, "    movq    $");
+    str_cat(generator->asm_start, nnode->value);
+    str_cat(generator->asm_start, ", %rax\n");
 }
 
 static Void generate_binop_node(Generator* generator, const BinopNode* bnode)
 {
     if (dev_mode) {
-        list_push(generator->asm_start, str_new("    # < binOp"));
+        str_cat(generator->asm_start, "    # < binOp\n");
     }
 
     generate_expression_node(generator, bnode->right);
-    list_push(generator->asm_start, str_new("    pushq   %rax"));
+    str_cat(generator->asm_start, "    pushq   %rax\n");
     generate_expression_node(generator, bnode->left);
-    list_push(generator->asm_start, str_new("    pop     %rbx"));
+    str_cat(generator->asm_start, "    pop     %rbx\n");
 
     switch (bnode->op) {
         case TOKEN_PLUS:
-            list_push(generator->asm_start, str_new("    add     %rbx, %rax"));
+            str_cat(generator->asm_start, "    add     %rbx, %rax\n");
             break;
         case TOKEN_MINUS:
-            list_push(generator->asm_start, str_new("    sub     %rbx, %rax"));
+            str_cat(generator->asm_start, "    sub     %rbx, %rax\n");
             break;
         case TOKEN_MUL:
-            list_push(generator->asm_start, str_new("    imul    %rbx, %rax"));
+            str_cat(generator->asm_start, "    imul    %rbx, %rax\n");
             break;
         case TOKEN_DIV:
-            list_push(generator->asm_start, str_new("    cqo"));
-            list_push(generator->asm_start, str_new("    idiv    %rbx"));
+            str_cat(generator->asm_start, "    cqo\n");
+            str_cat(generator->asm_start, "    idiv    %rbx\n");
             break;
         default:
             UNREACHABLE();
     }
 
     if (dev_mode) {
-        list_push(generator->asm_start, str_new("    # binOp >"));
+        str_cat(generator->asm_start, "    # binOp >\n");
     }
 }
+
 
 static Void generate_expression_node(Generator* generator, const ExprNode* expr_node)
 {
@@ -109,56 +100,56 @@ static Void generate_expression_node(Generator* generator, const ExprNode* expr_
 static Void generate_var_decl_node(Generator* generator, const VarDeclNode* vnode)
 {
     if (dev_mode) {
-        list_push(generator->asm_start, str_new("\n    # variables declaration"));
+        str_cat(generator->asm_start, "\n    # variables declaration\n");
     }
-    Char* var_offset = malloc(20);
+    Char var_offset[20];
     sprintf(var_offset, "%d(%%rbp)", generator->var_decl_offset);
     list_push(generator->variables, var_offset);
 
     generate_expression_node(generator, vnode->value);
 
-    Char* instruction = str_new("    movq    %rax, ");
-    instruction = str_cat(instruction, var_offset);
-
-    list_push(generator->asm_start, instruction);
+    str_cat(generator->asm_start, "    movq    %rax, ");
+    str_cat(generator->asm_start, var_offset);
+    str_cat(generator->asm_start, "\n");
 
     generator->var_decl_offset -= 8;
 }
 
-void ininitalize_asm_instructions(Generator* generator)
+
+void initialize_asm_instructions(Generator* generator)
 {
     // Setup initial instructions
     if (dev_mode) {
-        list_push(generator->asm_data, str_new("    # --- SECTION DATA ---"));
+        str_cat(generator->asm_data, "    # --- SECTION DATA ---\n");
     }
-    list_push(generator->asm_data, str_new("    .section .data"));
+    str_cat(generator->asm_data, "    .section .data\n");
 
     if (dev_mode) {
-        list_push(generator->asm_bss, str_new("\n\n    # --- SECTION BSS ---"));
+        str_cat(generator->asm_bss, "\n\n    # --- SECTION BSS ---\n");
     }
-    list_push(generator->asm_bss, str_new("    .section .bss"));
+    str_cat(generator->asm_bss, "    .section .bss\n");
 
     if (dev_mode) {
-        list_push(generator->asm_text, str_new("\n\n    # --- SECTION TEXT ---"));
+        str_cat(generator->asm_text, "\n\n    # --- SECTION TEXT ---\n");
     }
-    list_push(generator->asm_text, str_new("    .section .text"));
-    list_push(generator->asm_text, str_new("    .global _start"));
+    str_cat(generator->asm_text, "    .section .text\n");
+    str_cat(generator->asm_text, "    .global _start\n");
 
     if (dev_mode) {
-        list_push(generator->asm_start, str_new("\n_start:"));
+        str_cat(generator->asm_start, "\n_start:\n");
     }
     else {
-        list_push(generator->asm_start, str_new("_start:"));
+        str_cat(generator->asm_start, "_start:\n");
     }
 
     if (dev_mode) {
-        list_push(generator->asm_start, str_new("    # intialisation"));
+        str_cat(generator->asm_start, "    # initialization\n");
     }
 
-    list_push(generator->asm_start, str_new("    pushq   %rbp"));       // save old stack pointer ?
-    list_push(generator->asm_start, str_new("    movq    %rsp, %rbp")); // ?????
+    str_cat(generator->asm_start, "    pushq   %rbp\n");       // save old stack pointer ?
+    str_cat(generator->asm_start, "    movq    %rsp, %rbp\n"); // ?????
 
-    // Pépare la pile pour etre capable d'acceuillir toutes les variables déclarées dans le code
+    // Prépare la pile pour être capable d'accueillir toutes les variables déclarées dans le code
     I32 stack_space = generator->node_list->size * 8;
     if (generator->node_list->size % 2 == 0) {
         stack_space += 8;
@@ -166,65 +157,42 @@ void ininitalize_asm_instructions(Generator* generator)
     Char stack_space_str[20];
     sprintf(stack_space_str, "%d", stack_space);
 
-    Char* instruction = str_new("    subq    $");
-    instruction = str_cat(instruction, stack_space_str);
-    instruction = str_cat(instruction, ", %rsp");
-    list_push(generator->asm_start, instruction);
+    str_cat(generator->asm_start, "    subq    $");
+    str_cat(generator->asm_start, stack_space_str);
+    str_cat(generator->asm_start, ", %rsp\n");
 }
+
 
 Void finalize_asm_instructions(Generator* generator)
 {
     // exit
     if (dev_mode) {
-        list_push(generator->asm_start, str_new("\n.ENDP:"));
+        str_cat(generator->asm_start, "\n.ENDP:\n");
     }
     else {
-        list_push(generator->asm_start, str_new(".ENDP:"));
+        str_cat(generator->asm_start, ".ENDP:\n");
     }
 
     if (dev_mode) {
-        list_push(generator->asm_start, str_new("    # end of the program"));
+        str_cat(generator->asm_start, "    # end of the program\n");
     }
-    list_push(generator->asm_start, str_new("    movq    %rbp, %rsp"));
-    list_push(generator->asm_start, str_new("    pop     %rbp"));
+    str_cat(generator->asm_start, "    movq    %rbp, %rsp\n");
+    str_cat(generator->asm_start, "    pop     %rbp\n");
     if (dev_mode) {
-        list_push(generator->asm_start, str_new("    # exit syscall"));
+        str_cat(generator->asm_start, "    # exit syscall\n");
     }
-    list_push(generator->asm_start, str_new("    movq    $60, %rax"));
-    list_push(generator->asm_start, str_new("    xor     %rdi, %rdi"));
-    list_push(generator->asm_start, str_new("    syscall"));
+    str_cat(generator->asm_start, "    movq    $60, %rax\n");
+    str_cat(generator->asm_start, "    xor     %rdi, %rdi\n");
+    str_cat(generator->asm_start, "    syscall\n");
 }
 
-Char* convert_instructionlist_to_string(Generator* generator)
-{
-    // Combine all instructions into a single output string
-    Char* data_section = concat_instructions(generator->asm_data);
-    Char* bss_section = concat_instructions(generator->asm_bss);
-    Char* text_section = concat_instructions(generator->asm_text);
-    Char* start_section = concat_instructions(generator->asm_start);
-
-    Char* asm_code = str_new("");
-    asm_code = str_cat(asm_code, data_section);
-    asm_code = str_cat(asm_code, bss_section);
-    asm_code = str_cat(asm_code, text_section);
-    asm_code = str_cat(asm_code, start_section);
-
-    // Free temporary strings
-    free(data_section);
-    free(bss_section);
-    free(text_section);
-    free(start_section);
-
-    return asm_code;
-}
-
-Char* generate(const List* node_list)
+Str* generate(const List* node_list)
 {
     printf("Generating assembly...\n");
     Generator* generator = generator_new(node_list);
 
     // initialize asm instructions
-    ininitalize_asm_instructions(generator);
+    initialize_asm_instructions(generator);
 
     // Generate assembly code for each node
     for (I32 i = 0; i < node_list->size; i++) {
@@ -242,7 +210,12 @@ Char* generate(const List* node_list)
     // Finalize assembly code
     finalize_asm_instructions(generator);
 
-    Char* asm_code = convert_instructionlist_to_string(generator);
+    // Concatenate all code into one string
+    Str* asm_code = str_new("");
+    str_cat_str(asm_code, generator->asm_data);
+    str_cat_str(asm_code, generator->asm_bss);
+    str_cat_str(asm_code, generator->asm_text);
+    str_cat_str(asm_code, generator->asm_start);
 
     generator_free(generator);
     return asm_code;

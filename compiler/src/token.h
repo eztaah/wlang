@@ -26,7 +26,7 @@ typedef struct {
     TokenType type;
 } Token;
 
-Token* token_new(const Char* value, I32 type);
+Token* token_new(Str* value, I32 type);
 Void token_free(Token* token);
 
 Char* tokentype_to_string(TokenType tokentype);
