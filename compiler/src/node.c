@@ -3,9 +3,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-ExpressionNode* instanciate_number_node(Char* value)
+ExprNode* number_node_new(Char* value)
 {
-    ExpressionNode* expr_node = (ExpressionNode*)malloc(sizeof(ExpressionNode));
+    ExprNode* expr_node = (ExprNode*)malloc(sizeof(ExprNode));
     if (!expr_node) {
         PANIC("failed to allocate memory");
     }
@@ -14,9 +14,9 @@ ExpressionNode* instanciate_number_node(Char* value)
     return expr_node;
 }
 
-ExpressionNode* instanciate_binop_node(ExpressionNode* left, TokenType op, ExpressionNode* right)
+ExprNode* binop_node_new(ExprNode* left, TokenType op, ExprNode* right)
 {
-    ExpressionNode* expr_node = (ExpressionNode*)malloc(sizeof(ExpressionNode));
+    ExprNode* expr_node = (ExprNode*)malloc(sizeof(ExprNode));
     if (!expr_node) {
         PANIC("failed to allocate memory");
     }
@@ -27,9 +27,9 @@ ExpressionNode* instanciate_binop_node(ExpressionNode* left, TokenType op, Expre
     return expr_node;
 }
 
-StatementNode* instanciate_var_decl_node(const Char* type, const Char* name, ExpressionNode* value)
+StmtNode* var_decl_node_new(const Char* type, const Char* name, ExprNode* value)
 {
-    StatementNode* stmt_node = (StatementNode*)malloc(sizeof(StatementNode));
+    StmtNode* stmt_node = (StmtNode*)malloc(sizeof(StmtNode));
     if (!stmt_node) {
         PANIC("failed to allocate memory");
     }

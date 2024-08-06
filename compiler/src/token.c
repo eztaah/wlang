@@ -1,10 +1,10 @@
 #include "token.h"
-#include "global.h"
+#include "lib.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-Token* instanciate_token(const Char* value, I32 type)
+Token* token_new(const Char* value, I32 type)
 {
     Token* new_token = malloc(sizeof(Token));
     new_token->value = strdup(value);
@@ -12,7 +12,7 @@ Token* instanciate_token(const Char* value, I32 type)
     return new_token;
 }
 
-Void destroy_token(Token* token)
+Void token_free(Token* token)
 {
     free(token);
 }
