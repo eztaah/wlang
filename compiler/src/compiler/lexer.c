@@ -1,11 +1,9 @@
 // #include <stdlib.h>
+#include "lib.h"
+#include "token.h"
 #include <ctype.h>
 #include <stdio.h>
 #include <string.h>
-
-#include "global.h"
-#include "lib/lib.h"
-#include "token.h"
 
 typedef struct {
     Char* src;
@@ -24,22 +22,16 @@ static Void lexer_advance(Lexer* lexer)
 
 static Token* lex_next_token_assumes(Lexer* lexer, I32 type)
 {
-    Char* value = calloc(2, sizeof(Char));
-    value[0] = lexer->c;
-    value[1] = '\0';
-
-    Token* token = instanciate_token(value, type);
+    Char* value = str_new_c(lexer->c);
+    Token* token = token_new(value, type);
 
     return token;
 }
 
 static Token* lex_symbol(Lexer* lexer, I32 type)
 {
-    Char* value = calloc(2, sizeof(Char));
-    value[0] = lexer->c;
-    value[1] = '\0';
-
-    Token* token = instanciate_token(value, type);
+    Char* value = str_new_c(lexer->c);
+    Token* token = token_new(value, type);
 
     lexer_advance(lexer);
 
@@ -48,33 +40,33 @@ static Token* lex_symbol(Lexer* lexer, I32 type)
 
 static Token* lex_number(Lexer* lexer)
 {
-    Char* value = calloc(1, sizeof(Char));
+    Char* value = str_new("");
 
     while (isdigit(lexer->c)) {
-        value = strcat_improved(value, (Char[]){lexer->c, 0});
+        value = str_cat_c(value, lexer->c);
         lexer_advance(lexer);
     }
 
-    return instanciate_token(value, TOKEN_INT);
+    return token_new(value, TOKEN_INT);
 }
 
 static Token* lex_word(Lexer* lexer)
 {
-    I32 token_type;
-    Char* value = calloc(1, sizeof(Char));
+    Char* value = str_new("");
 
     while (isalpha(lexer->c) || isdigit(lexer->c)) {
-        value = strcat_improved(value, (Char[]){lexer->c, 0});
+        value = str_cat_c(value, lexer->c);
         lexer_advance(lexer);
     }
 
-    if (strings_are_equals(value, "cst")) {
+    I32 token_type;
+    if (str_cmp(value, "cst")) {
         token_type = TOKEN_MUT;
     }
-    else if (strings_are_equals(value, "var")) {
+    else if (str_cmp(value, "var")) {
         token_type = TOKEN_MUT;
     }
-    else if (strings_are_equals(value, "I32")) {
+    else if (str_cmp(value, "I32")) {
         token_type = TOKEN_TYPE;
     }
     // for variables names
@@ -82,7 +74,7 @@ static Token* lex_word(Lexer* lexer)
         token_type = TOKEN_ID;
     }
 
-    return instanciate_token(value, token_type);
+    return token_new(value, token_type);
 }
 
 static Void skip_whitespace(Lexer* lexer)
@@ -94,11 +86,9 @@ static Void skip_whitespace(Lexer* lexer)
 
 static Token* lex_end_statement(Lexer* lexer)
 {
-    Char* value = calloc(2, sizeof(Char));
-    value[0] = ' ';
-    value[1] = '\0';
+    Char* value = str_new(" ");
 
-    Token* token = instanciate_token(value, TOKEN_END_STATEMENT);
+    Token* token = token_new(value, TOKEN_END_STATEMENT);
     lexer_advance(lexer);
 
     // handle other \n or carriage return
@@ -145,7 +135,7 @@ static Token* lex_next_token(Lexer* lexer)
             break;
         default:
             printf("[Lexer]: Unexpected character `%c` (%d)\n", lexer->c, (I32)lexer->c);
-            exit(1);
+            exit(EXIT_FAILURE);
             break;
     }
 
@@ -153,9 +143,9 @@ static Token* lex_next_token(Lexer* lexer)
 }
 
 /**
- * This function create a lexer (you can see a lexer as a tool that contain data)
+ * This function create a lexer (you can see a lexer as a tool that contain asm_data)
  */
-static Lexer* instanciate_lexer(Char* src)
+static Lexer* lexer_new(Char* src)
 {
     Lexer* lexer = calloc(1, sizeof(Lexer));
     lexer->src = src;
@@ -166,7 +156,7 @@ static Lexer* instanciate_lexer(Char* src)
     return lexer;
 }
 
-static Void destroy_lexer(Lexer* lexer)
+static Void lexer_free(Lexer* lexer)
 {
     free(lexer);
 }
@@ -175,8 +165,8 @@ List* lex(Char* src)
 {
     printf("Lexing...\n");
 
-    Lexer* lexer = instanciate_lexer(src);
-    List* token_list = init_list(sizeof(Token));
+    Lexer* lexer = lexer_new(src);
+    List* token_list = list_new(sizeof(Token));
 
     while (lexer->c != '\0') {
         Token* token = lex_next_token(lexer);
@@ -187,6 +177,6 @@ List* lex(Char* src)
     Token* token = lex_next_token_assumes(lexer, TOKEN_EOF);
     list_push(token_list, token);
 
-    destroy_lexer(lexer);
+    lexer_free(lexer);
     return token_list;
 }

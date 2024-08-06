@@ -1,4 +1,6 @@
-#include "parser.h"
+#include "compiler.h"
+#include "node.h"
+#include "token.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -9,7 +11,7 @@ typedef struct {
     Token current_token;
 } Parser;
 
-static Parser* instanciate_parser(const List* token_list)
+static Parser* parser_new(const List* token_list)
 {
     Parser* parser = calloc(1, sizeof(Parser));
     parser->token_list = token_list;
@@ -20,7 +22,7 @@ static Parser* instanciate_parser(const List* token_list)
     return parser;
 }
 
-static Void destroy_parser(Parser* parser)
+static Void parser_free(Parser* parser)
 {
     free(parser);
     // TODO: Verify if we need to free the parser->token_list
@@ -46,28 +48,28 @@ static Token parser_eat_assumes(Parser* parser, TokenType expected_token_type)
     return parser_eat(parser);
 }
 
-static ExpressionNode* parse_term(Parser* parser)
+static ExprNode* parse_term(Parser* parser)
 {
     if (parser->current_token.type == TOKEN_INT) {
         Token token = parser_eat_assumes(parser, TOKEN_INT);
-        return instanciate_number_node(token.value);
+        return number_node_new(token.value);
     }
     return NULL;
 }
 
-static ExpressionNode* parse_expr(Parser* parser)
+static ExprNode* parse_expr(Parser* parser)
 {
-    ExpressionNode* left = parse_term(parser);
+    ExprNode* left = parse_term(parser);
     while (parser->index < parser->token_list_size &&
            (parser->current_token.type == TOKEN_PLUS || parser->current_token.type == TOKEN_MINUS || parser->current_token.type == TOKEN_MUL || parser->current_token.type == TOKEN_DIV)) {
         Token op = parser_eat(parser);
-        ExpressionNode* right = parse_term(parser);
-        left = instanciate_binop_node(left, op.type, right);
+        ExprNode* right = parse_term(parser);
+        left = binop_node_new(left, op.type, right);
     }
     return left;
 }
 
-static StatementNode* parse_var_decl(Parser* parser)
+static StmtNode* parse_var_decl(Parser* parser)
 {
     // handling cst and var keywords
     parser_eat(parser);
@@ -84,15 +86,15 @@ static StatementNode* parse_var_decl(Parser* parser)
 
     // handling content
     parser_eat_assumes(parser, TOKEN_EQUAL);
-    ExpressionNode* value = parse_expr(parser);
+    ExprNode* value = parse_expr(parser);
 
-    return instanciate_var_decl_node(type, name, value);
+    return var_decl_node_new(type, name, value);
 }
 
-static StatementNode* parse_stmt(Parser* parser)
+static StmtNode* parse_stmt(Parser* parser)
 {
     if (parser->current_token.type == TOKEN_MUT) {
-        StatementNode* var_decl_node = parse_var_decl(parser);
+        StmtNode* var_decl_node = parse_var_decl(parser);
         return var_decl_node;
     }
     // If no valid statement is found, consume the current token to advance the parser
@@ -104,16 +106,16 @@ List* parse(const List* token_list)
 {
     printf("Parsing...\n");
 
-    Parser* parser = instanciate_parser(token_list);
-    List* statement_list = init_list(sizeof(StatementNode));
+    Parser* parser = parser_new(token_list);
+    List* statement_list = list_new(sizeof(StmtNode));
 
     while (parser->index < parser->token_list_size) {
-        StatementNode* stmt = parse_stmt(parser);
+        StmtNode* stmt = parse_stmt(parser);
         if (stmt) {
             list_push(statement_list, stmt);
         }
     }
 
-    destroy_parser(parser);
+    parser_free(parser);
     return statement_list;
 }
