@@ -40,6 +40,12 @@ Char* tokentype_to_string(TokenType tokentype)
         case TOKEN_MUT:
             return "TOKEN_MUT";
             break;
+        case TOKEN_FUN:
+            return "TOKEN_FUN";
+            break;
+        case TOKEN_RETURN:
+            return "TOKEN_RETURN";
+            break;
         case TOKEN_ID:
             return "TOKEN_ID";
             break;
@@ -49,17 +55,26 @@ Char* tokentype_to_string(TokenType tokentype)
         case TOKEN_COLON:
             return "TOKEN_COLON";
             break;
+        case TOKEN_COMMA:
+            return "TOKEN_COMMA";
+            break;
         case TOKEN_EQUAL:
             return "TOKEN_EQUAL";
             break;
-         case TOKEN_LPAREN:
+        case TOKEN_LPAREN:
             return "TOKEN_LPAREN";
-            break;           
+            break;
         case TOKEN_RPAREN:
             return "TOKEN_RPAREN";
             break;
-        case TOKEN_END_STATEMENT:
-            return "TOKEN_END_STATEMENT";
+        case TOKEN_LBRACE:
+            return "TOKEN_LBRACE";
+            break;
+        case TOKEN_RBRACE:
+            return "TOKEN_RBRACE";
+            break;
+        case TOKEN_END_INSTR:
+            return "TOKEN_END_INSTR";
             break;
         case TOKEN_EOF:
             return "TOKEN_EOF";

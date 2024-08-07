@@ -1,0 +1,138 @@
+[
+    FunDefNode
+    ├─ name: "print_num"
+    ├─ return_type: "Void"
+    ├─ parameters: List<ParamNode>
+                   └─ ParamNode
+                      ├─ mut: "cst"
+                      ├─ type: "I32"
+                      └─ name: "num"
+    ├─ code_block: CodeblockNode
+                   └─ content: List<StmtNode>
+                               └─ NULL
+    ,
+    FunDefNode
+    ├─ name: "add"
+    ├─ return_type: "I32"
+    ├─ parameters: List<ParamNode>
+                   ├─ ParamNode
+                      ├─ mut: "cst"
+                      ├─ type: "I32"
+                      └─ name: "a"
+                   └─ ParamNode
+                      ├─ mut: "cst"
+                      ├─ type: "I32"
+                      └─ name: "b"
+    ├─ code_block: CodeblockNode
+                   └─ content: List<StmtNode>
+                               ├─ VarDefNode
+                                  ├─ mut: "cst"
+                                  ├─ type: "I32"
+                                  ├─ name: "sum"
+                                  └─ value: BinopNode
+                                            ├─ op: TOKEN_PLUS
+                                            ├─ left:  VarRefNode
+                                                      └─ name: a
+                                            └─ right: VarRefNode
+                                                      └─ name: b
+                               └─ ReturnNode
+                                  └─ value: VarRefNode
+                                            └─ name: sum
+    ,
+    VarDefNode
+    ├─ mut: "var"
+    ├─ type: "I32"
+    ├─ name: "num1"
+    └─ value: BinopNode
+              ├─ op: TOKEN_DIV
+              ├─ left:  BinopNode
+                        ├─ op: TOKEN_PLUS
+                        ├─ left:  NumberNode
+                                  └─ value: 1
+                        └─ right: UnaryopNode
+                                  ├─ op: TOKEN_MINUS
+                                  └─ operand: NumberNode
+                                              └─ value: 2
+              └─ right: NumberNode
+                        └─ value: 3
+    ,
+        VarModifNode
+    ├─ name: "num1"
+    └─ value: BinopNode
+              ├─ op: TOKEN_DIV
+              ├─ left:  BinopNode
+                        ├─ op: TOKEN_MUL
+                        ├─ left:  NumberNode
+                                  └─ value: 3
+                        └─ right: NumberNode
+                                  └─ value: 4
+              └─ right: NumberNode
+                        └─ value: 3
+    ,
+    VarDefNode
+    ├─ mut: "cst"
+    ├─ type: "I32"
+    ├─ name: "num2"
+    └─ value: BinopNode
+              ├─ op: TOKEN_MINUS
+              ├─ left:  BinopNode
+                        ├─ op: TOKEN_MUL
+                        ├─ left:  BinopNode
+                                  ├─ op: TOKEN_PLUS
+                                  ├─ left:  VarRefNode
+                                            └─ name: num1
+                                  └─ right: NumberNode
+                                            └─ value: 3
+                        └─ right: NumberNode
+                                  └─ value: 2
+              └─ right: BinopNode
+                        ├─ op: TOKEN_MUL
+                        ├─ left:  NumberNode
+                                  └─ value: 4
+                        └─ right: BinopNode
+                                  ├─ op: TOKEN_MUL
+                                  ├─ left:  NumberNode
+                                            └─ value: 7
+                                  └─ right: UnaryopNode
+                                            ├─ op: TOKEN_MINUS
+                                            └─ operand: NumberNode
+                                                        └─ value: 12
+    ,
+    VarDefNode
+    ├─ mut: "var"
+    ├─ type: "I32"
+    ├─ name: "num3"
+    └─ value: NumberNode
+              └─ value: 7
+    ,
+        VarModifNode
+    ├─ name: "num3"
+    └─ value: BinopNode
+              ├─ op: TOKEN_PLUS
+              ├─ left:  VarRefNode
+                        └─ name: num3
+              └─ right: FunCallNode
+                        ├─ name: "add"
+                        ├─ args: List<ExprNode>
+                                 ├─ VarRefNode
+                                    └─ name: num1
+                                 └─ VarRefNode
+                                    └─ name: num2
+    ,
+    FunCallNode
+    ├─ name: "print_num"
+    ├─ args: List<ExprNode>
+             └─ VarRefNode
+                └─ name: num3
+    ,
+    BinopNode
+    ├─ op: TOKEN_PLUS
+    ├─ left:  NumberNode
+              └─ value: 1
+    └─ right: NumberNode
+              └─ value: 1
+    ,
+    VarRefNode
+    └─ name: num3
+
+]

@@ -6,7 +6,7 @@
 
 typedef struct Generator {
     const List* node_list;
-    I32 var_decl_offset;
+    I32 var_def_offset;
     List* variables; // List of strings (variable offsets)
     Str* asm_data;
     Str* asm_bss;
@@ -86,7 +86,7 @@ static Void generate_unaryop_node(Generator* generator, const UnaryOpNode* unode
 {
     if (unode->op == TOKEN_MINUS) {
         str_cat(generator->asm_start, "    movq    $");
-        str_cat(generator->asm_start, "-");               // hardcoded but it is ok for now
+        str_cat(generator->asm_start, "-"); // hardcoded but it is ok for now
         str_cat(generator->asm_start, unode->operand->number_node.value);
         str_cat(generator->asm_start, ", %rax\n");
     }
@@ -94,7 +94,6 @@ static Void generate_unaryop_node(Generator* generator, const UnaryOpNode* unode
         PANIC("We are only able to convert into asm minus symbol unaryop node");
     }
 }
-
 
 static Void generate_expression_node(Generator* generator, const ExprNode* expr_node)
 {
@@ -113,13 +112,13 @@ static Void generate_expression_node(Generator* generator, const ExprNode* expr_
     }
 }
 
-static Void generate_var_decl_node(Generator* generator, const VarDeclNode* vnode)
+static Void generate_var_def_node(Generator* generator, const VarDefNode* vnode)
 {
     if (dev_mode) {
         str_cat(generator->asm_start, "\n    # variables declaration\n");
     }
     Char var_offset[20];
-    sprintf(var_offset, "%d(%%rbp)", generator->var_decl_offset);
+    sprintf(var_offset, "%d(%%rbp)", generator->var_def_offset);
     list_push(generator->variables, var_offset);
 
     generate_expression_node(generator, vnode->value);
@@ -128,9 +127,8 @@ static Void generate_var_decl_node(Generator* generator, const VarDeclNode* vnod
     str_cat(generator->asm_start, var_offset);
     str_cat(generator->asm_start, "\n");
 
-    generator->var_decl_offset -= 8;
+    generator->var_def_offset -= 8;
 }
-
 
 void initialize_asm_instructions(Generator* generator)
 {
@@ -178,7 +176,6 @@ void initialize_asm_instructions(Generator* generator)
     str_cat(generator->asm_start, ", %rsp\n");
 }
 
-
 Void finalize_asm_instructions(Generator* generator)
 {
     // exit
@@ -212,11 +209,11 @@ Str* generate(const List* node_list)
 
     // Generate assembly code for each node
     for (I32 i = 0; i < node_list->size; i++) {
-        const StmtNode* node = (const StmtNode*)node_list->items[i];
+        const InstrNode* node = (const InstrNode*)node_list->items[i];
 
         switch (node->type) {
-            case NODE_VAR_DECL:
-                generate_var_decl_node(generator, &node->var_decl);
+            case NODE_VAR_DEF:
+                generate_var_def_node(generator, &node->var_def);
                 break;
             default:
                 UNREACHABLE();
