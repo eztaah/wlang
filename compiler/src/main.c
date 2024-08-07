@@ -1,11 +1,13 @@
-#include "compiler.h"
-#include "lib.h"
-#include "printer.h"
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "compiler.h"
+#include "lib.h"
+#include "printer.h"
+
 Bool dev_mode = FALSE;
-static Char* output_path;
+Bool compile = FALSE;
+static Char* output_path = "out/prog";
 static Char* source_path;
 
 static Void print_usage(Void)
@@ -58,6 +60,9 @@ static Void handle_arguments(const I32 argc, Char* argv[])
         else if (char_cmp(argv[i], "-d") || char_cmp(argv[i], "--dev-mode")) {
             dev_mode = TRUE;
         }
+        else if (char_cmp(argv[i], "-e") || char_cmp(argv[i], "--to-executable")) {
+            compile = TRUE;
+        }
         // if a wrong argument is given
         else {
             printf("%s is not a valid argument", argv[i]);
@@ -91,6 +96,11 @@ static Void compile_file(const Char* filename)
     str_free(asm_code);
 
     free(src);
+
+    if (compile) {
+        sh("as -D out/generator_output.s -o out/prog.o");
+        sh("ld -s -o out/prog out/prog.o");
+    }
 }
 
 I32 main(I32 argc, Char* argv[])
