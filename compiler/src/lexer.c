@@ -3,8 +3,8 @@
 #include "token.h"
 #include <ctype.h>
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 
 typedef struct {
     Char* src;
@@ -55,22 +55,34 @@ static Token* lex_word(Lexer* lexer)
 {
     Str* value = str_new("");
 
-    while (isalpha(lexer->c) || isdigit(lexer->c)) {
+    while (isalpha(lexer->c) || isdigit(lexer->c) || lexer->c == '_') {
         str_cat_c(value, lexer->c);
         lexer_advance(lexer);
     }
 
     I32 token_type;
+    // handle keywords
     if (str_cmp(value, "cst")) {
         token_type = TOKEN_MUT;
     }
     else if (str_cmp(value, "var")) {
         token_type = TOKEN_MUT;
     }
+    else if (str_cmp(value, "fun")) {
+        token_type = TOKEN_FUN;
+    }
+    else if (str_cmp(value, "return")) {
+        token_type = TOKEN_RETURN;
+    }
+
+    // handle types
     else if (str_cmp(value, "I32")) {
         token_type = TOKEN_TYPE;
     }
-    // for variables names
+    else if (str_cmp(value, "Void")) {
+        token_type = TOKEN_TYPE;
+    }
+    // handle variable variables names
     else {
         token_type = TOKEN_ID;
     }
@@ -80,16 +92,27 @@ static Token* lex_word(Lexer* lexer)
 
 static Void skip_whitespace(Lexer* lexer)
 {
-    while (lexer->c == ' ' || lexer->c == '\t') {
+    while (lexer->c == ' ' || lexer->c == '\t' || lexer->c == 13 || lexer->c == 10) {
         lexer_advance(lexer);
     }
 }
 
-static Token* lex_end_statement(Lexer* lexer)
+static void lexer_skip_comment(Lexer* lexer)
 {
-    Str* value = str_new(" ");
+    if (lexer->c == '#') {
+        while (lexer->c != '\n') {
+            lexer_advance(lexer);
+        }
+    }
 
-    Token* token = token_new(value, TOKEN_END_STATEMENT);
+    skip_whitespace(lexer);
+}
+
+static Token* lex_end_instruction(Lexer* lexer)
+{
+    Str* value = str_new(";");
+
+    Token* token = token_new(value, TOKEN_END_INSTR);
     lexer_advance(lexer);
 
     // handle other \n or carriage return
@@ -105,6 +128,7 @@ static Token* lex_next_token(Lexer* lexer)
     ASSERT(lexer->c != '\0', "lexer->c should not be \\0");
 
     skip_whitespace(lexer);
+    lexer_skip_comment(lexer);
 
     if (isalpha(lexer->c)) {
         return lex_word(lexer);
@@ -115,8 +139,8 @@ static Token* lex_next_token(Lexer* lexer)
     }
 
     // handle end of statement
-    if (lexer->c == 10 || lexer->c == 13) {
-        return lex_end_statement(lexer);
+    if (lexer->c == ';') {
+        return lex_end_instruction(lexer);
     }
 
     switch (lexer->c) {
@@ -130,12 +154,18 @@ static Token* lex_next_token(Lexer* lexer)
             return lex_symbol(lexer, TOKEN_MUL);
         case ':':
             return lex_symbol(lexer, TOKEN_COLON);
+        case ',':
+            return lex_symbol(lexer, TOKEN_COMMA);
         case '=':
             return lex_symbol(lexer, TOKEN_EQUAL);
         case '(':
             return lex_symbol(lexer, TOKEN_LPAREN);
         case ')':
             return lex_symbol(lexer, TOKEN_RPAREN);
+        case '{':
+            return lex_symbol(lexer, TOKEN_LBRACE);
+        case '}':
+            return lex_symbol(lexer, TOKEN_RBRACE);
         case '\0':
             break;
         default:
