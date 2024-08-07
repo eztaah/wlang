@@ -61,6 +61,16 @@ static Void print_expression_node(ExprNode* node, Str* output, I32 pos_x)
             str_cat(output, "└─ right: ");
             print_expression_node(node->bin_op_node.right, output, pos_x + 10);
             break;
+        case NODE_UNARYOP:
+            snprintf(buffer, sizeof(buffer), "UnaryopNode\n");
+            str_cat(output, buffer);
+            print_indent(output, pos_x);
+            snprintf(buffer, sizeof(buffer), "├─ op: %s\n", tokentype_to_string(node->unary_op_node.op));
+            str_cat(output, buffer);
+            print_indent(output, pos_x);
+            str_cat(output, "└─ operand: ");
+            print_expression_node(node->unary_op_node.operand, output, pos_x + 12);
+            break;
         default:
             UNREACHABLE();
             break;

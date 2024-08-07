@@ -16,6 +16,8 @@ typedef enum {
 
     TOKEN_COLON,
     TOKEN_EQUAL,
+    TOKEN_LPAREN,
+    TOKEN_RPAREN,
 
     TOKEN_END_STATEMENT,
     TOKEN_EOF

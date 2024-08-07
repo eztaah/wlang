@@ -132,6 +132,10 @@ static Token* lex_next_token(Lexer* lexer)
             return lex_symbol(lexer, TOKEN_COLON);
         case '=':
             return lex_symbol(lexer, TOKEN_EQUAL);
+        case '(':
+            return lex_symbol(lexer, TOKEN_LPAREN);
+        case ')':
+            return lex_symbol(lexer, TOKEN_RPAREN);
         case '\0':
             break;
         default:
