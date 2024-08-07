@@ -82,6 +82,19 @@ static Void generate_binop_node(Generator* generator, const BinopNode* bnode)
     }
 }
 
+static Void generate_unaryop_node(Generator* generator, const UnaryOpNode* unode)
+{
+    if (unode->op == TOKEN_MINUS) {
+        str_cat(generator->asm_start, "    movq    $");
+        str_cat(generator->asm_start, "-");               // hardcoded but it is ok for now
+        str_cat(generator->asm_start, unode->operand->number_node.value);
+        str_cat(generator->asm_start, ", %rax\n");
+    }
+    else {
+        PANIC("We are only able to convert into asm minus symbol unaryop node");
+    }
+}
+
 
 static Void generate_expression_node(Generator* generator, const ExprNode* expr_node)
 {
@@ -91,6 +104,9 @@ static Void generate_expression_node(Generator* generator, const ExprNode* expr_
             break;
         case NODE_BINOP:
             generate_binop_node(generator, &expr_node->bin_op_node);
+            break;
+        case NODE_UNARYOP:
+            generate_unaryop_node(generator, &expr_node->unary_op_node);
             break;
         default:
             UNREACHABLE();

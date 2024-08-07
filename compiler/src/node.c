@@ -27,6 +27,18 @@ ExprNode* binop_node_new(ExprNode* left, TokenType op, ExprNode* right)
     return expr_node;
 }
 
+ExprNode* unaryop_node_new(TokenType op, ExprNode* operand)
+{
+    ExprNode* node = malloc(sizeof(ExprNode));
+    if (!node) {
+        PANIC("malloc failed");
+    }
+    node->type = NODE_UNARYOP;
+    node->unary_op_node.op = op;
+    node->unary_op_node.operand = operand;
+    return node;
+}
+
 StmtNode* var_decl_node_new(const Char* type, const Char* name, ExprNode* value)
 {
     StmtNode* stmt_node = (StmtNode*)malloc(sizeof(StmtNode));
