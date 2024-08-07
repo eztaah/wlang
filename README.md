@@ -23,9 +23,7 @@ Usage:
     compiler --help                 display this help message and exit.
 
 Options:
-    -o, --output-dir <directory>    specify the output directory. (default: ./out/)
     -d, --dev-mode                  activate dev mode
-
     -e, --to-executable             assemble and link the generated assembly code into an executable
                                         - GNU assembler (as) and GNU linker (ld) will be needed during compilation time.
                                         - the generated executable will only run on x86_64 architecture and requires a Linux system with the GNU C Library (glibc).
