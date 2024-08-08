@@ -6,7 +6,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/compiler/wcompiler",
-            "args": ["test.w"],
+            "args": ["test/test.w", "-d"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/compiler/",
             "environment": [],

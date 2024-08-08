@@ -57,6 +57,7 @@ struct ExprNode {
 
 // EXPRESSION NODE
 
+
 typedef struct {
     Char* mut;
     Char* name;
@@ -74,21 +75,28 @@ typedef struct {
 } ReturnNode;
 
 typedef struct {
+    Char* char_location_ptr_name;
+} SyscallwriteNode;
+
+typedef struct {
     enum {
         NODE_VAR_DEF,
         NODE_VAR_MODIF,
         NODE_RETURN,
+        NODE_SYSCALLWRITE,
         NODE_EXPR
     } type;
     union {
         VarDefNode var_def;
         VarModifNode var_modif;
         ReturnNode return_node;
+        SyscallwriteNode syscallwrite_node;
         ExprNode expr_node;
     };
 } InstrNode;
 
 // INSTRUCTIONS NODE
+
 
 typedef struct {
     List* stmt_node_list;
@@ -102,17 +110,24 @@ typedef struct {
 } FunDefNode;
 
 typedef struct {
+    CodeblockNode* code_block;
+} StartNode;
+
+typedef struct {
     enum {
         NODE_INSTR,
         NODE_FUN_DEF,
+        NODE_START
     } type;
     union {
         InstrNode instr_node;
         FunDefNode fun_def_node;
+        StartNode start_node;
     };
 } StmtNode;
 
 // STATEMENT NODE
+
 
 ParamNode* param_node_new(Char* mut, Char* name, Char* type);
 
@@ -125,8 +140,10 @@ ExprNode* fun_call_node_new(const Char* name, List* expr_node_list);
 InstrNode* var_def_node_new(Char* mut, const Char* type, const Char* name, ExprNode* value);
 InstrNode* var_modif_node_new(const Char* name, ExprNode* value);
 InstrNode* return_node_new(ExprNode* expr_node);
+InstrNode* syscallwrite_node_new(Char* char_location_ptr_name);
 
 StmtNode* fun_def_node_new(Char* name, Char* return_type, List* param_node_list, CodeblockNode* code_block);
+StmtNode* start_node_new(CodeblockNode* code_block);
 
 CodeblockNode* code_block_new(List* stmt_node_list);
 
