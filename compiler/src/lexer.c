@@ -76,7 +76,7 @@ static Token* lex_word(Lexer* lexer)
     }
 
     // handle types
-    else if (str_cmp(value, "I32")) {
+    else if (str_cmp(value, "I64")) {
         token_type = TOKEN_TYPE;
     }
     else if (str_cmp(value, "Void")) {
@@ -99,14 +99,18 @@ static Void skip_whitespace(Lexer* lexer)
 
 static void lexer_skip_comment(Lexer* lexer)
 {
-    if (lexer->c == '#') {
-        while (lexer->c != '\n') {
+    while (lexer->c == '#') {
+        while (lexer->c != '\n' && lexer->c != '\0') {
             lexer_advance(lexer);
         }
+        if (lexer->c == '\n') {
+            lexer_advance(lexer);
+        }
+        skip_whitespace(lexer);
     }
-
     skip_whitespace(lexer);
 }
+
 
 static Token* lex_end_instruction(Lexer* lexer)
 {
@@ -130,7 +134,7 @@ static Token* lex_next_token(Lexer* lexer)
     skip_whitespace(lexer);
     lexer_skip_comment(lexer);
 
-    if (isalpha(lexer->c)) {
+    if (isalpha(lexer->c) || lexer->c == '_') {
         return lex_word(lexer);
     }
 
@@ -166,19 +170,21 @@ static Token* lex_next_token(Lexer* lexer)
             return lex_symbol(lexer, TOKEN_LBRACE);
         case '}':
             return lex_symbol(lexer, TOKEN_RBRACE);
+        case '@':
+            return lex_symbol(lexer, TOKEN_AT);
+        case '&':
+            return lex_symbol(lexer, TOKEN_AMPERSAND);
         case '\0':
-            break;
+            return lex_next_token_assumes(lexer, TOKEN_EOF);
         default:
             printf("[Lexer]: Unexpected character `%c` (%d)\n", lexer->c, (I32)lexer->c);
             exit(EXIT_FAILURE);
             break;
     }
-
-    return NULL;
 }
 
 /**
- * This function create a lexer (you can see a lexer as a tool that contain asm_data)
+ * This function create a lexer (you can see a lexer as a tool that contain data)
  */
 static Lexer* lexer_new(Char* src)
 {
