@@ -43,6 +43,20 @@ ExprNode* var_ref_node_new(Char* name)
     return expr_node;
 }
 
+ExprNode* var_addr_node_new(Char* name)
+{
+    ExprNode* expr_node = (ExprNode*)malloc(sizeof(ExprNode));
+    if (!expr_node) {
+        PANIC("failed to allocate memory");
+    }
+    expr_node->type = NODE_VAR_ADDR;
+    expr_node->var_addr_node.name = strdup(name);
+    if (!expr_node->var_addr_node.name) {
+        PANIC("failed to allocate memory");
+    }
+    return expr_node;
+}
+
 ExprNode* binop_node_new(ExprNode* left, TokenType op, ExprNode* right)
 {
     ExprNode* expr_node = (ExprNode*)malloc(sizeof(ExprNode));
@@ -124,7 +138,7 @@ InstrNode* var_modif_node_new(const Char* name, ExprNode* value)
     return instr_node;
 }
 
-InstrNode* return_node_new(ExprNode* expr_node)
+InstrNode* return_node_new(Bool is_empty, ExprNode* expr_node)
 {
     InstrNode* instr_node = (InstrNode*)malloc(sizeof(InstrNode));
     if (!instr_node) {
@@ -132,24 +146,26 @@ InstrNode* return_node_new(ExprNode* expr_node)
     }
 
     instr_node->type = NODE_RETURN;
+    instr_node->return_node.is_empty = is_empty;
     instr_node->return_node.expr_node = expr_node;
 
-    if (!instr_node->return_node.expr_node) {
-        PANIC("failed to allocate memory");
-    }
+    // if (!instr_node->return_node.expr_node) {
+    //     PANIC("failed to allocate memory");
+    // }
+    // We removed this line because of the fact that an expression can be NULL for the return statement
 
     return instr_node;
 }
 
-InstrNode* syscallwrite_node_new(Char* char_location_ptr_name)
+InstrNode* syscall_node_new(List* expr_node_list)
 {
     InstrNode* instr_node = (InstrNode*)malloc(sizeof(InstrNode));
     if (!instr_node) {
         PANIC("failed to allocate memory");
     }
 
-    instr_node->type = NODE_SYSCALLWRITE;
-    instr_node->syscallwrite_node.char_location_ptr_name = char_location_ptr_name;
+    instr_node->type = NODE_SYSCALL;
+    instr_node->syscall_node.expr_node_list = expr_node_list;
 
     return instr_node;
 }

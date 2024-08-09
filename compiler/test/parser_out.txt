@@ -10,7 +10,7 @@
     └─ code_block: CodeblockNode
                    └─ content: List<StmtNode>
                                ├─ VarDefNode
-                                  ├─ mut: "var"
+                                  ├─ mut: "cst"
                                   ├─ type: "I64"
                                   ├─ name: "ascii_code"
                                   └─ value: BinopNode
@@ -20,12 +20,78 @@
                                             └─ right: NumberNode
                                                       └─ value: 48
                                └─ ReturnNode
+                                  ├─ is_empty: "0"
                                   └─ value: VarRefNode
                                             └─ name: ascii_code
     ,
     FunDefNode
+    ├─ name: "exit"
+    ├─ return_type: "Void"
+    ├─ parameters: List<ParamNode>
+                   └─ ParamNode
+                      ├─ mut: "cst"
+                      ├─ type: "I64"
+                      └─ name: "error_code"
+    └─ code_block: CodeblockNode
+                   └─ content: List<StmtNode>
+                               └─ SyscallNode
+                                  └─ args: List<ExprNode>
+                                           ├─ NumberNode
+                                              └─ value: 60
+                                           ├─ VarRefNode
+                                              └─ name: error_code
+                                           ├─ NumberNode
+                                              └─ value: 0
+                                           ├─ NumberNode
+                                              └─ value: 0
+                                           ├─ NumberNode
+                                              └─ value: 0
+                                           ├─ NumberNode
+                                              └─ value: 0
+                                           └─ NumberNode
+                                              └─ value: 0
+    ,
+    FunDefNode
+    ├─ name: "write"
+    ├─ return_type: "Void"
+    ├─ parameters: List<ParamNode>
+                   ├─ ParamNode
+                      ├─ mut: "cst"
+                      ├─ type: "I64"
+                      └─ name: "fd"
+                   ├─ ParamNode
+                      ├─ mut: "cst"
+                      ├─ type: "I64"
+                      └─ name: "buf_addr"
+                   └─ ParamNode
+                      ├─ mut: "cst"
+                      ├─ type: "I64"
+                      └─ name: "count"
+    └─ code_block: CodeblockNode
+                   └─ content: List<StmtNode>
+                               ├─ SyscallNode
+                                  └─ args: List<ExprNode>
+                                           ├─ NumberNode
+                                              └─ value: 1
+                                           ├─ VarRefNode
+                                              └─ name: fd
+                                           ├─ VarRefNode
+                                              └─ name: buf_addr
+                                           ├─ VarRefNode
+                                              └─ name: count
+                                           ├─ NumberNode
+                                              └─ value: 0
+                                           ├─ NumberNode
+                                              └─ value: 0
+                                           └─ NumberNode
+                                              └─ value: 0
+                               └─ ReturnNode
+                                  ├─ is_empty: "1"
+                                  └─ value: NULL
+    ,
+    FunDefNode
     ├─ name: "print_num"
-    ├─ return_type: "I64"
+    ├─ return_type: "Void"
     ├─ parameters: List<ParamNode>
                    └─ ParamNode
                       ├─ mut: "cst"
@@ -34,27 +100,41 @@
     └─ code_block: CodeblockNode
                    └─ content: List<StmtNode>
                                ├─ VarDefNode
-                                  ├─ mut: "var"
+                                  ├─ mut: "cst"
                                   ├─ type: "I64"
                                   ├─ name: "asciicode"
                                   └─ value: FunCallNode
                                             ├─ name: "i32_to_asciicode"
-                                            ├─ args: List<ExprNode>
+                                            └─ args: List<ExprNode>
                                                      └─ VarRefNode
                                                         └─ name: num
-                               ├─ SyscallwriteNode
-                                  └─ char_location_ptr_name: "asciicode"
+                               ├─ FunCallNode
+                                  ├─ name: "write"
+                                  └─ args: List<ExprNode>
+                                           ├─ NumberNode
+                                              └─ value: 1
+                                           ├─ VarAddrNode
+                                              └─ name: asciicode
+                                           └─ NumberNode
+                                              └─ value: 1
                                ├─ VarDefNode
-                                  ├─ mut: "var"
+                                  ├─ mut: "cst"
                                   ├─ type: "I64"
                                   ├─ name: "new_line_ascii_code"
                                   └─ value: NumberNode
                                             └─ value: 10
-                               ├─ SyscallwriteNode
-                                  └─ char_location_ptr_name: "new_line_ascii_code"
+                               ├─ FunCallNode
+                                  ├─ name: "write"
+                                  └─ args: List<ExprNode>
+                                           ├─ NumberNode
+                                              └─ value: 1
+                                           ├─ VarAddrNode
+                                              └─ name: new_line_ascii_code
+                                           └─ NumberNode
+                                              └─ value: 1
                                └─ ReturnNode
-                                  └─ value: NumberNode
-                                            └─ value: 0
+                                  ├─ is_empty: "1"
+                                  └─ value: NULL
     ,
     FunDefNode
     ├─ name: "add"
@@ -81,6 +161,7 @@
                                             └─ right: VarRefNode
                                                       └─ name: b
                                └─ ReturnNode
+                                  ├─ is_empty: "0"
                                   └─ value: VarRefNode
                                             └─ name: sum
     ,
@@ -88,32 +169,37 @@
     └─ code_block: CodeblockNode
                    └─ content: List<StmtNode>
                                ├─ VarDefNode
-                                  ├─ mut: "var"
+                                  ├─ mut: "cst"
                                   ├─ type: "I64"
                                   ├─ name: "num1"
                                   └─ value: NumberNode
                                             └─ value: 4
                                ├─ VarDefNode
-                                  ├─ mut: "var"
+                                  ├─ mut: "cst"
                                   ├─ type: "I64"
                                   ├─ name: "num2"
                                   └─ value: NumberNode
-                                            └─ value: 2
+                                            └─ value: 4
                                ├─ VarDefNode
-                                  ├─ mut: "var"
+                                  ├─ mut: "cst"
                                   ├─ type: "I64"
                                   ├─ name: "sum"
                                   └─ value: FunCallNode
                                             ├─ name: "add"
-                                            ├─ args: List<ExprNode>
+                                            └─ args: List<ExprNode>
                                                      ├─ VarRefNode
                                                         └─ name: num1
                                                      └─ VarRefNode
                                                         └─ name: num2
-                               └─ FunCallNode
+                               ├─ FunCallNode
                                   ├─ name: "print_num"
-                                  ├─ args: List<ExprNode>
+                                  └─ args: List<ExprNode>
                                            └─ VarRefNode
                                               └─ name: sum
+                               └─ FunCallNode
+                                  ├─ name: "exit"
+                                  └─ args: List<ExprNode>
+                                           └─ NumberNode
+                                              └─ value: 0
 
 ]
