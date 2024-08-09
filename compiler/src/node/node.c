@@ -203,12 +203,12 @@ StmtNode* start_node_new(CodeblockNode* code_block)
     return stmt_node;
 }
 
-CodeblockNode* code_block_new(List* stmt_node_list)
+CodeblockNode* code_block_new(List* instr_node_list)
 {
     CodeblockNode* code_block = (CodeblockNode*)malloc(sizeof(CodeblockNode));
     if (!code_block) {
         PANIC("failed to allocate memory");
     }
-    code_block->stmt_node_list = stmt_node_list;
+    code_block->instr_node_list = instr_node_list;
     return code_block;
 }
