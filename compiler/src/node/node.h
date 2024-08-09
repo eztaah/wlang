@@ -106,7 +106,7 @@ typedef struct {
 
 
 typedef struct {
-    List* stmt_node_list;
+    List* instr_node_list;
 } CodeblockNode;
 
 typedef struct {
@@ -122,12 +122,10 @@ typedef struct {
 
 typedef struct {
     enum {
-        NODE_INSTR,
         NODE_FUN_DEF,
         NODE_START
     } type;
     union {
-        InstrNode instr_node;
         FunDefNode fun_def_node;
         StartNode start_node;
     };

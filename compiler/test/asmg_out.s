@@ -41,7 +41,23 @@ exit:
     subq    $88, %rsp
     # storing arguments into stackframe
     movq    %rdi, -8(%rbp)
+    movq    -8(%rbp), %rax
+    movq    %rax, %rdi
+    movq    $0, %rax
+    movq    %rax, %rsi
+    movq    $0, %rax
+    movq    %rax, %rdx
+    movq    $0, %rax
+    movq    %rax, %rcx
+    movq    $0, %rax
+    movq    %rax, %r8
+    movq    $0, %rax
+    movq    %rax, %r9
     movq    $60, %rax
+
+    # clean stack
+    movq    %rbp, %rsp
+    pop     %rbp
     syscall    
 write:
     # function prelude
@@ -52,6 +68,18 @@ write:
     movq    %rdi, -8(%rbp)
     movq    %rsi, -16(%rbp)
     movq    %rdx, -24(%rbp)
+    movq    -8(%rbp), %rax
+    movq    %rax, %rdi
+    movq    -16(%rbp), %rax
+    movq    %rax, %rsi
+    movq    -24(%rbp), %rax
+    movq    %rax, %rdx
+    movq    $0, %rax
+    movq    %rax, %rcx
+    movq    $0, %rax
+    movq    %rax, %r8
+    movq    $0, %rax
+    movq    %rax, %r9
     movq    $1, %rax
     syscall    
     # return statement
@@ -96,27 +124,19 @@ print_num:
     pop     %rbp
     ret
 
-add:
+test:
     # function prelude
     pushq   %rbp
     movq    %rsp, %rbp
     subq    $88, %rsp
     # storing arguments into stackframe
-    movq    %rdi, -8(%rbp)
-    movq    %rsi, -16(%rbp)
 
     # variables declaration
-    # < binop
-    movq    -16(%rbp), %rax
-    pushq   %rax
-    movq    -8(%rbp), %rax
-    pop     %rbx
-    add     %rbx, %rax
-    # binop >
-    movq    %rax, -24(%rbp)
+    movq    $1, %rax
+    movq    %rax, -8(%rbp)
 
     # return statement
-    movq    -24(%rbp), %rax
+    movq    -8(%rbp), %rax
     movq    %rbp, %rsp
     pop     %rbp
     ret
@@ -128,21 +148,13 @@ _start:
     subq    $88, %rsp
 
     # variables declaration
-    movq    $4, %rax
+    call    test
     movq    %rax, -8(%rbp)
 
     # variables declaration
-    movq    $4, %rax
+    movq    $7, %rax
     movq    %rax, -16(%rbp)
-
-    # variables declaration
-    movq    -8(%rbp), %rax
-    movq    %rax, %rdi
     movq    -16(%rbp), %rax
-    movq    %rax, %rsi
-    call    add
-    movq    %rax, -24(%rbp)
-    movq    -24(%rbp), %rax
     movq    %rax, %rdi
     call    print_num
     movq    $0, %rax
