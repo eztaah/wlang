@@ -97,6 +97,11 @@ static ExprNode* parse_primary(Parser* parser)
         Token token_id = parser_eat_assumes(parser, TOKEN_ID);
         return var_ref_node_new(token_id.value);
     }
+    else if (token.type == TOKEN_AMPERSAND) {
+        parser_eat_assumes(parser, TOKEN_AMPERSAND);   // eat &
+        Token token_id = parser_eat_assumes(parser, TOKEN_ID);
+        return var_addr_node_new(token_id.value);
+    }
     else if (token.type == TOKEN_LPAREN) {
         parser_eat(parser); // Eat '('
         ExprNode* expr = parse_expr(parser);
@@ -189,12 +194,19 @@ static InstrNode* parse_return(Parser* parser)
     parser_eat_assumes(parser, TOKEN_RETURN);
 
     // handling expression
-    ExprNode* expr_node = parse_expr(parser);
-
-    return return_node_new(expr_node);
+    if (parser->current_token.type != TOKEN_END_INSTR) {
+        Bool is_empty = FALSE;
+        ExprNode* expr_node = parse_expr(parser);
+        return return_node_new(is_empty, expr_node);
+    }
+    else {
+        Bool is_empty = TRUE;
+        ExprNode* expr_node = NULL;
+        return return_node_new(is_empty, expr_node);
+    }
 }
 
-static InstrNode* parse_syscallwrite(Parser* parser)
+static InstrNode* parse_syscall(Parser* parser)
 {
     // eat @ 
     parser_eat_assumes(parser, TOKEN_AT);
@@ -202,17 +214,19 @@ static InstrNode* parse_syscallwrite(Parser* parser)
     // eat name
     parser_eat_assumes(parser, TOKEN_ID);
 
-    // handle the argument given
     parser_eat_assumes(parser, TOKEN_LPAREN);
-    parser_eat_assumes(parser, TOKEN_AMPERSAND);
 
-    // handling name
-    Token name_token = parser_eat_assumes(parser, TOKEN_ID);
-    Char* char_location_ptr_name = strdup(name_token.value);
-
+    // handling arguments
+    List* expression_nodes_list = list_new(sizeof(ExprNode));
+    while (parser->current_token.type != TOKEN_RPAREN) {
+        list_push(expression_nodes_list, parse_expr(parser));
+        if (parser->current_token.type == TOKEN_COMMA) { // for handling case where this is the last parameters (and there is no comma after)
+            parser_eat_assumes(parser, TOKEN_COMMA);
+        }
+    }
     parser_eat_assumes(parser, TOKEN_RPAREN);
 
-    return syscallwrite_node_new(char_location_ptr_name);
+    return syscall_node_new(expression_nodes_list);
 }
 
 InstrNode* expr_to_instr_node(ExprNode* expr_node)
@@ -247,8 +261,8 @@ static InstrNode* parse_instr(Parser* parser)
         parser_eat_assumes(parser, TOKEN_END_INSTR);
         return return_node;
     }
-    else if ((parser->current_token.type == TOKEN_AT && parser->next_token.type == TOKEN_ID)) {
-        InstrNode* syscallwrite_node = parse_syscallwrite(parser);
+    else if ((parser->current_token.type == TOKEN_AT && parser->next_token.type == TOKEN_ID && strcmp(parser->next_token.value, "syscall") == 0)) {
+        InstrNode* syscallwrite_node = parse_syscall(parser);
         parser_eat_assumes(parser, TOKEN_END_INSTR);
         return syscallwrite_node;
     }
@@ -356,7 +370,7 @@ static StmtNode* parse_stmt(Parser* parser)
         StmtNode* fun_def_node = parse_fun_def(parser);
         return fun_def_node;
     }
-    if (parser->current_token.type == TOKEN_ID && strcmp(parser->current_token.value, "_start") == 0) {
+    else if (parser->current_token.type == TOKEN_ID && strcmp(parser->current_token.value, "_start") == 0) {
         StmtNode* fun_def_node = parse_start_def(parser);
         return fun_def_node;
     }
