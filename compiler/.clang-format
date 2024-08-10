@@ -1,0 +1,27 @@
+# https://clang.llvm.org/docs/ClangFormatStyleOptions.html
+# $ clang-format -i ./src/*
+# $ find ./src -name '*.c' -o -name '*.h' | xargs clang-format -i
+
+BasedOnStyle: LLVM
+UseTab: Never
+TabWidth: 4
+IndentWidth: 4
+ColumnLimit: 0
+BreakBeforeBraces: Custom
+IndentCaseLabels: true
+PointerAlignment: Left
+
+BraceWrapping:
+  AfterControlStatement: false
+  AfterEnum: false
+  AfterFunction: true
+  AfterNamespace: false
+  AfterStruct: false
+  AfterUnion: false
+  AfterExternBlock: false
+  BeforeCatch: false
+  BeforeElse: true
+  BeforeWhile: false
+  SplitEmptyFunction: true
+  SplitEmptyRecord: true
+  SplitEmptyNamespace: true

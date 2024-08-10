@@ -1,0 +1,34 @@
+: base
+print_libw_version()                                        : prints the version of the libw library
+exit(<64> status)                                           : exits the program with the provided status code
+sleep(<64> milliseconds)                                    : suspends execution for a specified duration in milliseconds
+srand()                                                     : seeds the random number generator
+<64> rand()                                                 : generates a pseudo-random number
+
+: conversion
+!aiic <64> digt_to_aiic(!digt <64> digt)                    : converts a digit (0-9) to its corresponding ASCII code
+!digt <64> aiic_to_digt(!aiic <64> aiic)                    : converts an ASCII code to its corresponding digit (0-9)
+<64> wstr_to_int(!wstr& <64> wstr, <64> str_size)           : converts a wstr to a 64-bit integer
+!wstr& <64> int_to_wstr(!wstr& <64> wstr, <64> str_size, <64> num)  : converts a 64-bit integer to a wstr
+!cstr& wstr_to_cstr(!wstr& <64> wstr, <64> str_size)        : converts a wstr to a standard C string (cstr)
+cstr_to_wstr(!cstr& <64> cstr, !wstr& wstr, <64> str_size)  : converts a standard C string (cstr) to a wstr
+
+: io
+print_aiic(!aiic <64> aiic)                                 : prints a single ASCII character
+print_num(<64> num)                                         : prints a 64-bit integer
+print_array(!array& <64> array_addr, <64> array_size)       : prints the contents of an array
+print_cstr(!cstr& <64> cstr, <64> str_size)                 : prints a C string (cstr)
+print_wstr(!wstr& <64> wstr, <64> str_size)                 : prints a wstr
+input(!wstr& <64> wstr, <64> str_size)                      : reads input into a wstr
+
+: memory
+!void& malloc(<64> len)                                     : allocates memory of the specified length
+free(!void& <64> addr, <64> len)                            : frees allocated memory at the specified address
+
+: math
+<64> abs(<64> x)                                            : returns the absolute value of x
+<64> max(<64> a, <64> b)                                    : returns the maximum of two values
+<64> min(<64> a, <64> b)                                    : returns the minimum of two values
+<64> pow(<64> base, <64> exponent)                          : returns base raised to the power of exponent
+<64> sqrt(<64> x)                                           : returns the square root of x
+

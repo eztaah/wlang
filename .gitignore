@@ -1,0 +1,4 @@
+.vscode/
+out/
+wlangc
+libw.a

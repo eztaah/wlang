@@ -1,0 +1,42 @@
+{
+  "name": "wlang",
+  "displayName": "wlang",
+  "description": "Language support for wlang.",
+  "publisher": "eztaah",
+  "license": "MIT",
+  "version": "1.0.3",
+  "keywords": [
+    "wlang",
+    "w",
+    "programming",
+    "language",
+    "syntax",
+    "highlighting"
+  ],
+  "bugs": {
+    "url": "https://github.com/eztaah/wlang/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/eztaah/wlang/tree/master/editors/wlang-vscode"
+  },
+  "engines": {
+    "vscode": "^1.50.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [{
+      "id": "w",
+      "aliases": ["w"],
+      "extensions": [".w"],
+      "configuration": "./language-configuration.json"
+    }],
+    "grammars": [{
+      "language": "w",
+      "scopeName": "source.w",
+      "path": "./syntaxes/wlang.tmLanguage.json"
+    }]
+  }
+}

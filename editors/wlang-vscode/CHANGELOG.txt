@@ -1,0 +1,10 @@
+---------------------------------------------------------------------------------------------------
+Version: 1.0.3   
+Date: 26.08.2024    
+
+  Features:    
+    - support for single line comments  
+    - [ret] -> keyword.control.w    
+    - [!<annotation>] -> entity.name.type.w    
+    - functions names -> entity.name.function.w    
+    - numbers and directives -> constant.w     
