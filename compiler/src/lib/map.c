@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-Map* map_new(Void) 
+Map* map_new(Void)
 {
     Map* map = (Map*)calloc(1, sizeof(Map));
     if (!map) {
@@ -13,7 +13,7 @@ Map* map_new(Void)
     return map;
 }
 
-Void map_put(Map* map, const Char* key, I32 value) 
+Void map_put(Map* map, const Char* key, I32 value)
 {
     MapEntry* entry = (MapEntry*)malloc(sizeof(MapEntry));
     if (!entry) {
@@ -33,22 +33,22 @@ Void map_put(Map* map, const Char* key, I32 value)
     map->entries[map->size++] = entry;
 }
 
-I32 map_get(Map* map, const Char* key) 
+I32 map_get(Map* map, const Char* key)
 {
     for (I32 i = 0; i < map->size; i++) {
         if (strcmp(map->entries[i]->key, key) == 0) {
             return map->entries[i]->value;
         }
     }
-    return -100;   // key not found
+    return -100; // key not found
 }
 
-Void map_free(Map* map) 
+Void map_free(Map* map)
 {
     for (I32 i = 0; i < map->size; i++) {
-        free(map->entries[i]->key); 
-        free(map->entries[i]);     
+        free(map->entries[i]->key);
+        free(map->entries[i]);
     }
     free(map->entries);
-    free(map);   
+    free(map);
 }

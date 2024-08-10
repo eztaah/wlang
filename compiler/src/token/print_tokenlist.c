@@ -9,7 +9,7 @@ Str* print_tokenlist(const List* token_list)
 {
     Str* output = str_new("[\n");
 
-    for (I32 i = 0; i < token_list->size-1; i++) {
+    for (I32 i = 0; i < token_list->size - 1; i++) {
         const Token* token = (Token*)token_list->items[i];
         if (token != NULL) {
             const Char* token_type_name = tokentype_to_string(token->type);
@@ -22,7 +22,6 @@ Str* print_tokenlist(const List* token_list)
                 str_cat(output, "\n");
             }
         }
-
     }
     str_cat(output, "]");
 

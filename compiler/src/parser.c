@@ -98,7 +98,7 @@ static ExprNode* parse_primary(Parser* parser)
         return var_ref_node_new(token_id.value);
     }
     else if (token.type == TOKEN_AMPERSAND) {
-        parser_eat_assumes(parser, TOKEN_AMPERSAND);   // eat &
+        parser_eat_assumes(parser, TOKEN_AMPERSAND); // eat &
         Token token_id = parser_eat_assumes(parser, TOKEN_ID);
         return var_addr_node_new(token_id.value);
     }
@@ -208,7 +208,7 @@ static InstrNode* parse_return(Parser* parser)
 
 static InstrNode* parse_syscall(Parser* parser)
 {
-    // eat @ 
+    // eat @
     parser_eat_assumes(parser, TOKEN_AT);
 
     // eat name
@@ -369,7 +369,9 @@ static StmtNode* parse_stmt(Parser* parser)
 
 List* parse(const List* token_list)
 {
-    printf("Parsing...\n");
+    if (verbose) {
+        printf("parsing...\n");
+    }
 
     Parser* parser = parser_new(token_list);
 

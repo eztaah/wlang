@@ -1,0 +1,1 @@
+syntax highlighting for .w files
