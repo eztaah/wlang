@@ -1,8 +1,8 @@
-# Convert a number (0-9) to its corresponding ASCII code and print it.
-fun print_num(cst num: I64): Void
+# Convert a digit to its corresponding ASCII code and print it.
+fun print_digit(cst digit: I64): Void
 {
     # convert the number to its ASCII code
-    cst asciicode: I64 = num + 48;
+    cst asciicode: I64 = digit + 48;
 
     # print the ASCII character (using write syscall)
     @syscall(1, 1, &asciicode, 1, 0, 0, 0);
@@ -27,7 +27,7 @@ _start
 
     # calculate the sum of num1 and num2, then print the result
     cst sum: I64 = add(num1, num2);
-    print_num(sum);
+    print_digit(sum);
 
     # exit the program (using exit syscall)
     @syscall(60, 0, 0, 0, 0, 0, 0);

@@ -16,20 +16,20 @@ typedef struct ExprNode ExprNode;
 
 typedef struct {
     Char* value;
-} NumberNode;
+} NumNode;
 
 typedef struct {
     Char* name;
-} VarRefNode;
+} VarrefNode;
 
 typedef struct {
     Char* name;
-} VarAddrNode;
+} VaraddrNode;
 
 typedef struct {
     TokenType op;
     ExprNode* operand;
-} UnaryOpNode;
+} UnaropNode;
 
 typedef struct {
     ExprNode* left;
@@ -40,7 +40,7 @@ typedef struct {
 typedef struct {
     Char* name;
     List* expr_node_list;
-} FunCallNode;
+} FuncallNode;
 
 struct ExprNode {
     enum {
@@ -52,16 +52,16 @@ struct ExprNode {
         NODE_FUN_CALL = 15,
     } type;
     union {
-        BinopNode bin_op_node;
-        UnaryOpNode unary_op_node;
-        VarRefNode var_ref_node;
-        VarAddrNode var_addr_node;
-        NumberNode number_node;
-        FunCallNode fun_call_node;
+        BinopNode binop_node;
+        UnaropNode unarop_node;
+        VarrefNode varref_node;
+        VaraddrNode varaddr_node;
+        NumNode num_node;
+        FuncallNode funcall_node;
     };
 };
 
-// EXPRESSION NODE
+// EXPRESSION NODES
 
 typedef struct {
     Char* mut;
@@ -86,69 +86,69 @@ typedef struct {
 
 typedef struct {
     enum {
-        NODE_VAR_DEF,
-        NODE_VAR_MODIF,
+        NODE_VARDEF,
+        NODE_VARMOD,
         NODE_RETURN,
         NODE_SYSCALL,
         NODE_EXPR
     } type;
     union {
-        VarDefNode var_def;
-        VarModifNode var_modif;
+        VarDefNode vardef_node;
+        VarModifNode varmod_node;
         ReturnNode return_node;
         SyscallNode syscall_node;
         ExprNode expr_node;
     };
-} InstrNode;
+} StmtNode;
 
-// INSTRUCTIONS NODE
+// STATEMENT NODES
 
 typedef struct {
-    List* instr_node_list;
+    List* stmt_node_list;
 } CodeblockNode;
 
 typedef struct {
     Char* name;
     Char* return_type;
     List* param_node_list;
-    CodeblockNode* code_block;
-} FunDefNode;
+    CodeblockNode* codeblock_node;
+} FundefNode;
 
 typedef struct {
-    CodeblockNode* code_block;
-} StartNode;
+    CodeblockNode* codeblock_node;
+} StartdefNode;
 
 typedef struct {
     enum {
-        NODE_FUN_DEF,
-        NODE_START
+        NODE_FUNDEF,
+        NODE_STARTDEF
     } type;
     union {
-        FunDefNode fun_def_node;
-        StartNode start_node;
+        FundefNode fundef_node;
+        StartdefNode startdef_node;
     };
-} StmtNode;
+} DefNode;
 
-// STATEMENT NODE
+// DEFINITION NODES
 
 ParamNode* param_node_new(Char* mut, Char* name, Char* type);
 
-ExprNode* number_node_new(Char* value);
-ExprNode* var_ref_node_new(Char* name);
-ExprNode* var_addr_node_new(Char* name);
+ExprNode* num_node_new(Char* value);
+ExprNode* varref_node_new(Char* name);
+ExprNode* varaddr_node_new(Char* name);
 ExprNode* binop_node_new(ExprNode* left, TokenType op, ExprNode* right);
-ExprNode* unaryop_node_new(TokenType op, ExprNode* operand);
-ExprNode* fun_call_node_new(const Char* name, List* expr_node_list);
+ExprNode* unarop_node_new(TokenType op, ExprNode* operand);
+ExprNode* funcall_node_new(const Char* name, List* expr_node_list);
 
-InstrNode* var_def_node_new(Char* mut, const Char* type, const Char* name, ExprNode* value);
-InstrNode* var_modif_node_new(const Char* name, ExprNode* value);
-InstrNode* return_node_new(Bool is_empty, ExprNode* expr_node);
-InstrNode* syscall_node_new(List* expr_node_list);
+StmtNode* vardef_node_new(Char* mut, const Char* type, const Char* name, ExprNode* value);
+StmtNode* varmod_node_new(const Char* name, ExprNode* value);
+StmtNode* return_node_new(Bool is_empty, ExprNode* expr_node);
+StmtNode* syscall_node_new(List* expr_node_list);
 
-StmtNode* fun_def_node_new(Char* name, Char* return_type, List* param_node_list, CodeblockNode* code_block);
-StmtNode* start_node_new(CodeblockNode* code_block);
+DefNode* fundef_node_new(Char* name, Char* return_type, List* param_node_list, CodeblockNode* codeblock_node);
+DefNode* startdef_node_new(CodeblockNode* codeblock_node);
 
-CodeblockNode* code_block_new(List* stmt_node_list);
+CodeblockNode* codeblock_node_new(List* def_node_list);
 
 Str* print_nodelist(const List* node_list);
 

@@ -1,6 +1,6 @@
 #include "lib.h"
-#include <stdlib.h>
-#include <string.h>
+#include <stdlib.h> // malloc()
+#include <string.h> // strcmp()
 
 Dict* dict_new(Void)
 {
@@ -15,6 +15,11 @@ Dict* dict_new(Void)
 
 Void dict_put(Dict* dict, const Char* key, I32 value)
 {
+    if (value == -1) {
+        PANIC("the value -1 is not allowed in a dict as it is used to indicate a missing key");
+        return;
+    }
+
     DictEntry* entry = (DictEntry*)malloc(sizeof(DictEntry));
     if (!entry) {
         PANIC("failed to allocate memory");
@@ -33,14 +38,14 @@ Void dict_put(Dict* dict, const Char* key, I32 value)
     dict->entries[dict->size++] = entry;
 }
 
-I32 dict_get(Dict* dict, const Char* key)
+I32 dict_get(const Dict* dict, const Char* key)
 {
     for (I32 i = 0; i < dict->size; i++) {
         if (strcmp(dict->entries[i]->key, key) == 0) {
             return dict->entries[i]->value;
         }
     }
-    return -100; // key not found
+    return -1; // key not found
 }
 
 Void dict_free(Dict* dict)
