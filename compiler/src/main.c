@@ -1,5 +1,6 @@
-#include <stdio.h>
-#include <stdlib.h>
+#include <stdio.h>  // printf()
+#include <stdlib.h> // exit(), free()
+#include <string.h>
 
 #include "compiler.h"
 #include "lib.h"
@@ -24,7 +25,7 @@ static Void print_usage(Void)
     printf("\n");
 }
 
-static Void handle_arguments(const I32 argc, Char* argv[])
+static Void handle_arguments(I32 argc, const Char* argv[])
 {
     // handle base arguments
     if (argc < 2) {
@@ -41,7 +42,7 @@ static Void handle_arguments(const I32 argc, Char* argv[])
     }
 
     // handle source file argument
-    source_path = argv[1];
+    source_path = strdup(argv[1]);
 
     // handle optional arguments
     for (I32 i = 2; i < argc; i++) {
@@ -59,12 +60,12 @@ static Void handle_arguments(const I32 argc, Char* argv[])
                         to_executable = TRUE;
                         break;
                     default:
-                        print(MSG_ERROR,"-%c is not a valid argument\n", argv[i][j]);
+                        print(MSG_ERROR, "-%c is not a valid argument\n", argv[i][j]);
                         print_usage();
                         exit(EXIT_FAILURE);
                 }
             }
-        } 
+        }
         else {
             // handle full length arguments
             if (char_cmp(argv[i], "-v") || char_cmp(argv[i], "--verbose")) {
@@ -78,7 +79,7 @@ static Void handle_arguments(const I32 argc, Char* argv[])
             }
             // if a wrong argument is given
             else {
-                print(MSG_ERROR,"%s is not a valid argument\n", argv[i]);
+                print(MSG_ERROR, "%s is not a valid argument\n", argv[i]);
                 print_usage();
                 exit(EXIT_FAILURE);
             }
@@ -122,7 +123,7 @@ static Void compile_file(const Char* filename)
     }
 }
 
-I32 main(I32 argc, Char* argv[])
+I32 main(I32 argc, const Char* argv[])
 {
     handle_arguments(argc, argv); // TODO: return a list with all the flags, and pass it to the compile_file function
 

@@ -1,6 +1,5 @@
 #include "lib.h"
-#include <stdlib.h>
-#include <string.h>
+#include <stdlib.h> // malloc()
 
 List* list_new(I32 item_size)
 {
