@@ -9,13 +9,19 @@
             "include": "#keyword"
         },
         {
+            "include": "#symbol"
+        },
+        {
             "include": "#type"
         },
         {
-            "include": "#function"
+            "include": "#function_name"
         },
         {
-            "include": "#constant"
+            "include": "#number"
+        },
+        {
+            "include": "#string"
         }
     ],    
     "repository": {
@@ -42,19 +48,35 @@
             "patterns": [
                 {
                     "name": "keyword.control.w",
-                    "match": "\\b(cst|var|fun|return)\\b"
+                    "match": "\\b(if|elif|else|while|for|cst|var|fun|return|from|import|export|replace|by)\\b"
                 }
             ]
         },
+        "symbol": {
+            "patterns": [
+                {
+                    "name": "keyword.control.w",
+                    "match": "\\&\\&|\\|\\||[\\+\\-\\*/%|^=!<>]"
+                },
+                {
+                    "name": "keyword.control.w",
+                    "match": "(?<!&)\\&(?![a-zA-Z0-9_])"
+                }
+            ]
+        },  
         "type": {
             "patterns": [
                 {
-                    "name": "entity.name.type.w",
-                    "match": "\\b(I64|Void)\\b"
+                    "name": "entity.name.type",
+                    "match": "\\b(I32|B32|C8|Void)\\b"
+                },
+                {
+                    "name": "entity.name.type",
+                    "match": "&(?:I32|B32|C8|Void)"
                 }
             ]
         },    
-        "function": {
+        "function_name": {
             "patterns": [
                 {
                     "name": "entity.name.function.w",
@@ -62,19 +84,23 @@
                 },
                 {
                     "name": "entity.name.function.w",
-                    "match": "_start"
+                    "match": "\\b[a-zA-Z_][a-zA-Z0-9_]*\\b(?=\\s*from\\b|\\s*\\b%import)"
                 }
             ]
         },
-        "constant": {
+        "number": {
             "patterns": [
                 {
-                    "name": "constant.w",
+                    "name": "constant.numeric.w",
                     "match": "\\b(0b[01]+|\\d+\\.?\\d*)\\b"
-                },
+                }
+            ]
+        },
+        "string": {
+            "patterns": [
                 {
-                    "name": "constant.w",
-                    "match": "@([a-zA-Z_][a-zA-Z0-9_]*)\\s*(?=\\()"
+                    "name": "string.w",
+                    "match": "\".*?\""
                 }
             ]
         }
