@@ -1,7 +1,8 @@
-#include "compiler.h"
 #include <ctype.h>  // isalpha(), isdigit()
 #include <stdlib.h> // exit()
 #include <string.h> // strlen()
+
+#include "compiler.h"
 
 typedef struct {
     const Char* src;
@@ -213,7 +214,6 @@ List* lex(const Char* src)
     // Add the EOF token to the array
     Token* token = lex_next_token_assumes(lexer, TOKEN_EOF);
     list_push(token_list, token);
-
 
     lexer_free(lexer);
     return token_list;
