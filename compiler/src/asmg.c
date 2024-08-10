@@ -1,7 +1,8 @@
-#include "compiler.h"
 #include <stdio.h>  // sprintf()
 #include <stdlib.h> // calloc()
 #include <string.h> // strcmp()
+
+#include "compiler.h"
 
 typedef struct AsmG {
     const List* node_list;

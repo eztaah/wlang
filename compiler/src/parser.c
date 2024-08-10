@@ -1,6 +1,7 @@
-#include "compiler.h"
 #include <stdlib.h> // calloc(), free()
 #include <string.h> // strdup()
+
+#include "compiler.h"
 
 typedef struct {
     const List* token_list;
@@ -28,7 +29,6 @@ static Parser* parser_new(const List* token_list)
 static Void parser_free(Parser* parser)
 {
     free(parser);
-    // TODO: Verify if we need to free the parser->token_list
 }
 
 static Token parser_eat(Parser* parser)

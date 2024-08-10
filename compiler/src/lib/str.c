@@ -1,6 +1,7 @@
-#include "lib.h"
 #include <stdlib.h> // malloc
 #include <string.h> // strcpy()
+
+#include "lib.h"
 
 Str* str_new(const Char* value)
 {

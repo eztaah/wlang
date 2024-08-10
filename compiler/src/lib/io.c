@@ -1,11 +1,12 @@
 #define _GNU_SOURCE
 
-#include "compiler.h" // dev_mode, verbose
-#include "lib.h"
 #include <stdio.h>    // printf()
 #include <stdlib.h>   // malloc(), free()
 #include <string.h>   // strcat()
 #include <sys/stat.h> // stat
+
+#include "compiler.h" // dev_mode, verbose
+#include "lib.h"
 
 Char* read_file(const Char* filename)
 {

@@ -1,6 +1,7 @@
+#include <stdio.h> // snprintf()
+
 #include "lib.h"
 #include "node.h"
-#include <stdio.h> // snprintf()
 
 static Void print_indent(Str* output, I32 pos_x)
 {

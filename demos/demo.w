@@ -32,3 +32,4 @@ _start
     # exit the program (using exit syscall)
     @syscall(60, 0, 0, 0, 0, 0, 0);
 }
+

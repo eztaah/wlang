@@ -1,6 +1,7 @@
-#include "lib.h"
 #include <stdlib.h> // malloc()
 #include <string.h> // strcmp()
+
+#include "lib.h"
 
 Dict* dict_new(Void)
 {

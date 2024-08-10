@@ -1,5 +1,6 @@
-#include "lib.h"
 #include <stdlib.h> // abort()
+
+#include "lib.h"
 
 Void application_panic(const Char* file_path, I32 line, const Char* format, ...)
 {

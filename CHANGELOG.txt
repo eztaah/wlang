@@ -1,4 +1,17 @@
-Changelog
+---------------------------------------------------------------------------------------------------
+Version: 0.2
+Date: 10.08.2024
 
-v0.1  
-    - fonctions, variable assignement, etc
+  Major Features:
+    - unary operations (e.g., `-`)  
+    - basic memory operations (address-of operator `&`) 
+    - function definitions and function calls  
+    - `@syscall` directive  
+
+---------------------------------------------------------------------------------------------------
+Version: 0.1
+Date: 07.08.2024
+
+  Major Features:
+    - basic arithmetic operations (+, -, *, /)  
+    - variable and constant declarations with type `i64`  
