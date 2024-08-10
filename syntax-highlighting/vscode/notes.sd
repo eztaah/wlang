@@ -1,11 +1,11 @@
 COMMANDS VS CODE EXTENSION : 
 
-# installer les outils
+# install tools
 $ sudo dnf install nodejs
 $ sudo npm install -g @vscode/vsce
 
-# créer le package
+# create vsce package
 $ vsce package --no-yarn 
 
-# edit l'extension 
+# edit extension on the marketplace
 https://marketplace.visualstudio.com/manage/publishers/eztaah

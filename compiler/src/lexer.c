@@ -1,4 +1,5 @@
 // #include <stdlib.h>
+#include "compiler.h"
 #include "lib.h"
 #include "token.h"
 #include <ctype.h>
@@ -111,7 +112,6 @@ static void lexer_skip_comment(Lexer* lexer)
     skip_whitespace(lexer);
 }
 
-
 static Token* lex_end_instruction(Lexer* lexer)
 {
     Str* value = str_new(";");
@@ -204,7 +204,9 @@ static Void lexer_free(Lexer* lexer)
 
 List* lex(Char* src)
 {
-    printf("Lexing...\n");
+    if (verbose) {
+        printf("lexing...\n");
+    }
 
     Lexer* lexer = lexer_new(src);
     List* token_list = list_new(sizeof(Token));

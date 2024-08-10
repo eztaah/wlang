@@ -1,4 +1,2 @@
-wcompiler
-
-as_out.o
-prog
+wlangc
+out/
