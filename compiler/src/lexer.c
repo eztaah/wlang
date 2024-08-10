@@ -177,7 +177,7 @@ static Token* lex_next_token(Lexer* lexer)
         case '\0':
             return lex_next_token_assumes(lexer, TOKEN_EOF);
         default:
-            printf("[Lexer]: Unexpected character `%c` (%d)\n", lexer->c, (I32)lexer->c);
+            print(MSG_ERROR,"[Lexer]: Unexpected character `%c` (%d)\n", lexer->c, (I32)lexer->c);
             exit(EXIT_FAILURE);
             break;
     }
@@ -204,9 +204,7 @@ static Void lexer_free(Lexer* lexer)
 
 List* lex(Char* src)
 {
-    if (verbose) {
-        printf("lexing...\n");
-    }
+    print(MSG_STEP, "lexing...\n");
 
     Lexer* lexer = lexer_new(src);
     List* token_list = list_new(sizeof(Token));

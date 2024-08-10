@@ -3,6 +3,8 @@
 
 #include "lib.h"
 #include <sys/types.h> // for ssize_t
+#include <stdarg.h>    // for va_start(), va_end(), va_list type
+
 
 typedef unsigned int U32;
 typedef size_t UX;
@@ -43,24 +45,33 @@ Char* str_to_char(const Str* str);
 Void str_free(Str* str);
 Bool char_cmp(const Char* s1, const Char* s2);
 
-// Map
+// Dict
 typedef struct {
     Char* key;
     I32 value;
-} MapEntry;
+} DictEntry;
 typedef struct {
-    MapEntry** entries;
+    DictEntry** entries;
     I32 size;
-} Map;
-Map* map_new(Void);
-Void map_put(Map* map, const Char* key, I32 value);
-I32 map_get(Map* map, const Char* key);
-Void map_free(Map* map);
+} Dict;
+Dict* dict_new(Void);
+Void dict_put(Dict* dict, const Char* key, I32 value);
+I32 dict_get(Dict* dict, const Char* key);
+Void dict_free(Dict* dict);
 
 // io
+typedef enum {
+    MSG_STEP,
+    MSG_INFO,
+    MSG_ERROR,
+} MsgType;
+
 Char* read_file(const Char* filename);
 Void write_file(const Char* filename, Char* outbuffer);
 Char* sh(const Char* cmd);
+Void create_dir(const Char* dir);
+void print_v(MsgType msg_type, const char *text, va_list args);
+void print(MsgType msg_type, const char *text, ...);
 
 // error handling
 Void application_panic(const Char* file_path, I32 line, const Char* format, ...);
