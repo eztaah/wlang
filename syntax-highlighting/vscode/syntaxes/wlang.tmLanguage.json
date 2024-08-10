@@ -70,7 +70,7 @@
             "patterns": [
                 {
                     "name": "constant.w",
-                    "match": "\\b(0b[01]+|\\d+\\.?\\d*)\\b"
+                    "match": "\\b\\d+\\b"
                 },
                 {
                     "name": "constant.w",
