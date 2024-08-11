@@ -1,10 +1,10 @@
 ---------------------------------------------------------------------------------------------------
-Version: 1.0.2
-Date: 10.08.2024
+Version: 1.0.2    
+Date: 10.08.2024    
 
-  Major Features:
-    - support for single line comments
-    - [cst, var, fun, return] -> keyword.control.w
-    - [I32, Void] -> entity.name.type.w
-    - functions names and "_start" -> entity.name.function.w
-    - numbers and directives -> constant.w 
+  Major Features:    
+    - support for single line comments    
+    - [cst, var, fun, return] -> keyword.control.w    
+    - [I32, Void] -> entity.name.type.w    
+    - functions names and "_start" -> entity.name.function.w    
+    - numbers and directives -> constant.w     
