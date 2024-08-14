@@ -1,0 +1,37 @@
+program = Program(function_declaration*)
+
+function_declaration = (identifier name, identifier* params, block? body)
+
+block = Block(statement*)
+
+statement = Return(exp)
+
+          | Expression(exp)
+
+          | Assignment(identifier, exp)
+
+          | If(exp condition, block then, block? else)
+
+          | Compound(block)
+
+          | Break
+
+          | Continue
+
+          | Loop(block body)
+
+          | Null
+
+exp = Constant(int)
+
+    | Var(identifier)
+
+    | Unary(unary_operator, exp)
+
+    | Binary(binary_operator, exp, exp)
+
+    | FunctionCall(identifier, exp* args)
+
+unary_operator = Negate
+
+binary_operator = Add | Subtract | Multiply | Divide
