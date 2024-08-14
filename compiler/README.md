@@ -15,7 +15,7 @@ The compiler is written in C, you can see the use of custom types and structures
     typedef int I32;
     typedef ssize_t IX;
     typedef float F32;
-    typedef char Char;
+    typedef Char Char;
     typedef void Void;
     typedef enum { 
         FALSE = 0, 

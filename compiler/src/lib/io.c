@@ -91,9 +91,9 @@ Void create_dir(const Char* dir)
 }
 
 #define MAX_LOG_LENGTH 1024
-void print_v(MsgType msg_type, const char* text, va_list args)
+void print_v(MsgType msg_type, const Char* text, va_list args)
 {
-    char buffer[MAX_LOG_LENGTH];
+    Char buffer[MAX_LOG_LENGTH];
 
     // using vsnprintf to format the text
     vsnprintf(buffer, MAX_LOG_LENGTH, text, args);
@@ -126,7 +126,7 @@ void print_v(MsgType msg_type, const char* text, va_list args)
     }
 }
 
-void print(MsgType msg_type, const char* text, ...)
+void print(MsgType msg_type, const Char* text, ...)
 {
     va_list args;
     va_start(args, text);

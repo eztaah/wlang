@@ -1,53 +1,38 @@
-# # ------------------------ UTILS LIBRARY ------------------------
-# fun i32_to_asciicode(cst num: I64): I64
-# {
-#     cst ascii_code: I64 = num + 48;
-
-#     return ascii_code;
-# }
-
-# # ------------------------ IO library ------------------------
-# # follow this order when passing arguments to syscall
-# # @syscall(rax, rdi, rsi, rdx, r10, r8, r9)
-# fun exit(cst error_code: I64): Void
-# {
-#     @syscall(60, error_code, 0, 0, 0, 0, 0);
-
-#     # we don't have to add return because we exit the program
-# }
-
-# fun write(cst fd: I64, cst buf_addr: I64, cst count: I64): Void
-# {
-#     @syscall(1, fd, buf_addr, count, 0, 0, 0);
-
-#     return;
-# }
-
-# fun print_digit(cst digit: I64): Void
-# {
-#     # print the digit
-#     cst asciicode: I64 = i32_to_asciicode(digit);
-#     write(1, &asciicode, 1);
-
-#     # print \n
-#     cst new_line_ascii_code: I64 = 10; 
-#     write(1, &new_line_ascii_code, 1);
-
-#     return;
-# }
-
-# ------------------------ USER CODE ------------------------
-fun add(cst a: I64, cst b: I64): I64
-{
-    return a + b;
+!fun digit_to_ascii(!digit digit) !ascii
+{   
+    ret digit + 48;
 }
 
-_start
+:Convert a digit to its corresponding ASCII code and print it.
+!prc print_digit(!digit digit)
 {
-    cst num1: I64 = 3 + 1;
-    cst num2: I64 = 5;
+    :convert the number to its ASCII code
+    !ascii asciicode = digit_to_ascii(digit);
 
-    cst sum: I64 = add(num1, num2);
+    :print the ASCII character (using write syscall)
+    @sysc(1, 1, &asciicode, 1, 0, 0, 0);
 
-    @syscall(60, 0, 0, 0, 0, 0, 0);
+    :print a newline character (using write syscall)
+    !ascii new_line = 10; 
+    @sysc(1, 1, &new_line, 1, 0, 0, 0);
+
+    ret; 
+}
+
+!fun add(!i64 a, !i64 b) !i64
+{
+    ret a + b;
+}
+
+!fun main()
+{
+    :define two !cst integers
+    !i64 num1 = 3;
+    !i64 num2 = 4;
+
+    :calculate the sum of num1 and num2, then print the result
+    !i64 sum = add(num1, num2);
+    print_digit(sum);
+
+    ret 0;
 }

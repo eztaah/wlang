@@ -5,6 +5,7 @@ The compiler is written in C and translates your high-level code into x86_64 GNU
 
 ```
 A ajouter : 
+wlangc est un compiler driver, il va gerer le preprocessing, et va aussi utiliser en interne as et ld pour generer l'elf executable. 
 
 Vision : 
     - le compilateur à pour but d'etre le plus simple possible

@@ -1,1 +1,1 @@
-Language support for the W programming language.
+Language support for wlang.

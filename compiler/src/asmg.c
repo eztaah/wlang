@@ -144,7 +144,7 @@ static Void asme_funcall(AsmG* asmg, const FuncallNode* funcall_node)
     I32 num_args = funcall_node->expr_node_list->size;
 
     // process the first 6 arguments, mapping them to registers
-    const char* reg_names[6] = {"%rdi", "%rsi", "%rdx", "%rcx", "%r8", "%r9"};
+    const Char* reg_names[6] = {"%rdi", "%rsi", "%rdx", "%rcx", "%r8", "%r9"};
     for (I32 i = 0; i < num_args && i < 6; i++) {
         const ExprNode* arg_expr = (ExprNode*)funcall_node->expr_node_list->items[i];
         asme_expr(asmg, arg_expr); // the result of the expression should be in %rax
@@ -159,21 +159,27 @@ static Void asme_funcall(AsmG* asmg, const FuncallNode* funcall_node)
     str_cat(asmg->text, "\n");
 }
 
-static Void asme_vardef(AsmG* asmg, const VarDefNode* vardef_node)
+static Void asme_varass(AsmG* asmg, const VarAssNode* varass_node)
 {
     if (dev_mode) {
-        str_cat(asmg->text, "\n    # variables declaration\n");
+        str_cat(asmg->text, "\n    # variables assignement\n");
     }
 
-    asme_expr(asmg, vardef_node->value); // the value of the variable will be in rax
+    asme_expr(asmg, varass_node->value); // the value of the variable will be in rax
 
-    // put var in the variable dict
+    // get full variable name
     Str* full_var_name = str_new(str_to_char(asmg->var_prefix));
     str_cat(full_var_name, "_");
-    str_cat(full_var_name, vardef_node->name);
-    dict_put(asmg->variables, str_to_char(full_var_name), asmg->rbp_offset);
+    str_cat(full_var_name, varass_node->name);
 
-    print(MSG_INFO, "add in the dict: \"%s\" at location %d\n", str_to_char(full_var_name), asmg->rbp_offset);
+    I32 var_pos = dict_get(asmg->variables, str_to_char(full_var_name));
+    if (var_pos == -1) {
+        // is the variable is not in the dict, add it in the dict
+
+        dict_put(asmg->variables, str_to_char(full_var_name), asmg->rbp_offset);
+
+        print(MSG_INFO, "add in the dict: \"%s\" at location %d\n", str_to_char(full_var_name), asmg->rbp_offset);
+    }
 
     Char var_location[256];
     sprintf(var_location, "%d(%%rbp)", asmg->rbp_offset);
@@ -185,41 +191,14 @@ static Void asme_vardef(AsmG* asmg, const VarDefNode* vardef_node)
     asmg->rbp_offset -= 8;
 }
 
-static Void asme_varmod(AsmG* asmg, const VarModifNode* varmod_node)
-{
-    if (dev_mode) {
-        str_cat(asmg->text, "\n    # variables modification\n");
-    }
-
-    asme_expr(asmg, varmod_node->value); // the value of the variable will be in rax
-
-    // combine function name and variable name
-    Str* full_var_name = str_new(str_to_char(asmg->var_prefix));
-    str_cat(full_var_name, "_");
-    str_cat(full_var_name, varmod_node->name);
-
-    I32 var_pos = dict_get(asmg->variables, str_to_char(full_var_name));
-    if (var_pos == -1) {
-        print(MSG_ERROR, "you want to modify %s, but this variable is not defined", str_to_char(full_var_name));
-        exit(EXIT_FAILURE);
-    }
-
-    Char var_pos_c[256];
-    sprintf(var_pos_c, "%d(%%rbp)", var_pos);
-
-    str_cat(asmg->text, "    movq    %rax, ");
-    str_cat(asmg->text, var_pos_c);
-    str_cat(asmg->text, "\n");
-}
-
-static Void asme_return(AsmG* asmg, const ReturnNode* return_node)
+static Void asme_return(AsmG* asmg, const RetNode* ret_node)
 {
     if (dev_mode) {
         str_cat(asmg->text, "\n    # return statement\n");
     }
 
-    if (!return_node->is_empty) {
-        asme_expr(asmg, return_node->expr_node); // this will put the value into rax
+    if (!ret_node->is_empty) {
+        asme_expr(asmg, ret_node->expr_node); // this will put the value into rax
     }
 
     str_cat(asmg->text, "    movq    %rbp, %rsp\n");
@@ -227,18 +206,18 @@ static Void asme_return(AsmG* asmg, const ReturnNode* return_node)
     str_cat(asmg->text, "    ret\n"); // we can use rax after to use the return value
 }
 
-static Void asme_syscall(AsmG* asmg, const SyscallNode* syscall_node)
+static Void asme_syscall(AsmG* asmg, const SyscNode* sysc_node)
 {
     if (dev_mode) {
         str_cat(asmg->text, "    # syscall\n");
     }
     // handle arguments
-    I32 num_args = syscall_node->expr_node_list->size;
+    I32 num_args = sysc_node->expr_node_list->size;
 
     // process the first 6 arguments, mapping them to registers
-    const char* reg_names[6] = {"%rdi", "%rsi", "%rdx", "%rcx", "%r8", "%r9"};
+    const Char* reg_names[6] = {"%rdi", "%rsi", "%rdx", "%rcx", "%r8", "%r9"};
     for (I32 i = 0; i < num_args && i < 6; i++) {
-        const ExprNode* arg_expr = (ExprNode*)syscall_node->expr_node_list->items[i + 1];
+        const ExprNode* arg_expr = (ExprNode*)sysc_node->expr_node_list->items[i + 1];
         asme_expr(asmg, arg_expr); // the result of the expression should be in %rax
         str_cat(asmg->text, "    movq    %rax, ");
         str_cat(asmg->text, reg_names[i]);
@@ -246,12 +225,12 @@ static Void asme_syscall(AsmG* asmg, const SyscallNode* syscall_node)
     }
 
     // process rax argument
-    const ExprNode* arg_expr = (ExprNode*)syscall_node->expr_node_list->items[0];
+    const ExprNode* arg_expr = (ExprNode*)sysc_node->expr_node_list->items[0];
     asme_expr(asmg, arg_expr); // the result of the expression should be in %rax
 
     // Clean stack if the syscall is a syscall exit
     // TOFIX: Will not work as expected if the error_code is not a number node
-    if (strcmp(((ExprNode*)syscall_node->expr_node_list->items[0])->num_node.value, "60") == 0) {
+    if (strcmp(((ExprNode*)sysc_node->expr_node_list->items[0])->num_node.value, "60") == 0) {
         if (dev_mode) {
             str_cat(asmg->text, "\n    # clean stack\n");
         }
@@ -339,32 +318,6 @@ static Void asme_fundef(AsmG* asmg, const FundefNode* fundef_node)
     }
 }
 
-static Void asme_start(AsmG* asmg, const StartdefNode* startdef_node)
-{
-    str_cat(asmg->text, "\n_start:\n");
-
-    // function prologue
-    if (dev_mode) {
-        str_cat(asmg->text, "    # function prelude\n");
-    }
-    str_cat(asmg->text, "    pushq   %rbp\n");
-    str_cat(asmg->text, "    movq    %rsp, %rbp\n");
-
-    str_cat(asmg->text, "    subq    $88, %rsp\n"); // you can store 11 variables in each function
-
-    asmg->rbp_offset = -8; // TODO: why not 0 ?
-
-    // put the function name in var_prefix
-    str_free(asmg->var_prefix);
-    asmg->var_prefix = str_new("_start");
-
-    // generate code for each stmt of the codeblock_node
-    for (I32 i = 0; i < startdef_node->codeblock_node->stmt_node_list->size; i++) {
-        const StmtNode* stmt_node = (StmtNode*)startdef_node->codeblock_node->stmt_node_list->items[i];
-        asme_stmt(asmg, stmt_node);
-    }
-}
-
 static Void asme_expr(AsmG* asmg, const ExprNode* expr_node)
 {
     switch (expr_node->type) {
@@ -400,40 +353,20 @@ static Void asme_expr(AsmG* asmg, const ExprNode* expr_node)
 static Void asme_stmt(AsmG* asmg, const StmtNode* stmt_node)
 {
     switch (stmt_node->type) {
-        case NODE_VARDEF:
-            asme_vardef(asmg, &stmt_node->vardef_node);
+        case NODE_VARASS:
+            asme_varass(asmg, &stmt_node->varass_node);
             break;
 
-        case NODE_VARMOD:
-            asme_varmod(asmg, &stmt_node->varmod_node);
+        case NODE_RET:
+            asme_return(asmg, &stmt_node->ret_node);
             break;
 
-        case NODE_RETURN:
-            asme_return(asmg, &stmt_node->return_node);
-            break;
-
-        case NODE_SYSCALL:
-            asme_syscall(asmg, &stmt_node->syscall_node);
+        case NODE_SYSC:
+            asme_syscall(asmg, &stmt_node->sysc_node);
             break;
 
         case NODE_EXPR:
             asme_expr(asmg, &stmt_node->expr_node);
-            break;
-
-        default:
-            UNREACHABLE();
-    }
-}
-
-static Void asme_def(AsmG* asmg, const DefNode* def_node)
-{
-    switch (def_node->type) {
-        case NODE_FUNDEF:
-            asme_fundef(asmg, &def_node->fundef_node);
-            break;
-
-        case NODE_STARTDEF:
-            asme_start(asmg, &def_node->startdef_node);
             break;
 
         default:
@@ -459,20 +392,27 @@ static void init_asm_file(AsmG* asmg)
     }
     str_cat(asmg->text, "    .section .text\n");
     str_cat(asmg->text, "    .global _start\n");
+
+    // _start code
+    str_cat(asmg->text, "\n_start:\n");
+    str_cat(asmg->text, "    call main\n");
+    str_cat(asmg->text, "    movq %rax, %rdi\n");
+    str_cat(asmg->text, "    movq $60, %rax\n");
+    str_cat(asmg->text, "    syscall\n");
 }
 
-Str* asme(const List* node_list)
+Str* asme(const List* fundef_node_list)
 {
     print(MSG_STEP, "generating assembly...\n");
-    AsmG* asmg = asmg_new(node_list);
+    AsmG* asmg = asmg_new(fundef_node_list);
 
     // initialize asm stmtuctions
     init_asm_file(asmg);
 
     // Generate assembly code for each node
-    for (I32 i = 0; i < node_list->size; i++) {
-        const DefNode* def_node = (DefNode*)node_list->items[i];
-        asme_def(asmg, def_node);
+    for (I32 i = 0; i < fundef_node_list->size; i++) {
+        const FundefNode* fundef_node = (FundefNode*)fundef_node_list->items[i];
+        asme_fundef(asmg, fundef_node);
     }
 
     // concatenate all code into one string
