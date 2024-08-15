@@ -21,6 +21,10 @@ typedef struct {
 } VarrefNode;
 
 typedef struct {
+    ExprNode* expr;
+} AddrderefNode;
+
+typedef struct {
     Char* name;
 } VaraddrNode;
 
@@ -42,17 +46,19 @@ typedef struct {
 
 struct ExprNode {
     enum {
-        NODE_NUMBER = 10,
-        NODE_VAR_REF = 11,
-        NODE_VAR_ADDR = 12,
-        NODE_BINOP = 13,
-        NODE_UNARYOP = 14,
-        NODE_FUN_CALL = 15,
+        NODE_NUM = 10,
+        NODE_VARREF = 11,
+        NODE_ADDRDEREF = 12,
+        NODE_VARADDR = 13,
+        NODE_BINOP = 14,
+        NODE_UNARYOP = 15,
+        NODE_FUNCALL = 16,
     } type;
     union {
         BinopNode binop_node;
         UnaropNode unarop_node;
         VarrefNode varref_node;
+        AddrderefNode addrderef_node;
         VaraddrNode varaddr_node;
         NumNode num_node;
         FuncallNode funcall_node;
@@ -62,12 +68,11 @@ struct ExprNode {
 // EXPRESSION NODES
 
 typedef struct {
-    Char* name;
+    ExprNode* lvalue;
     ExprNode* value;
 } VarAssNode;
 
 typedef struct {
-    Bool is_empty; // not the right way of doing it but ok for now
     ExprNode* expr_node;
 } RetNode;
 
@@ -109,13 +114,14 @@ ParamNode* param_node_new(Char* name);
 
 ExprNode* num_node_new(Char* value);
 ExprNode* varref_node_new(Char* name);
+ExprNode* addrderef_node_new(ExprNode* expr);
 ExprNode* varaddr_node_new(Char* name);
 ExprNode* binop_node_new(ExprNode* left, TokenType op, ExprNode* right);
 ExprNode* unarop_node_new(TokenType op, ExprNode* operand);
 ExprNode* funcall_node_new(const Char* name, List* expr_node_list);
 
-StmtNode* varass_node_new(const Char* name, ExprNode* value);
-StmtNode* ret_node_new(Bool is_empty, ExprNode* expr_node);
+StmtNode* varass_node_new(ExprNode* lvalue, ExprNode* value);
+StmtNode* ret_node_new(ExprNode* expr_node);
 StmtNode* sysc_node_new(List* expr_node_list);
 
 FundefNode* fundef_node_new(Char* name, Char* scope, List* param_node_list, CodeblockNode* codeblock_node);

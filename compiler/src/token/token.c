@@ -73,6 +73,9 @@ Char* tokentype_to_string(TokenType tokentype)
         case TOKEN_AMPERSAND:
             return "TOKEN_AMPERSAND";
             break;
+        case TOKEN_ASTERIX:
+            return "TOKEN_ASTERIX";
+            break;
         case TOKEN_SEMI:
             return "TOKEN_SEMI";
             break;

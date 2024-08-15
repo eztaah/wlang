@@ -120,6 +120,11 @@ static ExprNode* parse_primary(Parser* parser)
         Token token_id = eat_next_token(parser, TOKEN_ID);
         return varref_node_new(token_id.value);
     }
+    else if (parser->current_token.type == TOKEN_ASTERIX) {
+        eat_next_token(parser, TOKEN_ASTERIX);
+        ExprNode* expr = parse_expr(parser);
+        return addrderef_node_new(expr);
+    }
     else if (parser->current_token.type == TOKEN_AMPERSAND) {
         eat_next_token(parser, TOKEN_AMPERSAND); // eat &
         Token token_id = eat_next_token(parser, TOKEN_ID);
@@ -173,34 +178,13 @@ static ExprNode* parse_expr(Parser* parser)
     return parse_additive(parser);
 }
 
-static StmtNode* parse_varass(Parser* parser)
-{
-    // handling name
-    Token name_token = eat_next_token(parser, TOKEN_ID);
-    Char* name = strdup(name_token.value);
-
-    // handling content
-    eat_next_token(parser, TOKEN_EQUAL);
-    ExprNode* value = parse_expr(parser);
-
-    return varass_node_new(name, value);
-}
-
 static StmtNode* parse_ret(Parser* parser)
 {
     eat_next_token(parser, TOKEN_RET);
 
     // handling expression
-    if (parser->current_token.type != TOKEN_SEMI) {
-        Bool is_empty = FALSE;
-        ExprNode* expr_node = parse_expr(parser);
-        return ret_node_new(is_empty, expr_node);
-    }
-    else {
-        Bool is_empty = TRUE;
-        ExprNode* expr_node = NULL;
-        return ret_node_new(is_empty, expr_node);
-    }
+    ExprNode* expr_node = parse_expr(parser);
+    return ret_node_new(expr_node);
 }
 
 static StmtNode* parse_sysc(Parser* parser)
@@ -246,13 +230,6 @@ static StmtNode* parse_stmt(Parser* parser)
         return ret_node;
     }
 
-    // parser var assignement
-    else if (parser->current_token.type == TOKEN_ID && parser->next_token.type == TOKEN_EQUAL) {
-        StmtNode* varass_node = parse_varass(parser);
-        eat_next_token(parser, TOKEN_SEMI);
-        return varass_node;
-    }
-
     // parse syscall
     else if ((parser->current_token.type == TOKEN_PERCENT && parser->next_token.type == TOKEN_ID && strcmp(parser->next_token.value, "sysc") == 0)) {
         StmtNode* sysc_node = parse_sysc(parser);
@@ -262,9 +239,27 @@ static StmtNode* parse_stmt(Parser* parser)
 
     // parse expression
     else {
-        StmtNode* expr_node = expr_to_stmt_node(parse_expr(parser));
-        eat_next_token(parser, TOKEN_SEMI);
-        return expr_node;
+        ExprNode* expr_node1 = parse_expr(parser);
+
+        // handle var assignement
+        if (parser->current_token.type == TOKEN_EQUAL) {
+            eat_next_token(parser, TOKEN_EQUAL);
+
+            // parse value of the var assigmeent
+            ExprNode* expr_node2 = parse_expr(parser);
+
+            eat_next_token(parser, TOKEN_SEMI);
+
+            StmtNode* varass_node = varass_node_new(expr_node1, expr_node2);
+            return varass_node;
+        }
+
+        else {
+            StmtNode* stmt_node = expr_to_stmt_node(expr_node1);
+            eat_next_token(parser, TOKEN_SEMI);
+
+            return stmt_node;
+        }
     }
 }
 

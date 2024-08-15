@@ -1,5 +1,5 @@
-! def add(!int a, !int b)        from ./add.w
-! def print_digit(!digit digit)  from std
+! def int  add(int a, int b)       from ./add.w
+! def void print_digit(digit num)  from ./io.w
 
 glb !int main()
 {
