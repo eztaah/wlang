@@ -290,6 +290,10 @@ static Void print_fundef_node(const FundefNode* fundef_node, Str* output, I32 po
     str_cat(output, buffer);
 
     print_indent(output, pos_x);
+    snprintf(buffer, sizeof(buffer), "├─ scope: \"%s\"\n", fundef_node->scope);
+    str_cat(output, buffer);
+
+    print_indent(output, pos_x);
     str_cat(output, "├─ parameters: ");
     print_param_node_list(fundef_node->param_node_list, output, pos_x + 15);
 

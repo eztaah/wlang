@@ -32,6 +32,10 @@
                 {
                     "name": "entity.name.type.w",
                     "match": "!\\w+(\\([^)]*\\))?"
+                },
+                {
+                    "name": "entity.name.type.w",
+                    "match": "!\\s.*$"
                 }
             ]
         }, 
@@ -39,7 +43,7 @@
             "patterns": [
                 {
                     "name": "keyword.control.w",
-                    "match": "\\b(ret)\\b"
+                    "match": "\\b(ret|glb)\\b"
                 }
             ]
         },
@@ -48,6 +52,10 @@
                 {
                     "name": "entity.name.function.w",
                     "match": "\\b([a-zA-Z_][a-zA-Z0-9_]*)\\s*(?=\\()"
+                },
+                {
+                    "name": "entity.name.function.w",
+                    "match": "@([a-zA-Z_][a-zA-Z0-9_]*)\\s*(?=\\()"
                 }
             ]
         },
@@ -59,7 +67,7 @@
                 },
                 {
                     "name": "constant.w",
-                    "match": "@([a-zA-Z_][a-zA-Z0-9_]*)\\s*(?=\\()"
+                    "match": "%([a-zA-Z_][a-zA-Z0-9_]*)\\s*(?=\\()"
                 }
             ]
         }

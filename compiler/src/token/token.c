@@ -37,6 +37,9 @@ Char* tokentype_to_string(TokenType tokentype)
         case TOKEN_RET:
             return "TOKEN_RET";
             break;
+        case TOKEN_GLB:
+            return "TOKEN_GLB";
+            break;
         case TOKEN_ID:
             return "TOKEN_ID";
             break;
@@ -63,6 +66,9 @@ Char* tokentype_to_string(TokenType tokentype)
             break;
         case TOKEN_AT:
             return "TOKEN_AT";
+            break;
+        case TOKEN_PERCENT:
+            return "TOKEN_PERCENT";
             break;
         case TOKEN_AMPERSAND:
             return "TOKEN_AMPERSAND";

@@ -79,6 +79,9 @@ static Token* lex_word(Lexer* lexer)
     if (str_cmp(value, "ret")) {
         token_type = TOKEN_RET;
     }
+    else if (str_cmp(value, "glb")) {
+        token_type = TOKEN_GLB;
+    }
     else {
         token_type = TOKEN_ID;
     }
@@ -112,24 +115,45 @@ static Void skip_annotations(Lexer* lexer)
     while (lexer->c == '!') {
         lexer_advance(lexer); // skip the '!' character
 
-        while (isalnum(lexer->c) || lexer->c == '_') {
-            lexer_advance(lexer);
-        }
-
-        // skip any whitespace after the annotation
-        skip_whitespace(lexer);
-
-        // handles case where annotations are followed by function signatures or chained annotations.
-        if (lexer->c == '(') {
-            while (lexer->c != ')') {
+        // Check what follows the '!'
+        if (isspace(lexer->c)) {
+            // Skip the entire line if '!' is followed by whitespace
+            while (lexer->c != '\n' && lexer->c != '\0') {
                 lexer_advance(lexer);
             }
-            lexer_advance(lexer); // skip the closing ')'
+        } else {
+            // Skip the word following '!' if '!' is immediately followed by a word
+            while (isalnum(lexer->c) || lexer->c == '_') {
+                lexer_advance(lexer);
+            }
+
+            // Skip any whitespace after the annotation
+            skip_whitespace(lexer);
+
+            // Handle cases where annotations are followed by function signatures or chained annotations
+            if (lexer->c == '(') {
+                int parentheses_count = 1;
+                lexer_advance(lexer); // Skip the '('
+
+                while (parentheses_count > 0 && lexer->c != '\0') {
+                    if (lexer->c == '(') {
+                        parentheses_count++;
+                    } else if (lexer->c == ')') {
+                        parentheses_count--;
+                    }
+                    lexer_advance(lexer);
+                }
+                if (lexer->c == ')') {
+                    lexer_advance(lexer); // Skip the closing ')'
+                }
+            }
         }
 
+        // Skip any additional whitespace before the next possible annotation
         skip_whitespace(lexer);
     }
 }
+
 
 static Token* lex_next_token(Lexer* lexer)
 {
@@ -170,6 +194,8 @@ static Token* lex_next_token(Lexer* lexer)
             return lex_symbol(lexer, TOKEN_RBRACE);
         case '@':
             return lex_symbol(lexer, TOKEN_AT);
+        case '%':
+            return lex_symbol(lexer, TOKEN_PERCENT);
         case '&':
             return lex_symbol(lexer, TOKEN_AMPERSAND);
         case ';':

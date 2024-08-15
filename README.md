@@ -7,6 +7,8 @@ The compiler is written in C and translates your high-level code into x86_64 GNU
 A ajouter : 
 wlangc est un compiler driver, il va gerer le preprocessing, et va aussi utiliser en interne as et ld pour generer l'elf executable. 
 
+Lors du linkage, votre systeme a besoin d'avoir la libc sur son systeme, le linkage est dynamic (la libc n'est pas inclus dans l'executable), link avec ce fichier : ld-linux-x86-64.so.2
+
 Vision : 
     - le compilateur à pour but d'etre le plus simple possible
     - le compilateur ne fournit aucune optimisation

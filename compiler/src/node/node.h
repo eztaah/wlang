@@ -98,6 +98,7 @@ typedef struct {
 
 typedef struct {
     Char* name;
+    Char* scope;
     List* param_node_list;
     CodeblockNode* codeblock_node;
 } FundefNode;
@@ -117,7 +118,7 @@ StmtNode* varass_node_new(const Char* name, ExprNode* value);
 StmtNode* ret_node_new(Bool is_empty, ExprNode* expr_node);
 StmtNode* sysc_node_new(List* expr_node_list);
 
-FundefNode* fundef_node_new(Char* name, List* param_node_list, CodeblockNode* codeblock_node);
+FundefNode* fundef_node_new(Char* name, Char* scope, List* param_node_list, CodeblockNode* codeblock_node);
 
 CodeblockNode* codeblock_node_new(List* def_node_list);
 

@@ -148,7 +148,7 @@ StmtNode* sysc_node_new(List* expr_node_list)
     return sysc_node;
 }
 
-FundefNode* fundef_node_new(Char* name, List* param_node_list, CodeblockNode* codeblock_node)
+FundefNode* fundef_node_new(Char* name, Char* scope, List* param_node_list, CodeblockNode* codeblock_node)
 {
     FundefNode* fundef_node = (FundefNode*)malloc(sizeof(FundefNode));
     if (!fundef_node) {
@@ -156,6 +156,7 @@ FundefNode* fundef_node_new(Char* name, List* param_node_list, CodeblockNode* co
     }
 
     fundef_node->name = strdup(name);
+    fundef_node->scope = strdup(scope);
     fundef_node->param_node_list = param_node_list;
     fundef_node->codeblock_node = codeblock_node;
 
