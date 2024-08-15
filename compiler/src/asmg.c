@@ -193,6 +193,42 @@ static Void asme_funcall(AsmG* asmg, const FuncallNode* funcall_node)
     str_cat(asmg->text, "\n");
 }
 
+static Void asme_syscall(AsmG* asmg, const SyscNode* sysc_node)
+{
+    if (dev_mode) {
+        str_cat(asmg->text, "    # syscall\n");
+    }
+    // handle arguments
+    I32 num_args = sysc_node->expr_node_list->size;
+
+    // process the first 6 arguments, mapping them to registers
+    const Char* reg_names[6] = {"%rdi", "%rsi", "%rdx", "%rcx", "%r8", "%r9"};
+    for (I32 i = 0; i < num_args && i < 6; i++) {
+        const ExprNode* arg_expr = (ExprNode*)sysc_node->expr_node_list->items[i + 1];
+        asme_expr(asmg, arg_expr); // the result of the expression should be in %rax
+        str_cat(asmg->text, "    movq    %rax, ");
+        str_cat(asmg->text, reg_names[i]);
+        str_cat(asmg->text, "\n");
+    }
+
+    // process rax argument
+    const ExprNode* arg_expr = (ExprNode*)sysc_node->expr_node_list->items[0];
+    asme_expr(asmg, arg_expr); // the result of the expression should be in %rax
+
+    // Clean stack if the syscall is a syscall exit
+    // TOFIX: Will not work as expected if the error_code is not a number node
+    if (strcmp(((ExprNode*)sysc_node->expr_node_list->items[0])->num_node.value, "60") == 0) {
+        if (dev_mode) {
+            str_cat(asmg->text, "\n    # clean stack\n");
+        }
+        str_cat(asmg->text, "    movq    %rbp, %rsp\n");
+        str_cat(asmg->text, "    pop     %rbp\n");
+    }
+
+    // call the function
+    str_cat(asmg->text, "    syscall\n");
+}
+
 static Void asme_lexpr(AsmG* asmg, const ExprNode* expr_node);
 
 static Void asme_varass(AsmG* asmg, const VarAssNode* varass_node)
@@ -229,41 +265,7 @@ static Void asme_ret(AsmG* asmg, const RetNode* ret_node)
     str_cat(asmg->text, "    ret\n"); // we can use rax after to use the return value
 }
 
-static Void asme_syscall(AsmG* asmg, const SyscNode* sysc_node)
-{
-    if (dev_mode) {
-        str_cat(asmg->text, "    # syscall\n");
-    }
-    // handle arguments
-    I32 num_args = sysc_node->expr_node_list->size;
 
-    // process the first 6 arguments, mapping them to registers
-    const Char* reg_names[6] = {"%rdi", "%rsi", "%rdx", "%rcx", "%r8", "%r9"};
-    for (I32 i = 0; i < num_args && i < 6; i++) {
-        const ExprNode* arg_expr = (ExprNode*)sysc_node->expr_node_list->items[i + 1];
-        asme_expr(asmg, arg_expr); // the result of the expression should be in %rax
-        str_cat(asmg->text, "    movq    %rax, ");
-        str_cat(asmg->text, reg_names[i]);
-        str_cat(asmg->text, "\n");
-    }
-
-    // process rax argument
-    const ExprNode* arg_expr = (ExprNode*)sysc_node->expr_node_list->items[0];
-    asme_expr(asmg, arg_expr); // the result of the expression should be in %rax
-
-    // Clean stack if the syscall is a syscall exit
-    // TOFIX: Will not work as expected if the error_code is not a number node
-    if (strcmp(((ExprNode*)sysc_node->expr_node_list->items[0])->num_node.value, "60") == 0) {
-        if (dev_mode) {
-            str_cat(asmg->text, "\n    # clean stack\n");
-        }
-        str_cat(asmg->text, "    movq    %rbp, %rsp\n");
-        str_cat(asmg->text, "    pop     %rbp\n");
-    }
-
-    // call the function
-    str_cat(asmg->text, "    syscall\n");
-}
 
 static Void asme_fundef(AsmG* asmg, const FundefNode* fundef_node)
 {
@@ -413,6 +415,10 @@ static Void asme_expr(AsmG* asmg, const ExprNode* expr_node)
             asme_funcall(asmg, &expr_node->funcall_node);
             break;
 
+        case NODE_SYSC:
+            asme_syscall(asmg, &expr_node->sysc_node);
+            break;
+
         default:
             UNREACHABLE();
     }
@@ -427,10 +433,6 @@ static Void asme_stmt(AsmG* asmg, const StmtNode* stmt_node)
 
         case NODE_RET:
             asme_ret(asmg, &stmt_node->ret_node);
-            break;
-
-        case NODE_SYSC:
-            asme_syscall(asmg, &stmt_node->sysc_node);
             break;
 
         case NODE_EXPR:

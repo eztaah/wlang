@@ -44,6 +44,10 @@ typedef struct {
     List* expr_node_list;
 } FuncallNode;
 
+typedef struct {
+    List* expr_node_list;
+} SyscNode;
+
 struct ExprNode {
     enum {
         NODE_NUM = 10,
@@ -53,6 +57,7 @@ struct ExprNode {
         NODE_BINOP = 14,
         NODE_UNARYOP = 15,
         NODE_FUNCALL = 16,
+        NODE_SYSC = 17,
     } type;
     union {
         BinopNode binop_node;
@@ -62,6 +67,7 @@ struct ExprNode {
         VaraddrNode varaddr_node;
         NumNode num_node;
         FuncallNode funcall_node;
+        SyscNode sysc_node;
     };
 };
 
@@ -77,20 +83,14 @@ typedef struct {
 } RetNode;
 
 typedef struct {
-    List* expr_node_list;
-} SyscNode;
-
-typedef struct {
     enum {
         NODE_VARASS,
         NODE_RET,
-        NODE_SYSC,
         NODE_EXPR
     } type;
     union {
         VarAssNode varass_node;
         RetNode ret_node;
-        SyscNode sysc_node;
         ExprNode expr_node;
     };
 } StmtNode;
@@ -119,10 +119,10 @@ ExprNode* varaddr_node_new(Char* name);
 ExprNode* binop_node_new(ExprNode* left, TokenType op, ExprNode* right);
 ExprNode* unarop_node_new(TokenType op, ExprNode* operand);
 ExprNode* funcall_node_new(const Char* name, List* expr_node_list);
+ExprNode* sysc_node_new(List* expr_node_list);
 
 StmtNode* varass_node_new(ExprNode* lvalue, ExprNode* value);
 StmtNode* ret_node_new(ExprNode* expr_node);
-StmtNode* sysc_node_new(List* expr_node_list);
 
 FundefNode* fundef_node_new(Char* name, Char* scope, List* param_node_list, CodeblockNode* codeblock_node);
 

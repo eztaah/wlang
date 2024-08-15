@@ -141,9 +141,9 @@ StmtNode* ret_node_new(ExprNode* expr_node)
     return ret_node;
 }
 
-StmtNode* sysc_node_new(List* expr_node_list)
+ExprNode* sysc_node_new(List* expr_node_list)
 {
-    StmtNode* sysc_node = (StmtNode*)malloc(sizeof(StmtNode));
+    ExprNode* sysc_node = (ExprNode*)malloc(sizeof(ExprNode));
     if (!sysc_node) {
         PANIC("failed to allocate memory");
     }

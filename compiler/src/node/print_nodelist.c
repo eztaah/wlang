@@ -120,6 +120,15 @@ static Void print_funcall_node(const FuncallNode* funcall_node, Str* output, I32
     print_expr_node_list(funcall_node->expr_node_list, output, pos_x + 9);
 }
 
+static Void print_sysc_node(const SyscNode* sysc_node, Str* output, I32 pos_x)
+{
+    str_cat(output, "SyscNode\n");
+
+    print_indent(output, pos_x);
+    str_cat(output, "└─ args: ");
+    print_expr_node_list(sysc_node->expr_node_list, output, pos_x + 9);
+}
+
 static Void print_expr_node(const ExprNode* node, Str* output, I32 pos_x)
 {
     switch (node->type) {
@@ -151,6 +160,10 @@ static Void print_expr_node(const ExprNode* node, Str* output, I32 pos_x)
             print_funcall_node(&node->funcall_node, output, pos_x);
             break;
 
+        case NODE_SYSC:
+            print_sysc_node(&node->sysc_node, output, pos_x);
+            break;
+
         default:
             UNREACHABLE();
             break;
@@ -180,15 +193,6 @@ static Void print_ret_node(const RetNode* node, Str* output, I32 pos_x)
     print_expr_node(node->expr_node, output, pos_x + 10);
 }
 
-static Void print_sysc_node(const SyscNode* sysc_node, Str* output, I32 pos_x)
-{
-    str_cat(output, "SyscNode\n");
-
-    print_indent(output, pos_x);
-    str_cat(output, "└─ args: ");
-    print_expr_node_list(sysc_node->expr_node_list, output, pos_x + 9);
-}
-
 static Void print_stmt_node(const StmtNode* stmt_node, Str* output, I32 pos_x)
 {
     switch (stmt_node->type) {
@@ -198,10 +202,6 @@ static Void print_stmt_node(const StmtNode* stmt_node, Str* output, I32 pos_x)
 
         case NODE_RET:
             print_ret_node(&stmt_node->ret_node, output, pos_x);
-            break;
-
-        case NODE_SYSC:
-            print_sysc_node(&stmt_node->sysc_node, output, pos_x);
             break;
 
         case NODE_EXPR:
