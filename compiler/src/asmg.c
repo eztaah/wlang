@@ -111,9 +111,10 @@ static Void asme_l_addrderef(AsmG* asmg, const AddrderefNode* addrderef_node)
 
 static void asme_binop(AsmG* asmg, const BinopNode* binop_node)
 {
-    if (dev_mode) {
-        str_cat(asmg->text, "    # < binop\n");
-    }
+
+#ifdef ASM_COMMENTS
+    str_cat(asmg->text, "    # < binop\n");
+#endif
 
     asme_expr(asmg, binop_node->right);
     str_cat(asmg->text, "    pushq   %rax\n");
@@ -137,10 +138,9 @@ static void asme_binop(AsmG* asmg, const BinopNode* binop_node)
         default:
             UNREACHABLE();
     }
-
-    if (dev_mode) {
-        str_cat(asmg->text, "    # binop >\n");
-    }
+#ifdef ASM_COMMENTS
+    str_cat(asmg->text, "    # binop >\n");
+#endif
 }
 
 static Void asme_unarop(AsmG* asmg, const UnaropNode* unarop_node)
@@ -159,9 +159,10 @@ static Void asme_unarop(AsmG* asmg, const UnaropNode* unarop_node)
 static Void asme_funcall(AsmG* asmg, const FuncallNode* funcall_node)
 {
 
-    if (dev_mode) {
-        str_cat(asmg->text, "    # funcall\n");
-    }
+#ifdef ASM_COMMENTS
+    str_cat(asmg->text, "    # funcall\n");
+#endif
+
     // handle arguments
     I32 num_args = funcall_node->expr_node_list->size;
 
@@ -183,9 +184,11 @@ static Void asme_funcall(AsmG* asmg, const FuncallNode* funcall_node)
 
 static Void asme_syscall(AsmG* asmg, const SyscNode* sysc_node)
 {
-    if (dev_mode) {
-        str_cat(asmg->text, "    # syscall\n");
-    }
+
+#ifdef ASM_COMMENTS
+    str_cat(asmg->text, "    # syscall\n");
+#endif
+
     // handle arguments
     I32 num_args = sysc_node->expr_node_list->size;
 
@@ -206,9 +209,9 @@ static Void asme_syscall(AsmG* asmg, const SyscNode* sysc_node)
     // Clean stack if the syscall is a syscall exit
     // TOFIX: Will not work as expected if the error_code is not a number node
     if (strcmp(((ExprNode*)sysc_node->expr_node_list->items[0])->num_node.value, "60") == 0) {
-        if (dev_mode) {
-            str_cat(asmg->text, "\n    # clean stack\n");
-        }
+#ifdef ASM_COMMENTS
+        str_cat(asmg->text, "\n    # clean stack\n");
+#endif
         str_cat(asmg->text, "    movq    %rbp, %rsp\n");
         str_cat(asmg->text, "    pop     %rbp\n");
     }
@@ -221,9 +224,10 @@ static Void asme_lexpr(AsmG* asmg, const ExprNode* expr_node);
 
 static Void asme_ass(AsmG* asmg, const AssNode* ass_node)
 {
-    if (dev_mode) {
-        str_cat(asmg->text, "\n    # variables assignement\n");
-    }
+
+#ifdef ASM_COMMENTS
+    str_cat(asmg->text, "\n    # variables assignement\n");
+#endif
 
     // get the lvalue and put it into rbx       (rbx will contain a location)
     asme_lexpr(asmg, ass_node->lvalue);
@@ -238,9 +242,10 @@ static Void asme_ass(AsmG* asmg, const AssNode* ass_node)
 
 static Void asme_vardec(AsmG* asmg, const VardecNode* vardec_node)
 {
-    if (dev_mode) {
-        str_cat(asmg->text, "\n    # variables declaration\n");
-    }
+
+#ifdef ASM_COMMENTS
+    str_cat(asmg->text, "\n    # variables declaration\n");
+#endif
 
     // get full variable name
     Str* full_var_name = str_new(str_to_char(asmg->var_prefix));
@@ -277,9 +282,10 @@ static Void asme_vardec(AsmG* asmg, const VardecNode* vardec_node)
 
 static Void asme_arraydec(AsmG* asmg, const ArraydecNode* arraydec_node)
 {
-    if (dev_mode) {
-        str_cat(asmg->text, "\n    # array declaration\n");
-    }
+
+#ifdef ASM_COMMENTS
+    str_cat(asmg->text, "\n    # array declaration\n");
+#endif
 
     // get full array name
     Str* full_array_name = str_new(str_to_char(asmg->var_prefix));
@@ -311,7 +317,7 @@ static Void asme_arraydec(AsmG* asmg, const ArraydecNode* arraydec_node)
 
 
             Char var_location[256];
-            sprintf(var_location, "%d(%%rbp)", asmg->rbp_offset * (i+1));
+            sprintf(var_location, "%d(%%rbp)", asmg->rbp_offset + (i+1));
 
             str_cat(asmg->text, "    movq    %rax, ");
             str_cat(asmg->text, var_location);
@@ -319,21 +325,23 @@ static Void asme_arraydec(AsmG* asmg, const ArraydecNode* arraydec_node)
         }
     }
 
-    asmg->rbp_offset -= 8 * array_size;
+    asmg->rbp_offset -= 1 * array_size;
 }
 
 static Void asme_ret(AsmG* asmg, const RetNode* ret_node)
 {
-    if (dev_mode) {
-        str_cat(asmg->text, "\n    # return statement\n");
-    }
+
+#ifdef ASM_COMMENTS
+    str_cat(asmg->text, "\n    # return statement\n");
+#endif
 
     // handle expression
     asme_expr(asmg, ret_node->expr_node); // this will put the value into rax
 
-    if (dev_mode) {
-        str_cat(asmg->text, "    # function epilogue\n");
-    }
+#ifdef ASM_COMMENTS
+    str_cat(asmg->text, "    # function epilogue\n");
+#endif
+
     str_cat(asmg->text, "    movq    %rbp, %rsp\n");
     str_cat(asmg->text, "    pop     %rbp\n");
     str_cat(asmg->text, "    ret\n"); // we can use rax after to use the return value
@@ -364,18 +372,18 @@ static Void asme_fundef(AsmG* asmg, const FundefNode* fundef_node)
     str_cat(asmg->text, ":\n");
 
     // function prologue
-    if (dev_mode) {
-        str_cat(asmg->text, "    # function prologue\n");
-    }
+#ifdef ASM_COMMENTS
+    str_cat(asmg->text, "    # function prologue\n");
+#endif
     str_cat(asmg->text, "    pushq   %rbp\n");
     str_cat(asmg->text, "    movq    %rsp, %rbp\n");
 
     str_cat(asmg->text, "    subq    $88, %rsp\n"); // HARDCODED FOR NOW, you can store 11 variables max in each function
 
     // pushing arguments onto the stack frame
-    if (dev_mode) {
-        str_cat(asmg->text, "    # storing arguments into stackframe\n");
-    }
+#ifdef ASM_COMMENTS
+    str_cat(asmg->text, "    # storing arguments into stackframe\n");
+#endif
 
     asmg->rbp_offset = -8; // TODO: why not 0 ?
 
@@ -432,9 +440,9 @@ static Void asme_fundef(AsmG* asmg, const FundefNode* fundef_node)
     }
 
     // handle case where the function return nothing
-    if (dev_mode) {
-        str_cat(asmg->text, "    # function epilogue\n");
-    }
+#ifdef ASM_COMMENTS
+    str_cat(asmg->text, "    # function epilogue\n");
+#endif
     str_cat(asmg->text, "    movq    %rbp, %rsp\n");
     str_cat(asmg->text, "    pop     %rbp\n");
     str_cat(asmg->text, "    ret\n");
@@ -526,24 +534,23 @@ static Void asme_stmt(AsmG* asmg, const StmtNode* stmt_node)
 
 static void init_asm_file(AsmG* asmg)
 {
-    // Setup initial stmtuctions
-    if (dev_mode) {
-        str_cat(asmg->data, "    # --- SECTION DATA ---\n");
-    }
+    // Setup initial instructions
+#ifdef ASM_COMMENTS
+    str_cat(asmg->data, "    # --- SECTION DATA ---\n");
+#endif
     str_cat(asmg->data, "    .section .data\n");
 
-    if (dev_mode) {
-        str_cat(asmg->bss, "\n\n    # --- SECTION BSS ---\n");
-    }
+#ifdef ASM_COMMENTS
+    str_cat(asmg->bss, "\n\n    # --- SECTION BSS ---\n");
+#endif
     str_cat(asmg->bss, "    .section .bss\n");
 
-    if (dev_mode) {
-        str_cat(asmg->bss, "\n\n    # --- SECTION TEXT ---\n"); // TODO: put it in the section text, here we can't use bss
-    }
-    str_cat(asmg->bss, "    .section .text\n");
-
-
+#ifdef ASM_COMMENTS
+    str_cat(asmg->text, "\n\n    # --- SECTION TEXT ---\n");
+#endif
+    str_cat(asmg->text, "    .section .text\n");
 }
+
 
 Str* asme(const List* fundef_node_list)
 {
