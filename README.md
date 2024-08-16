@@ -4,6 +4,8 @@ The goal is to create a simple high-level programming language.
 The compiler is written in C and translates your high-level code into x86_64 GNU assembly.
 
 ```
+C'est un language compilé (pas interpreté)
+
 A ajouter : 
 wlangc est un compiler driver, il va gerer le preprocessing, et va aussi utiliser en interne as et ld pour generer l'elf executable. 
 

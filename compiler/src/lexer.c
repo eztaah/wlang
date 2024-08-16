@@ -155,10 +155,6 @@ static Void skip_annotations(Lexer* lexer)
     }
 }
 
-
-
-
-
 static Token* lex_next_token(Lexer* lexer)
 {
     ASSERT(lexer->c != '\0', "lexer->c should not be \\0");
@@ -184,6 +180,10 @@ static Token* lex_next_token(Lexer* lexer)
             return lex_symbol(lexer, TOKEN_DIV);
         case '*':
             return lex_symbol(lexer, TOKEN_MUL);
+        case '<':
+            return lex_symbol(lexer, TOKEN_LESSTHAN);
+        case '>':
+            return lex_symbol(lexer, TOKEN_GREATERTHAN);
         case ',':
             return lex_symbol(lexer, TOKEN_COMMA);
         case '=':
@@ -192,6 +192,10 @@ static Token* lex_next_token(Lexer* lexer)
             return lex_symbol(lexer, TOKEN_LPAREN);
         case ')':
             return lex_symbol(lexer, TOKEN_RPAREN);
+        case '[':
+            return lex_symbol(lexer, TOKEN_LBRACKET);
+        case ']':
+            return lex_symbol(lexer, TOKEN_RBRACKET);
         case '{':
             return lex_symbol(lexer, TOKEN_LBRACE);
         case '}':

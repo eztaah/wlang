@@ -1,1 +1,5 @@
 wlangc
+/.vscode/
+
+# to remove because we should never compile wcode code here
+out/

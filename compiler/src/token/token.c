@@ -34,6 +34,12 @@ Char* tokentype_to_string(TokenType tokentype)
         case TOKEN_MUL:
             return "TOKEN_MUL";
             break;
+        case TOKEN_LESSTHAN:
+            return "TOKEN_LESSTHAN";
+            break;
+        case TOKEN_GREATERTHAN:
+            return "TOKEN_GREATERTHAN";
+            break;
         case TOKEN_RET:
             return "TOKEN_RET";
             break;
@@ -51,6 +57,12 @@ Char* tokentype_to_string(TokenType tokentype)
             break;
         case TOKEN_EQUAL:
             return "TOKEN_EQUAL";
+            break;
+        case TOKEN_LBRACKET:
+            return "TOKEN_LBRACKET";
+            break;
+        case TOKEN_RBRACKET:
+            return "TOKEN_RBRACKET";
             break;
         case TOKEN_LPAREN:
             return "TOKEN_LPAREN";

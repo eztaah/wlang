@@ -1,0 +1,119 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "w",
+    "patterns": [
+        {
+            "include": "#comment"
+        },
+        {
+            "include": "#variable"
+        },
+        {
+            "include": "#constant"
+        },
+        {
+            "include": "#type"
+        },
+        {
+            "include": "#functions"
+        },
+        {
+            "include": "#control-structures"
+        },
+        {
+            "include": "#number"
+        },
+        {
+            "include": "#string"
+        },
+        {
+            "include": "#symbols"
+        }
+    ],    
+    "repository": {
+        "comment": {
+            "patterns": [
+                {
+                    "name": "comment.line.w",
+                    "match": "#.+"
+                },
+                {
+                    "name": "comment.block.w",
+                    "begin": "\"\"\"",
+                    "end": "\"\"\"",
+                    "patterns": [
+                        {
+                            "name": "comment.block.w",
+                            "match": ".|\n"
+                        }
+                    ]
+                }
+            ]
+        },
+        "variable": {
+            "patterns": [
+                {
+                    "name": "keyword.declaration.var.w",
+                    "match": "\\bvar\\b"
+                }
+            ]
+        },
+        "constant": {
+            "patterns": [
+                {
+                    "name": "keyword.declaration.cst.w",
+                    "match": "\\bcst\\b"
+                }
+            ]
+        },
+        "type": {
+            "patterns": [
+                {
+                    "name": "entity.name.type",
+                    "match": "\\bi64\\b"
+                }
+            ]
+        },        
+        "functions": {
+            "patterns": [
+                {
+                    "name": "support.function.w",
+                    "match": "\\b(print|input|exit)\\b"
+                }
+            ]
+        },
+        "control-structures": {
+            "patterns": [
+                {
+                    "name": "keyword.control.w",
+                    "match": "\\b(if|else|while)\\b"
+                }
+            ]
+        },
+        "number": {
+            "patterns": [
+                {
+                    "name": "constant.numeric.w",
+                    "match": "\\b(0b[01]+|\\d+\\.?\\d*)\\b"
+                }
+            ]
+        },
+        "string": {
+            "patterns": [
+                {
+                    "name": "string.quoted.double.w",
+                    "match": "\".*?\""
+                }
+            ]
+        },
+        "symbols": {
+            "patterns": [
+                {
+                    "name": "keyword.control.w",
+                    "match": "[\\+\\-\\*/%&|^=!<>]"
+                }
+            ]
+        }
+    },
+	"scopeName": "source.w"
+}

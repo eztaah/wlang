@@ -1,27 +1,26 @@
-glb !void print_digit(!digit num)
+!void print_digit(!digit <64> num)
 {
     :convert the number to its ASCII code
-    !ascii asciicode = num + 48;
+    !ascii <64> asciicode = num + 48;
 
     :print the ASCII character (using write syscall)
     %sysc(1, 1, &asciicode, 1, 0, 0, 0);
 
     :print a newline character (using write syscall)
-    !ascii new_line = 10; 
+    !ascii <64> new_line = 10; 
     %sysc(1, 1, &new_line, 1, 0, 0, 0);
 }
 
-!int main()
+!int <64> main()
 {
-    !int a = 3;
-    print_digit(a); 
+    : !int <64> test_array[2];
 
-    !int& ptr = &a;
-    !int b = 2 + ^ptr;  :b = 2 + 3 = 5
-    print_digit(b);
+    !int <64> array[3] = [1, 2, 3];
+    : array + 2*64 = 7;
 
-    ^ptr = 4;    :a = 4
-    print_digit(a);
+    print_digit(array);
+    print_digit(^(^array));
+    print_digit(array + 2*64);
 
     ret 0;
 }

@@ -1,0 +1,114 @@
+WRITING A C COMPILER BOOK : 
+
+# original website
+https://nostarch.com/writing-c-compiler
+
+
+# full book for free
+https://learning.oreilly.com/library/view/writing-a-c/9781098182229/
+
+
+
+
+Chapitre 1 :
+
+- fait 
+
+# voir l'output en assembly de n'importe quel programme / commpilateur
+https://godbolt.org/
+
+# c17 standard rules
+https://www.open-std.org/JTC1/SC22/WG14/www/docs/n2310.pdf
+
+# sa propre implementation du compilateur
+https://github.com/nlsandler/nqcc2
+
+# additionnal book informations
+https://norasandler.com/book/
+
+
+
+Chapitre 2 : 
+
+
+Chapitre 3 :
+
+
+
+Chapitre 4 : 
+
+
+
+Chatpter 5 and 8:
+
+
+Chapter 9: 
+
+
+Chapter 10:
+
+The programs you compile will finally be able to perform I/O operations! Programs built by other compilers will also be able to use libraries built by your compiler.
+
+
+Function and variable names are both identifiers. They exist in the same namespace and follow the same scoping rules. Function names, like variable names, can be shadowed by other declarations in inner scopes.
+
+During the variable resolution pass, we give every local variable a new, unique name. However, we shouldn't rename entities with external linkage.
+
+
+checkout for multiple fonctions declarations in the semantic analysis
+
+At the end of this chapter, the semantic analysis stage will consist of three passes: identifier resolution, type checking, and loop labeling. The loop labeling pass can happen at any point relative to the other two passes.
+
+
+program = Program(function_definition*)
+le * veux dire une liste of function_definition
+
+
+
+
+
+A shared calling convention allows the caller and callee to work together. The caller knows where to put arguments, and the callee knows where to look for them. The callee knows where to store a return value, and the caller knows where to find it after the callee returns. The callee and caller both know which registers they need to save to ensure that the callee won't clobber any values the caller will use after the function call. This ensures that both functions can access the information they need.
+
+A calling convention is part of a larger specification, called the application binary interface (ABI), that makes it possible to link object files that were built by different compilers. As long as the object files all share the same ABI, they'll be able to interoperate.
+
+You still can't compile the standard library itself—it relies on all sorts of language features that we haven't implemented—but since it's already compiled and lives on your system, you can link to it.
+
+
+
+Chapitre 10 : File scope variables :
+
+operation comme 
+movq $1, -8(%rbp) 
+c'est de l'adressing relatif, on dit de mettre 1 à l'adresse suivant : contenu de rbp - 8
+
+Donc par exemple 
+movl    $4, var(%rip)
+
+var est un label, (un label est une adresse, rien de plus), 
+donc on met 4 à l'adresse de rip + l'adresse de var, contenu de rip (corrspond à l'adresse de la prochaine instruction)
+
+
+
+
+Chapitre 14 :
+
+utiliser leaq et lea
+
+
+
+
+Chap 15 : arrays :
+
+ptr + 1   va augement l'adresse du pointeur de 4, (car 1 est un entier, qui est codé sur 4 octets)
+
+
+It’s illegal for a function to return an array, like in the following declaration
+
+int foo(void)[3];
+
+A function can’t take arrays as parameters, either. Weirdly enough, the C standard lets you declare a function with array parameters, but it requires the compiler to adjust your function signature to take pointers instead. For example, the declaration
+
+
+int array[];
+
+C requires you to specify an array’s dimensions when you define it, but not when you declare it. However, we’ll require array dimensions in declarations as well as definitions.

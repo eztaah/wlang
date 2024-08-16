@@ -235,6 +235,73 @@ static StmtNode* parse_stmt(Parser* parser)
         return ret_node;
     }
 
+    // handle declarations
+    else if (parser->current_token.type == TOKEN_LESSTHAN) {
+        eat_next_token(parser, TOKEN_LESSTHAN);
+        Token size_token = eat_next_token(parser, TOKEN_NUM);
+        Char* size = strdup(size_token.value);
+        eat_next_token(parser, TOKEN_GREATERTHAN);
+    
+        Token name_token = eat_next_token(parser, TOKEN_ID);
+        Char* name = strdup(name_token.value);    
+
+        // handle variable dec without assignement
+        if (parser->current_token.type == TOKEN_SEMI) {
+            ExprNode* expr_node = NULL;
+
+            eat_next_token(parser, TOKEN_SEMI);   
+            return vardec_node_new(size, name, expr_node);
+        }
+
+        // handle variable dec with assignement
+        else if (parser->current_token.type == TOKEN_EQUAL) {
+            eat_next_token(parser, TOKEN_EQUAL);
+            ExprNode* expr_node = parse_expr(parser);
+
+            eat_next_token(parser, TOKEN_SEMI);       
+            return vardec_node_new(size, name, expr_node);
+        }
+
+        // handle array declarations (with and without assignement)
+        else if (parser->current_token.type == TOKEN_LBRACKET) {
+            eat_next_token(parser, TOKEN_LBRACKET);
+            Token array_size_token = eat_next_token(parser, TOKEN_NUM);
+            Char* array_size = strdup(array_size_token.value);
+            eat_next_token(parser, TOKEN_RBRACKET);
+
+            // with assignement
+            if (parser->current_token.type == TOKEN_EQUAL) {
+                eat_next_token(parser, TOKEN_EQUAL);
+
+                // handling arguments
+                eat_next_token(parser, TOKEN_LBRACKET);
+                List* expr_node_list = list_new(sizeof(ExprNode));
+                while (parser->current_token.type != TOKEN_RBRACKET) {
+                    list_push(expr_node_list, parse_expr(parser));
+                    if (parser->current_token.type == TOKEN_COMMA) { // for handling case where this is the last elt (and there is no comma after)
+                        eat_next_token(parser, TOKEN_COMMA);
+                    }
+                }
+                eat_next_token(parser, TOKEN_RBRACKET);
+
+                eat_next_token(parser, TOKEN_SEMI);  
+                return arraydec_node_new(size, name, array_size, expr_node_list);
+            }
+
+            // without assignement
+            else if (parser->current_token.type == TOKEN_SEMI) {
+                List* expr_node_list = NULL;
+
+                eat_next_token(parser, TOKEN_SEMI);
+                return arraydec_node_new(size, name, array_size, expr_node_list);
+            }
+            else {
+                UNREACHABLE();
+                return NULL;
+            }
+        }
+    }
+
     // parse expression
     else {
         ExprNode* expr_node1 = parse_expr(parser);
@@ -248,8 +315,8 @@ static StmtNode* parse_stmt(Parser* parser)
 
             eat_next_token(parser, TOKEN_SEMI);
 
-            StmtNode* varass_node = varass_node_new(expr_node1, expr_node2);
-            return varass_node;
+            StmtNode* ass_node = ass_node_new(expr_node1, expr_node2);
+            return ass_node;
         }
 
         else {
@@ -259,15 +326,24 @@ static StmtNode* parse_stmt(Parser* parser)
             return stmt_node;
         }
     }
+
+    UNREACHABLE();
+    return NULL;
 }
 
 static ParamNode* parse_fun_param(Parser* parser)
 {
+    // handling size
+    eat_next_token(parser, TOKEN_LESSTHAN);
+    Token size_token = eat_next_token(parser, TOKEN_NUM);
+    Char* size = strdup(size_token.value);
+    eat_next_token(parser, TOKEN_GREATERTHAN);
+
     // handling name
     Token name_token = eat_next_token(parser, TOKEN_ID);
     Char* name = strdup(name_token.value);
 
-    return param_node_new(name);
+    return param_node_new(name, size);
 }
 
 static CodeblockNode* parse_codeblock_node(Parser* parser)
@@ -297,6 +373,19 @@ static FundefNode* parse_fundef(Parser* parser)
         sprintf(scope, "local");
     }
 
+    // handle return size
+    Char* return_size;
+    if (parser->current_token.type == TOKEN_LESSTHAN) {
+        eat_next_token(parser, TOKEN_LESSTHAN);
+        Token size_token = eat_next_token(parser, TOKEN_NUM);
+        return_size = strdup(size_token.value);
+        eat_next_token(parser, TOKEN_GREATERTHAN);
+    }
+    else {
+        return_size = NULL;
+    }
+
+    // handle name
     Token name_token = eat_next_token(parser, TOKEN_ID);
     Char* name = strdup(name_token.value);
     Str* full_name = str_new("w__");
@@ -317,7 +406,7 @@ static FundefNode* parse_fundef(Parser* parser)
     // handling codeblock
     CodeblockNode* codeblock_node = parse_codeblock_node(parser);
 
-    return fundef_node_new(str_to_char(full_name), scope, param_node_list, codeblock_node);
+    return fundef_node_new(str_to_char(full_name), return_size, scope, param_node_list, codeblock_node);
 }
 
 List* parse(const List* token_list)
