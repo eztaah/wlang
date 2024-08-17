@@ -24,6 +24,31 @@ Void list_push(List* list, Void* item)
     list->items[list->size - 1] = item;
 }
 
+Void* list_pop(List* list)
+{
+    if (list->size == 0) {
+        PANIC("pop from empty list");
+        return NULL;
+    }
+
+    // Get the last item in the list
+    Void* item = list->items[list->size - 1];
+
+    // Reduce the size of the list
+    list->size -= 1;
+
+    if (list->size == 0) {
+        free(list->items);
+        list->items = NULL;
+    } else {
+        // Reallocate the memory for the items array to match the new size
+        list->items = realloc(list->items, list->size * list->item_size);
+    }
+
+    return item;
+}
+
+
 Void* list_get(const List* list, I32 index)
 {
     if (index < 0 || index >= list->size) {

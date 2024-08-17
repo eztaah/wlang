@@ -4,6 +4,49 @@
 
 #include "compiler.h"
 
+
+
+
+typedef struct {
+    List* loop_end_labels;
+} LoopLabelStack;
+
+static LoopLabelStack* loop_label_stack_new() {
+    LoopLabelStack* stack = calloc(1, sizeof(LoopLabelStack));
+    stack->loop_end_labels = list_new(sizeof(Char*));
+    return stack;
+}
+
+static Void loop_label_stack_free(LoopLabelStack* stack) {
+    for (I32 i = 0; i < stack->loop_end_labels->size; i++) {
+        free(stack->loop_end_labels->items[i]);
+    }
+    list_free(stack->loop_end_labels);
+    free(stack);
+}
+
+static Void loop_label_stack_push(LoopLabelStack* stack, const Char* label) {
+    list_push(stack->loop_end_labels, strdup(label));
+}
+
+static Char* loop_label_stack_pop(LoopLabelStack* stack) {
+    return list_pop(stack->loop_end_labels);
+}
+
+static Char* loop_label_stack_top(LoopLabelStack* stack) {
+    return (Char*)stack->loop_end_labels->items[stack->loop_end_labels->size - 1];
+}
+
+
+
+
+
+
+
+
+
+
+
 typedef struct AsmG {
     const List* node_list;
     Dict* variables; // associate variable names with their stack_offset
@@ -14,6 +57,7 @@ typedef struct AsmG {
     Str* text;
     Str* global;
     Str* start;
+    LoopLabelStack* loop_stack; // Stack to manage loop end labels
 } AsmG;
 
 // Function prototypes
@@ -32,6 +76,7 @@ static AsmG* asmg_new(const List* node_list)
     asmg->text = str_new("");
     asmg->global = str_new("");
     asmg->start = str_new("");
+    asmg->loop_stack = loop_label_stack_new();
 
     return asmg;
 }
@@ -44,6 +89,7 @@ static Void asmg_free(AsmG* asmg)
     str_free(asmg->text);
     str_free(asmg->global);
     str_free(asmg->start);
+    loop_label_stack_free(asmg->loop_stack);
     free(asmg);
 }
 
@@ -111,37 +157,131 @@ static Void asme_l_addrderef(AsmG* asmg, const AddrderefNode* addrderef_node)
 
 static void asme_binop(AsmG* asmg, const BinopNode* binop_node)
 {
-
 #ifdef ASM_COMMENTS
     str_cat(asmg->text, "    # < binop\n");
 #endif
 
+    // evaluate the right operand and place it in %rax
     asme_expr(asmg, binop_node->right);
-    str_cat(asmg->text, "    pushq   %rax\n");
+    str_cat(asmg->text, "    pushq   %rax\n");  // push the result onto the stack (%rax is pushed)
+    
+    // evaluate the left operand and place it in %rax
     asme_expr(asmg, binop_node->left);
-    str_cat(asmg->text, "    pop     %rbx\n");
+    str_cat(asmg->text, "    pop     %rbx\n");  // pop the right operand into %rbx (pop from stack to %rbx)
 
+    // generate code based on the operation type
     switch (binop_node->op) {
         case TOKEN_PLUS:
             str_cat(asmg->text, "    add     %rbx, %rax\n");
             break;
+
         case TOKEN_MINUS:
             str_cat(asmg->text, "    sub     %rbx, %rax\n");
             break;
+
         case TOKEN_MUL:
             str_cat(asmg->text, "    imul    %rbx, %rax\n");
             break;
+
         case TOKEN_DIV:
             str_cat(asmg->text, "    cqo\n");
             str_cat(asmg->text, "    idiv    %rbx\n");
             break;
+
+        case TOKEN_PERCENT:
+            str_cat(asmg->text, "    cqo\n");
+            str_cat(asmg->text, "    idiv    %rbx\n");
+            str_cat(asmg->text, "    movq    %rdx, %rax\n");  // the remainder of the division is in %rdx
+            break;
+
+        case TOKEN_LEFTSHIFT:
+            str_cat(asmg->text, "    shl     %cl, %rax\n");  // %cl contains the number of bits to shift
+            break;
+
+        case TOKEN_RIGHTSHIFT:
+            str_cat(asmg->text, "    shr     %cl, %rax\n");  // %cl contains the number of bits to shift
+            break;
+
+        case TOKEN_AMPERSAND:
+            str_cat(asmg->text, "    and     %rbx, %rax\n");
+            break;
+
+        case TOKEN_CARET:
+            str_cat(asmg->text, "    xor     %rbx, %rax\n");
+            break;
+
+        case TOKEN_PIPE:
+            str_cat(asmg->text, "    or      %rbx, %rax\n");
+            break;
+
+        case TOKEN_AND:
+            // generate code for && (logical AND)
+            str_cat(asmg->text, "    cmpq    $0, %rax\n");
+            str_cat(asmg->text, "    setne   %al\n");  // if %rax is not zero, %al = 1
+            str_cat(asmg->text, "    movzbq  %al, %rax\n");  // zero-extend %al to 64 bits
+            str_cat(asmg->text, "    cmpq    $0, %rbx\n");
+            str_cat(asmg->text, "    setne   %bl\n");  // if %rbx is not zero, %bl = 1
+            str_cat(asmg->text, "    movzbq  %bl, %rbx\n");
+            str_cat(asmg->text, "    and     %rbx, %rax\n");
+            break;
+
+        case TOKEN_OR:
+            // generate code for || (logical OR)
+            str_cat(asmg->text, "    cmpq    $0, %rax\n");
+            str_cat(asmg->text, "    setne   %al\n");  // if %rax is not zero, %al = 1
+            str_cat(asmg->text, "    movzbq  %al, %rax\n");  // zero-extend %al to 64 bits
+            str_cat(asmg->text, "    cmpq    $0, %rbx\n");
+            str_cat(asmg->text, "    setne   %bl\n");  // if %rbx is not zero, %bl = 1
+            str_cat(asmg->text, "    movzbq  %bl, %rbx\n");
+            str_cat(asmg->text, "    or      %rbx, %rax\n");
+            break;
+
+        case TOKEN_EQUAL_EQUAL:
+            str_cat(asmg->text, "    cmpq    %rbx, %rax\n");
+            str_cat(asmg->text, "    sete    %al\n");
+            str_cat(asmg->text, "    movzbq  %al, %rax\n");  // zero-extend %al to 64 bits
+            break;
+
+        case TOKEN_NOT_EQUAL:
+            str_cat(asmg->text, "    cmpq    %rbx, %rax\n");
+            str_cat(asmg->text, "    setne   %al\n");
+            str_cat(asmg->text, "    movzbq  %al, %rax\n");  // zero-extend %al to 64 bits
+            break;
+
+        case TOKEN_LESSTHAN:
+            str_cat(asmg->text, "    cmpq    %rbx, %rax\n");
+            str_cat(asmg->text, "    setl    %al\n");
+            str_cat(asmg->text, "    movzbq  %al, %rax\n");  // zero-extend %al to 64 bits
+            break;
+
+        case TOKEN_GREATERTHAN:
+            str_cat(asmg->text, "    cmpq    %rbx, %rax\n");
+            str_cat(asmg->text, "    setg    %al\n");
+            str_cat(asmg->text, "    movzbq  %al, %rax\n");  // zero-extend %al to 64 bits
+            break;
+
+        case TOKEN_LESSTHAN_EQ:
+            str_cat(asmg->text, "    cmpq    %rbx, %rax\n");
+            str_cat(asmg->text, "    setle   %al\n");
+            str_cat(asmg->text, "    movzbq  %al, %rax\n");  // zero-extend %al to 64 bits
+            break;
+
+        case TOKEN_GREATERTHAN_EQ:
+            str_cat(asmg->text, "    cmpq    %rbx, %rax\n");
+            str_cat(asmg->text, "    setge   %al\n");
+            str_cat(asmg->text, "    movzbq  %al, %rax\n");  // zero-extend %al to 64 bits
+            break;
+
         default:
             UNREACHABLE();
     }
+
 #ifdef ASM_COMMENTS
     str_cat(asmg->text, "    # binop >\n");
 #endif
 }
+
+
 
 static Void asme_unarop(AsmG* asmg, const UnaropNode* unarop_node)
 {
@@ -240,6 +380,96 @@ static Void asme_ass(AsmG* asmg, const AssNode* ass_node)
     str_cat(asmg->text, "    movq    %rax, (%r15)\n");
 }
 
+static Void asme_if(AsmG* asmg, const IfNode* if_node)
+{
+    static I32 if_label_counter = 0; // Unique label counter for if statements
+    I32 current_label = if_label_counter++;
+
+    // evaluate the condition
+    asme_expr(asmg, if_node->cond_node);
+    str_cat(asmg->text, "    cmpq    $0, %rax\n");  // Compare the result with 0
+
+    // jump to the false block if condition is false
+    Char label_false[64];
+    sprintf(label_false, "    je      .Lelse%d\n", current_label);
+    str_cat(asmg->text, label_false);
+
+    // generate code for each stmt of the true block
+    for (I32 i = 0; i < if_node->true_block->stmt_node_list->size; i++) {
+        const StmtNode* stmt_node = (StmtNode*)if_node->true_block->stmt_node_list->items[i];
+        asme_stmt(asmg, stmt_node);
+    }
+
+    // jump to the end after executing true block
+    Char label_end[64];
+    sprintf(label_end, "    jmp     .Lend%d\n", current_label);
+    str_cat(asmg->text, label_end);
+
+    // false block
+    str_cat(asmg->text, ".Lelse");
+    sprintf(label_false, "%d:\n", current_label);
+    str_cat(asmg->text, label_false);
+    if (if_node->false_block) {
+        // generate code for each stmt of the true block
+        for (I32 i = 0; i < if_node->false_block->stmt_node_list->size; i++) {
+            const StmtNode* stmt_node = (StmtNode*)if_node->false_block->stmt_node_list->items[i];
+            asme_stmt(asmg, stmt_node);
+        }
+    }
+
+    // end label
+    str_cat(asmg->text, ".Lend");
+    sprintf(label_end, "%d:\n", current_label);
+    str_cat(asmg->text, label_end);
+}
+
+static Void asme_loop(AsmG* asmg, const LoopNode* loop_node)
+{
+    static I32 loop_label_counter = 0; // Unique label counter for loops
+    I32 current_label = loop_label_counter++;
+
+    // generate loop labels
+    Char label_start[64];
+    Char label_end[64];
+    sprintf(label_start, ".Lloop%d", current_label);
+    sprintf(label_end, ".Lloopend%d", current_label);
+
+    // push the end label onto the loop stack
+    loop_label_stack_push(asmg->loop_stack, label_end);
+
+    // loop start label
+    str_cat(asmg->text, label_start);
+    str_cat(asmg->text, ":\n");
+
+    // generate code for each stmt in the loop block
+    for (I32 i = 0; i < loop_node->block->stmt_node_list->size; i++) {
+        const StmtNode* stmt_node = (StmtNode*)loop_node->block->stmt_node_list->items[i];
+        asme_stmt(asmg, stmt_node);
+    }
+
+    // jump back to start for the next iteration
+    str_cat(asmg->text, "    jmp     ");
+    str_cat(asmg->text, label_start);
+    str_cat(asmg->text, "\n");
+
+    // loop end label (for break statements)
+    str_cat(asmg->text, label_end);
+    str_cat(asmg->text, ":\n");
+
+    // pop the end label from the loop stack
+    loop_label_stack_pop(asmg->loop_stack);
+}
+
+static Void asme_break(AsmG* asmg)
+{
+    // use the top label from the loop stack
+    Char* label_end = loop_label_stack_top(asmg->loop_stack);
+    str_cat(asmg->text, "    jmp     ");
+    str_cat(asmg->text, label_end);
+    str_cat(asmg->text, "\n");
+}
+
+
 static Void asme_vardec(AsmG* asmg, const VardecNode* vardec_node)
 {
 
@@ -315,17 +545,17 @@ static Void asme_arraydec(AsmG* asmg, const ArraydecNode* arraydec_node)
             const ExprNode* arg_expr = (ExprNode*)arraydec_node->expr_node_list->items[i];
             asme_expr(asmg, arg_expr); // the result of the expression should be in %rax
 
-
             Char var_location[256];
-            sprintf(var_location, "%d(%%rbp)", asmg->rbp_offset + (i+1));
+            sprintf(var_location, "%d(%%rbp)", asmg->rbp_offset);
 
             str_cat(asmg->text, "    movq    %rax, ");
             str_cat(asmg->text, var_location);
             str_cat(asmg->text, "\n");
+
+            asmg->rbp_offset -= 8;
         }
     }
 
-    asmg->rbp_offset -= 1 * array_size;
 }
 
 static Void asme_ret(AsmG* asmg, const RetNode* ret_node)
@@ -433,9 +663,9 @@ static Void asme_fundef(AsmG* asmg, const FundefNode* fundef_node)
     str_free(asmg->var_prefix);
     asmg->var_prefix = str_new(fundef_node->name);
 
-    // generate code for each stmt of the codeblock_node
-    for (I32 i = 0; i < fundef_node->codeblock_node->stmt_node_list->size; i++) {
-        const StmtNode* stmt_node = (StmtNode*)fundef_node->codeblock_node->stmt_node_list->items[i];
+    // generate code for each stmt of the block_node
+    for (I32 i = 0; i < fundef_node->block_node->stmt_node_list->size; i++) {
+        const StmtNode* stmt_node = (StmtNode*)fundef_node->block_node->stmt_node_list->items[i];
         asme_stmt(asmg, stmt_node);
     }
 
@@ -527,10 +757,23 @@ static Void asme_stmt(AsmG* asmg, const StmtNode* stmt_node)
             asme_expr(asmg, &stmt_node->expr_node);
             break;
 
+        case NODE_IF:
+            asme_if(asmg, &stmt_node->if_node);
+            break;
+
+        case NODE_LOOP:
+            asme_loop(asmg, &stmt_node->loop_node);
+            break;
+
+        case NODE_BREAK:
+            asme_break(asmg);
+            break;
+
         default:
             UNREACHABLE();
     }
 }
+
 
 static void init_asm_file(AsmG* asmg)
 {
@@ -571,8 +814,8 @@ Str* asme(const List* fundef_node_list)
     str_cat_str(asm_code, asmg->data);
     str_cat_str(asm_code, asmg->bss);
     str_cat_str(asm_code, asmg->global);
-    str_cat_str(asm_code, asmg->start);
     str_cat_str(asm_code, asmg->text);
+    str_cat_str(asm_code, asmg->start);
     str_cat(asm_code, "\n");
 
     // clean and return

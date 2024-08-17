@@ -1,12 +1,11 @@
-! def void& @malloc(int size)  from libc
-! def void  @free(void& addr)  from libc
+! include malloc(), free(), print_string() from std
 
 !int main()
 {
-    !int str_length = 14;
+    !int <64> str_length = 15;
 
     : allocate memory for the string
-    !ascii& str_addr = @malloc(str_length);
+    !ascii& <64> str_addr = @malloc(str_length*8);
 
     : define the string "Hello, World!"
     ^(str_addr + 0) = 72;      : 'H'
@@ -22,7 +21,8 @@
     ^(str_addr + 80) = 108;    : 'l'
     ^(str_addr + 88) = 100;    : 'd'
     ^(str_addr + 96) = 33;     : '!'
-    ^(str_addr + 104) = 0;     : '\0'
+    ^(str_addr + 104) = 10;    : '\n'
+    ^(str_addr + 112) = 0;     : '\0'
 
     : print the string
     %sysc(1, 1, str_addr, str_length*8, 0, 0, 0);

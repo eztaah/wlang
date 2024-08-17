@@ -12,16 +12,5 @@ glb !int <64> main()
     !int <64> sum = add(num1, num2);
     print_digit(sum);
 
-    : ---------------------------------
-    !int <64> test_array[2];
-
-    !int <64> array[4] = [1, 2, 3, 4];
-    ^(array + 2*64) = 7;
-
-    print_digit(^(array + 0*64));
-    print_digit(^(array + 1*64));
-    print_digit(^(array + 2*64));
-    print_digit(^(array + 3*64));
-
     ret 0;
 }

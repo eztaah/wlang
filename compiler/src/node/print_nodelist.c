@@ -222,6 +222,56 @@ static Void print_vardec_node(const VardecNode* node, Str* output, I32 pos_x)
     print_expr_node(node->value, output, pos_x + 10);
 }
 
+static Void print_stmt_node_list(const List* stmt_node_list, Str* output, I32 pos_x);
+
+static Void print_block_node(const BlockNode* block_node, Str* output, I32 pos_x)
+{
+    str_cat(output, "BlockNode\n");
+
+    print_indent(output, pos_x);
+    str_cat(output, "└─ content: ");
+    print_stmt_node_list(block_node->stmt_node_list, output, pos_x + 12);
+}
+
+static Void print_if_node(const IfNode* node, Str* output, I32 pos_x)
+{
+    str_cat(output, "IfNode\n");
+
+    print_indent(output, pos_x);
+    str_cat(output, "├─ Condition:");
+    print_expr_node(node->cond_node, output, pos_x + 10);
+
+    print_indent(output, pos_x);
+    str_cat(output, "├─ True Block:");
+    print_block_node(node->true_block, output, pos_x + 10);
+
+    if (node->false_block) {
+        print_indent(output, pos_x);
+        str_cat(output, "└─ False Block:");
+        print_block_node(node->false_block, output, pos_x + 10);
+    } else {
+        print_indent(output, pos_x);
+        str_cat(output, "└─ False Block: (None)\n");
+    }
+}
+
+static Void print_loop_node(const LoopNode* node, Str* output, I32 pos_x)
+{
+    str_cat(output, "LoopNode\n");
+
+    print_indent(output, pos_x);
+    str_cat(output, "└─ Block:");
+    print_block_node(node->block, output, pos_x + 10);
+}
+
+static Void print_break_node(Str* output, I32 pos_x)
+{
+    str_cat(output, "BreakNode\n");
+
+    print_indent(output, pos_x);
+    str_cat(output, "└─ break\n");
+}
+
 static Void print_ass_node(const AssNode* node, Str* output, I32 pos_x)
 {
     str_cat(output, "AssNode\n");
@@ -268,11 +318,24 @@ static Void print_stmt_node(const StmtNode* stmt_node, Str* output, I32 pos_x)
             print_expr_node(&stmt_node->expr_node, output, pos_x);
             break;
 
+        case NODE_IF:
+            print_if_node(&stmt_node->if_node, output, pos_x);
+            break;
+
+        case NODE_LOOP:
+            print_loop_node(&stmt_node->loop_node, output, pos_x);
+            break;
+
+        case NODE_BREAK:
+            print_break_node(output, pos_x);
+            break;
+
         default:
             UNREACHABLE();
             break;
     }
 }
+
 
 static Void print_param_node(const ParamNode* node, Str* output, I32 pos_x)
 {
@@ -337,14 +400,7 @@ static Void print_stmt_node_list(const List* stmt_node_list, Str* output, I32 po
     }
 }
 
-static Void print_codeblock_node(const CodeblockNode* codeblock_node, Str* output, I32 pos_x)
-{
-    str_cat(output, "CodeblockNode\n");
 
-    print_indent(output, pos_x);
-    str_cat(output, "└─ content: ");
-    print_stmt_node_list(codeblock_node->stmt_node_list, output, pos_x + 12);
-}
 
 static Void print_fundef_node(const FundefNode* fundef_node, Str* output, I32 pos_x)
 {
@@ -377,8 +433,8 @@ static Void print_fundef_node(const FundefNode* fundef_node, Str* output, I32 po
     print_param_node_list(fundef_node->param_node_list, output, pos_x + 15);
 
     print_indent(output, pos_x);
-    str_cat(output, "└─ codeblock_node: ");
-    print_codeblock_node(fundef_node->codeblock_node, output, pos_x + 15);
+    str_cat(output, "└─ block_node: ");
+    print_block_node(fundef_node->block_node, output, pos_x + 15);
 }
 
 Str* print_nodelist(const List* node_list)

@@ -19,81 +19,86 @@ Void token_free(Token* token)
     free(token);
 }
 
-Char* tokentype_to_string(TokenType tokentype)
-{
+Char* tokentype_to_string(TokenType tokentype) {
     switch (tokentype) {
         case TOKEN_PLUS:
             return "TOKEN_PLUS";
-            break;
         case TOKEN_MINUS:
             return "TOKEN_MINUS";
-            break;
         case TOKEN_DIV:
             return "TOKEN_DIV";
-            break;
         case TOKEN_MUL:
             return "TOKEN_MUL";
-            break;
-        case TOKEN_LESSTHAN:
-            return "TOKEN_LESSTHAN";
-            break;
-        case TOKEN_GREATERTHAN:
-            return "TOKEN_GREATERTHAN";
-            break;
-        case TOKEN_RET:
-            return "TOKEN_RET";
-            break;
-        case TOKEN_GLB:
-            return "TOKEN_GLB";
-            break;
-        case TOKEN_ID:
-            return "TOKEN_ID";
-            break;
-        case TOKEN_NUM:
-            return "TOKEN_NUM";
-            break;
         case TOKEN_COMMA:
             return "TOKEN_COMMA";
-            break;
         case TOKEN_EQUAL:
             return "TOKEN_EQUAL";
-            break;
-        case TOKEN_LBRACKET:
-            return "TOKEN_LBRACKET";
-            break;
-        case TOKEN_RBRACKET:
-            return "TOKEN_RBRACKET";
-            break;
-        case TOKEN_LPAREN:
-            return "TOKEN_LPAREN";
-            break;
-        case TOKEN_RPAREN:
-            return "TOKEN_RPAREN";
-            break;
-        case TOKEN_LBRACE:
-            return "TOKEN_LBRACE";
-            break;
-        case TOKEN_RBRACE:
-            return "TOKEN_RBRACE";
-            break;
         case TOKEN_AT:
             return "TOKEN_AT";
-            break;
         case TOKEN_PERCENT:
             return "TOKEN_PERCENT";
-            break;
         case TOKEN_AMPERSAND:
             return "TOKEN_AMPERSAND";
-            break;
-        case TOKEN_ASTERIX:
-            return "TOKEN_ASTERIX";
-            break;
+        case TOKEN_PIPE:
+            return "TOKEN_PIPE";
+        case TOKEN_CARET:
+            return "TOKEN_CARET";
+        case TOKEN_LESSTHAN:
+            return "TOKEN_LESSTHAN";
+        case TOKEN_GREATERTHAN:
+            return "TOKEN_GREATERTHAN";
+        case TOKEN_LBRACKET:
+            return "TOKEN_LBRACKET";
+        case TOKEN_RBRACKET:
+            return "TOKEN_RBRACKET";
+        case TOKEN_LPAREN:
+            return "TOKEN_LPAREN";
+        case TOKEN_RPAREN:
+            return "TOKEN_RPAREN";
+        case TOKEN_LBRACE:
+            return "TOKEN_LBRACE";
+        case TOKEN_RBRACE:
+            return "TOKEN_RBRACE";
         case TOKEN_SEMI:
             return "TOKEN_SEMI";
-            break;
         case TOKEN_EOF:
             return "TOKEN_EOF";
-            break;
+
+        case TOKEN_NOT_EQUAL:
+            return "TOKEN_NOT_EQUAL";
+        case TOKEN_EQUAL_EQUAL:
+            return "TOKEN_EQUAL_EQUAL";
+        case TOKEN_LESSTHAN_EQ:
+            return "TOKEN_LESSTHAN_EQ";
+        case TOKEN_GREATERTHAN_EQ:
+            return "TOKEN_GREATERTHAN_EQ";
+        case TOKEN_AND:
+            return "TOKEN_AND";
+        case TOKEN_OR:
+            return "TOKEN_OR";
+        case TOKEN_LEFTSHIFT:
+            return "TOKEN_LEFTSHIFT";
+        case TOKEN_RIGHTSHIFT:
+            return "TOKEN_RIGHTSHIFT";
+
+        case TOKEN_RET:
+            return "TOKEN_RET";
+        case TOKEN_GLB:
+            return "TOKEN_GLB";
+        case TOKEN_IF:
+            return "TOKEN_IF";
+        case TOKEN_ELSE:
+            return "TOKEN_ELSE";
+        case TOKEN_LOOP:
+            return "TOKEN_LOOP";
+        case TOKEN_BREAK:
+            return "TOKEN_BREAK";
+
+        case TOKEN_ID:
+            return "TOKEN_ID";
+        case TOKEN_NUM:
+            return "TOKEN_NUM";
+
         default:
             PANIC("in tokentype_to_string(): TokenType '%d' does not have string equivalent", tokentype);
             return NULL;

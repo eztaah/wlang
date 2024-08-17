@@ -39,7 +39,7 @@
             "patterns": [
                 {
                     "name": "keyword.control.w",
-                    "match": "\\b(ret|glb)\\b"
+                    "match": "\\b(ret|glb|if|else|loop|break)\\b"
                 }
             ]
         },
