@@ -40,6 +40,10 @@
                 {
                     "name": "keyword.control.w",
                     "match": "\\b(ret|glb|if|else|loop|break)\\b"
+                },
+                {
+                    "name": "keyword.control.w",
+                    "match": "#\\b(incl|def|ifdef|else|endif)\\b"
                 }
             ]
         },
@@ -58,13 +62,29 @@
         "constant": {
             "patterns": [
                 {
-                    "name": "constant.w",
-                    "match": "\\b\\d+\\b"
+                    "name": "constant.numeric.decimal.w",
+                    "match": "\\b\\d+\\.?\\d*\\b"
+                },
+                {
+                    "name": "constant.numeric.binary.w",
+                    "match": "\\b0b[01]+\\b"
+                },
+                {
+                    "name": "constant.numeric.hexadecimal.w",
+                    "match": "\\b0x[0-9A-Fa-f]+\\b"
                 },
                 {
                     "name": "constant.w",
                     "match": "%([a-zA-Z_][a-zA-Z0-9_]*)\\s*(?=\\()"
-                }
+                },
+				{
+					"name": "constant.character.w",
+					"match": "'([^'\\\\]|\\\\.)'"
+				},
+				{
+					"name": "constant.string.w",
+					"match": "\"([^\"\\\\]|\\\\.)*\""
+				}
             ]
         }
     },
