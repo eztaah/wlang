@@ -1,6 +1,6 @@
+#include <stdio.h>  // sprintf()
 #include <stdlib.h> // calloc(), free()
 #include <string.h> // strdup()
-#include <stdio.h>  // sprintf()
 
 #include "compiler.h"
 
@@ -71,7 +71,7 @@ static ExprNode* parse_expr(Parser* parser);
 static ExprNode* parse_fun_call(Parser* parser)
 {
     Str* final_name = str_new("");
-    // handling @ 
+    // handling @
     if (parser->current_token.type == TOKEN_AT) {
         eat_next_token(parser, TOKEN_AT);
 
@@ -300,7 +300,6 @@ static ExprNode* parse_expr(Parser* parser)
     return parse_logical_or(parser);
 }
 
-
 static StmtNode* parse_ret(Parser* parser)
 {
     eat_next_token(parser, TOKEN_RET);
@@ -385,7 +384,7 @@ static StmtNode* parse_vardec_stmt(Parser* parser)
     eat_next_token(parser, TOKEN_GREATERTHAN);
 
     Token name_token = eat_next_token(parser, TOKEN_ID);
-    Char* name = strdup(name_token.value);    
+    Char* name = strdup(name_token.value);
 
     // handle variable dec without assignement
     if (parser->current_token.type == TOKEN_SEMI) {
@@ -431,7 +430,8 @@ static StmtNode* parse_vardec_stmt(Parser* parser)
         else if (parser->current_token.type == TOKEN_SEMI) {
             eat_next_token(parser, TOKEN_SEMI);
             return arraydec_node_new(size, name, array_size, NULL);
-        } else {
+        }
+        else {
             UNREACHABLE();
             return NULL;
         }

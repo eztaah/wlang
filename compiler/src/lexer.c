@@ -40,7 +40,8 @@ static Void lexer_retreat(Lexer* lexer)
     if (lexer->i > 0) {
         lexer->i -= 1;
         lexer->c = lexer->src[lexer->i];
-    } else {
+    }
+    else {
         PANIC("Cannot retreat lexer; already at the start of input");
     }
 }
@@ -80,7 +81,8 @@ static Token* lex_number(Lexer* lexer)
                 str_cat_c(value, lexer->c);
                 lexer_advance(lexer);
             }
-        } else if (lexer->c == 'b' || lexer->c == 'B') { // binary
+        }
+        else if (lexer->c == 'b' || lexer->c == 'B') { // binary
             str_cat_c(value, lexer->c);
             lexer_advance(lexer);
 
@@ -88,13 +90,15 @@ static Token* lex_number(Lexer* lexer)
                 str_cat_c(value, lexer->c);
                 lexer_advance(lexer);
             }
-        } else { // decimal
+        }
+        else { // decimal
             while (isdigit(lexer->c)) {
                 str_cat_c(value, lexer->c);
                 lexer_advance(lexer);
             }
         }
-    } else { // if it's not a prefix, it's a normal decimal number
+    }
+    else { // if it's not a prefix, it's a normal decimal number
         while (isdigit(lexer->c)) {
             str_cat_c(value, lexer->c);
             lexer_advance(lexer);
@@ -103,8 +107,6 @@ static Token* lex_number(Lexer* lexer)
 
     return token_new(value, TOKEN_NUM);
 }
-
-
 
 static Token* lex_word(Lexer* lexer)
 {
@@ -142,70 +144,10 @@ static Token* lex_word(Lexer* lexer)
     return token_new(value, token_type);
 }
 
-
 static Void skip_whitespace(Lexer* lexer)
 {
     while (lexer->c == ' ' || lexer->c == '\t' || lexer->c == 13 || lexer->c == 10) {
         lexer_advance(lexer);
-    }
-}
-
-static void lexer_skip_comment(Lexer* lexer)
-{
-    while (lexer->c == ':') {
-        while (lexer->c != '\n' && lexer->c != '\0') {
-            lexer_advance(lexer);
-        }
-        if (lexer->c == '\n') {
-            lexer_advance(lexer);
-        }
-        skip_whitespace(lexer);
-    }
-    skip_whitespace(lexer);
-}
-
-static Void skip_annotations(Lexer* lexer)
-{
-    while (lexer->c == '!') {
-        lexer_advance(lexer); // skip the '!' character
-
-        // check what follows the '!'
-        if (isspace(lexer->c)) {
-            // skip the entire line if '!' is followed by whitespace
-            while (lexer->c != '\n' && lexer->c != '\0') {
-                lexer_advance(lexer);
-            }
-        } else {
-            // skip the word following '!' if '!' is immediately followed by non-whitespace characters
-            while (!isspace(lexer->c) && lexer->c != '\0') {
-                lexer_advance(lexer);
-            }
-
-            // skip any whitespace after the annotation
-            skip_whitespace(lexer);
-
-            // handle cases where annotations are followed by function signatures or chained annotations
-            if (lexer->c == '(') {
-                int parentheses_count = 1;
-                lexer_advance(lexer); // skip the '('
-
-                while (parentheses_count > 0 && lexer->c != '\0') {
-                    if (lexer->c == '(') {
-                        parentheses_count++;
-                    } else if (lexer->c == ')') {
-                        parentheses_count--;
-                    }
-                    lexer_advance(lexer);
-                }
-                // ensure we skip the closing ')' if it's the character that brought parentheses_count to 0
-                if (lexer->c == ')') {
-                    lexer_advance(lexer); // Skip the closing ')'
-                }
-            }
-        }
-
-        // skip any additional whitespace before the next possible annotation
-        skip_whitespace(lexer);
     }
 }
 
@@ -214,8 +156,6 @@ static Token* lex_next_token(Lexer* lexer)
     ASSERT(lexer->c != '\0', "lexer->c should not be \\0");
 
     skip_whitespace(lexer);
-    lexer_skip_comment(lexer);
-    skip_annotations(lexer);
 
     if (isalpha(lexer->c) || lexer->c == '_') {
         return lex_word(lexer);
@@ -238,7 +178,8 @@ static Token* lex_next_token(Lexer* lexer)
             lexer_advance(lexer);
             if (lexer->c == '=') {
                 return lex_symbol(lexer, TOKEN_LESSTHAN_EQ);
-            } else if (lexer->c == '<') {
+            }
+            else if (lexer->c == '<') {
                 return lex_symbol(lexer, TOKEN_LEFTSHIFT);
             }
             lexer_retreat(lexer);
@@ -247,7 +188,8 @@ static Token* lex_next_token(Lexer* lexer)
             lexer_advance(lexer);
             if (lexer->c == '=') {
                 return lex_symbol(lexer, TOKEN_GREATERTHAN_EQ);
-            } else if (lexer->c == '>') {
+            }
+            else if (lexer->c == '>') {
                 return lex_symbol(lexer, TOKEN_RIGHTSHIFT);
             }
             lexer_retreat(lexer);

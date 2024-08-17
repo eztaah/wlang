@@ -191,7 +191,7 @@ StmtNode* ass_node_new(ExprNode* lvalue, ExprNode* value)
     ass_node->type = NODE_ASS;
     ass_node->ass_node.lvalue = lvalue;
     ass_node->ass_node.value = value;
-   
+
     return ass_node;
 }
 

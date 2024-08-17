@@ -86,8 +86,8 @@ static Void print_expr_node_list(const List* expr_nodelist, Str* output, I32 pos
 {
     str_cat(output, "List<ExprNode>\n");
 
-    if (expr_nodelist == NULL) {        // bad code but ok because it will be rewrite entiery
-        print_indent(output, pos_x);        
+    if (expr_nodelist == NULL) { // bad code but ok because it will be rewrite entiery
+        print_indent(output, pos_x);
         str_cat(output, "└─ EMPTY\n");
     }
     else if (expr_nodelist->size > 0) {
@@ -137,7 +137,7 @@ static Void print_expr_node(const ExprNode* node, Str* output, I32 pos_x)
 {
     if (node == NULL) {
         str_cat(output, "NULL\n");
-    } 
+    }
     else {
         switch (node->type) {
             case NODE_NUM:
@@ -177,7 +177,6 @@ static Void print_expr_node(const ExprNode* node, Str* output, I32 pos_x)
                 break;
         }
     }
-
 }
 
 static Void print_arraydec_node(const ArraydecNode* node, Str* output, I32 pos_x)
@@ -249,7 +248,8 @@ static Void print_if_node(const IfNode* node, Str* output, I32 pos_x)
         print_indent(output, pos_x);
         str_cat(output, "└─ False Block:");
         print_block_node(node->false_block, output, pos_x + 10);
-    } else {
+    }
+    else {
         print_indent(output, pos_x);
         str_cat(output, "└─ False Block: (None)\n");
     }
@@ -291,7 +291,7 @@ static Void print_ret_node(const RetNode* node, Str* output, I32 pos_x)
 
     print_indent(output, pos_x);
     str_cat(output, "└─ value: ");
-    
+
     print_expr_node(node->expr_node, output, pos_x + 10);
 }
 
@@ -336,7 +336,6 @@ static Void print_stmt_node(const StmtNode* stmt_node, Str* output, I32 pos_x)
     }
 }
 
-
 static Void print_param_node(const ParamNode* node, Str* output, I32 pos_x)
 {
     Char buffer[256];
@@ -350,8 +349,6 @@ static Void print_param_node(const ParamNode* node, Str* output, I32 pos_x)
     print_indent(output, pos_x);
     snprintf(buffer, sizeof(buffer), "└─ size: \"%s\"\n", node->size);
     str_cat(output, buffer);
-
-
 }
 
 static Void print_param_node_list(const List* param_node_list, Str* output, I32 pos_x)
@@ -400,8 +397,6 @@ static Void print_stmt_node_list(const List* stmt_node_list, Str* output, I32 po
     }
 }
 
-
-
 static Void print_fundef_node(const FundefNode* fundef_node, Str* output, I32 pos_x)
 {
     Char buffer[256];
@@ -422,7 +417,6 @@ static Void print_fundef_node(const FundefNode* fundef_node, Str* output, I32 po
         snprintf(buffer, sizeof(buffer), "├─ return_size: NULL\n");
         str_cat(output, buffer);
     }
-
 
     print_indent(output, pos_x);
     snprintf(buffer, sizeof(buffer), "├─ scope: \"%s\"\n", fundef_node->scope);

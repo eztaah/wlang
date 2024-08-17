@@ -1,14 +1,15 @@
-! include print_string() from std
+#incl ./char.w
+#def ASCII_START 48
 
 !void print_digit(!digit <64> num)
 {
     :convert the number to its ASCII code
-    !ascii <64> asciicode = num + 48;
+    !ascii <64> asciicode = num + ASCII_START;
 
     :print the ASCII character (using write syscall)
     %sysc(1, 1, &asciicode, 1, 0, 0, 0);
 
-    :print a newline character (using write syscall)
+    : print a newline character (using write syscall) 
     !ascii <64> new_line = 10; 
     %sysc(1, 1, &new_line, 1, 0, 0, 0);
 }
@@ -37,7 +38,7 @@
 !int <64> main()
 {
     : Define the string "Hello"
-    !ascii <64> str[7] = [72, 101, 108, 108, 111, 10, 0];
+    !ascii <64> str[7] = ['H', 'e', 'l', 'l', 'o', 10, 0];
 
     : Print the string
     print_array(&str, 7);
