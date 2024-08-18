@@ -1,8 +1,10 @@
-#include <stdlib.h> // malloc()
-#include <string.h> // strcmp()
+#include <stdio.h>
+#include <stdlib.h> // malloc(), calloc(), realloc(), free()
+#include <string.h> // strdup(), strcmp()
 
 #include "lib.h"
 
+// Create a new dictionary (Dict)
 Dict* dict_new(Void)
 {
     Dict* dict = (Dict*)calloc(1, sizeof(Dict));
@@ -14,23 +16,24 @@ Dict* dict_new(Void)
     return dict;
 }
 
-Void dict_put(Dict* dict, const Char* key, I32 value)
+// Add a key-value pair to the dictionary
+Void dict_put(Dict* dict, const Char* key, const Char* value)
 {
-    if (value == -1) {
-        PANIC("the value -1 is not allowed in a dict as it is used to indicate a missing key");
+    // Ensure the value is not NULL
+    if (!value) {
+        PANIC("NULL value is not allowed in a dict");
         return;
     }
 
+    // Allocate memory for the new entry
     DictEntry* entry = (DictEntry*)malloc(sizeof(DictEntry));
     if (!entry) {
         PANIC("failed to allocate memory");
     }
     entry->key = strdup(key);
-    if (!entry->key) {
-        PANIC("failed to allocate memory");
-    }
-    entry->value = value;
+    entry->value = strdup(value);
 
+    // Add the new entry to the dictionary
     DictEntry** new_entries = (DictEntry**)realloc(dict->entries, (dict->size + 1) * sizeof(DictEntry*));
     if (!new_entries) {
         PANIC("failed to allocate memory");
@@ -39,22 +42,41 @@ Void dict_put(Dict* dict, const Char* key, I32 value)
     dict->entries[dict->size++] = entry;
 }
 
-I32 dict_get(const Dict* dict, const Char* key)
+// Retrieve a value by its key from the dictionary
+Char* dict_get(const Dict* dict, const Char* key)
 {
+
     for (I32 i = 0; i < dict->size; i++) {
         if (strcmp(dict->entries[i]->key, key) == 0) {
             return dict->entries[i]->value;
         }
     }
-    return -1; // key not found
+    return NULL; // key not found
 }
 
+Void dict_print(const Dict* dict)
+{
+    if (dict->size == 0) {
+        printf("The dictionary is empty.\n");
+        return;
+    }
+
+    printf("Dictionary contains %d entries:\n", dict->size);
+
+    for (I32 i = 0; i < dict->size; i++) {
+        DictEntry* entry = dict->entries[i];
+        printf("Key: %s, Value: %s\n", entry->key, entry->value);
+    }
+}
+
+// Free the memory allocated for the dictionary
 Void dict_free(Dict* dict)
 {
     for (I32 i = 0; i < dict->size; i++) {
         free(dict->entries[i]->key);
+        free(dict->entries[i]->value);
         free(dict->entries[i]);
     }
-    free(dict->entries);
+    // free(dict->entries);
     free(dict);
 }

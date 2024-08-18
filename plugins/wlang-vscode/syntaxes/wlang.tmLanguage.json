@@ -31,7 +31,7 @@
             "patterns": [
                 {
                     "name": "entity.name.type.w",
-                    "match": "!\\S+|!\\s.*"
+                    "match": "!([^=\\s]+|\\s.*)"
                 }
             ]
         }, 

@@ -65,33 +65,18 @@ Bool str_ends_with(const Str* str, const Char* suffix);   // Check if the string
 // Dict
 typedef struct {
     Char* key;
-    I32 value;
+    Char* value;
 } DictEntry;
+
 typedef struct {
     DictEntry** entries;
     I32 size;
 } Dict;
 Dict* dict_new(Void);
-Void dict_put(Dict* dict, const Char* key, I32 value);
-I32 dict_get(const Dict* dict, const Char* key);
+Void dict_put(Dict* dict, const Char* key, const Char* value);
+Char* dict_get(const Dict* dict, const Char* key);
+Void dict_print(const Dict* dict);
 Void dict_free(Dict* dict);
-
-// DictStr
-typedef struct {
-    Char* key;
-    Char* value;
-} DictStrEntry;
-
-typedef struct {
-    DictStrEntry** entries;
-    I32 size;
-} DictStr;
-DictStr* dictstr_new(Void);
-Void dictstr_put(DictStr* dict, const Char* key, const Char* value);
-Char* dictstr_get(const DictStr* dict, const Char* key);
-Char* dictstr_get(const DictStr* dict, const Char* key);
-Void dictstr_print(const DictStr* dict);
-Void dictstr_free(DictStr* dict);
 
 // io
 typedef enum {

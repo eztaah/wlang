@@ -23,7 +23,7 @@ static Void print_usage(Void)
     printf("\n");
 }
 
-static Void handle_arguments(I32 argc, const Char* argv[], DictStr* macro_dict)
+static Void handle_arguments(I32 argc, const Char* argv[], Dict* macro_dict)
 {
     source_files = list_new(sizeof(Char*));
 
@@ -55,7 +55,7 @@ static Void handle_arguments(I32 argc, const Char* argv[], DictStr* macro_dict)
             else if (argv[i][1] == 'D') {
                 // Define a macro
                 Char* macro_name = strdup(argv[i] + 2); // Get the macro name after '-D'
-                dictstr_put(macro_dict, macro_name, str_to_char(str_new("")));
+                dict_put(macro_dict, macro_name, str_to_char(str_new("")));
             }
             else {
                 // handle combined flags like -vd
@@ -89,11 +89,11 @@ static Void handle_arguments(I32 argc, const Char* argv[], DictStr* macro_dict)
     }
 }
 
-static Void compile_file(const Char* filename, DictStr* macro_dict)
+static Void compile_file(const Char* filename, Dict* macro_dict)
 {
     create_dir("out");
 
-    dictstr_print(macro_dict);
+    dict_print(macro_dict);
 
     // Extract just the filename without the path
     Char* out_filename = strdup(filename);
@@ -166,7 +166,7 @@ static Void compile_file(const Char* filename, DictStr* macro_dict)
 
 I32 main(I32 argc, const Char* argv[])
 {
-    DictStr* macro_dict = dictstr_new();
+    Dict* macro_dict = dict_new();
 
     handle_arguments(argc, argv, macro_dict);
 
@@ -211,6 +211,7 @@ I32 main(I32 argc, const Char* argv[])
             str_cat(assemble_cmd, str_to_char(asm_out_file));
             str_cat(assemble_cmd, " -o ");
             str_cat(assemble_cmd, str_to_char(object_file));
+            print(MSG_INFO, "%s\n", str_to_char(assemble_cmd));
             sh(str_to_char(assemble_cmd));
 
             str_free(assemble_cmd);
@@ -225,9 +226,10 @@ I32 main(I32 argc, const Char* argv[])
         str_cat(link_cmd, "-lc -dynamic-linker /lib64/ld-linux-x86-64.so.2");
 
         print(MSG_STEP, "linking...\n");
+        print(MSG_INFO, "%s\n", str_to_char(link_cmd));
         sh(str_to_char(link_cmd));
 
-        // dictstr_free(macro_dict);
+        // dict_free(macro_dict);
         str_free(link_cmd);
         str_free(object_files);
     }
