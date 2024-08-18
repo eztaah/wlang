@@ -4,10 +4,11 @@
 #include "lib.h"
 #include "token.h"
 
-Token* token_new(Str* value, I32 type)
+Token* token_new(Str* value, I32 type, I32 line)
 {
     Token* new_token = malloc(sizeof(Token));
     new_token->value = strdup(str_to_char(value));
+    new_token->line = line;
     str_free(value);
     new_token->type = type;
 

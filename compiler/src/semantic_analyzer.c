@@ -1,5 +1,16 @@
-#include "node.h"
+/*
+THINGS CATCH BY THE SEMANTIC ANALYSER
+- assignement sur des variables non declarés
+- reference à des variables non declarés (ou non definis)
+- si l'utilisateur utilise une taille differente de <64> pour ces variables (jette une erreur)
+- utilisation d'un break alors que l'on est pas dans un "loop"
+- utilisation d'un else alors que l'on est pas dans un "if"
+- si des statements sont ecrit en dehors des fonctions
+- redeclaration d'une variable deja declarée
+ */
+
 #include "lib.h"
+#include "node.h"
 #include <stdlib.h> // malloc(), free()
 #include <string.h> // strcmp()
 
@@ -36,31 +47,31 @@ static Void analyze_block(AnalyzerContext* context, BlockNode* block_node)
 }
 
 // Check if the variable is declared
-static Void check_variable_declared(AnalyzerContext* context, const Char* name)
+static Void check_variable_declared(AnalyzerContext* context, const Char* name, I32 line_number)
 {
     if (dictstr_get(context->symbol_table, name) == NULL) {
-        USER_PANIC("Variable '%s' referenced before declaration", name);
+        USER_PANIC("Line %d: Variable '%s' referenced before declaration", line_number, name);
     }
 }
 
 // Analyze assignment
-static Void analyze_assignment(AnalyzerContext* context, AssNode* ass_node)
+static Void analyze_assignment(AnalyzerContext* context, AssNode* ass_node, I32 line_number)
 {
     if (ass_node->lvalue->type == NODE_VARREF) {
-        check_variable_declared(context, ass_node->lvalue->varref_node.name);
+        check_variable_declared(context, ass_node->lvalue->varref_node.name, line_number);
     }
     analyze_expr(context, ass_node->value);
 }
 
 // Analyze variable declaration
-static Void analyze_vardec(AnalyzerContext* context, VardecNode* vardec_node)
+static Void analyze_vardec(AnalyzerContext* context, VardecNode* vardec_node, I32 line_number)
 {
     if (strcmp(vardec_node->size, "64") != 0) {
-        USER_PANIC("Only 64-bit variables are allowed, but '%s' is of size <%s>", vardec_node->name, vardec_node->size);
+        USER_PANIC("Line %d: Only 64-bit variables are allowed, but '%s' is of size <%s>", line_number, vardec_node->name, vardec_node->size);
     }
 
     if (dictstr_get(context->symbol_table, vardec_node->name) != NULL) {
-        USER_PANIC("Variable '%s' already declared", vardec_node->name);
+        USER_PANIC("Line %d: Variable '%s' already declared", line_number, vardec_node->name);
     }
 
     dictstr_put(context->symbol_table, vardec_node->name, "64");
@@ -71,14 +82,14 @@ static Void analyze_vardec(AnalyzerContext* context, VardecNode* vardec_node)
 }
 
 // Analyze array declaration
-static Void analyze_arraydec(AnalyzerContext* context, ArraydecNode* arraydec_node)
+static Void analyze_arraydec(AnalyzerContext* context, ArraydecNode* arraydec_node, I32 line_number)
 {
     if (strcmp(arraydec_node->item_size, "64") != 0) {
-        USER_PANIC("Only 64-bit variables are allowed, but array '%s' contains elements of size <%s>", arraydec_node->name, arraydec_node->item_size);
+        USER_PANIC("Line %d: Only 64-bit variables are allowed, but array '%s' contains elements of size <%s>", line_number, arraydec_node->name, arraydec_node->item_size);
     }
 
     if (dictstr_get(context->symbol_table, arraydec_node->name) != NULL) {
-        USER_PANIC("Array '%s' already declared", arraydec_node->name);
+        USER_PANIC("Line %d: Array '%s' already declared", line_number, arraydec_node->name);
     }
 
     dictstr_put(context->symbol_table, arraydec_node->name, "64");
@@ -95,7 +106,7 @@ static Void analyze_expr(AnalyzerContext* context, ExprNode* expr_node)
 {
     switch (expr_node->type) {
         case NODE_VARREF:
-            check_variable_declared(context, expr_node->varref_node.name);
+            check_variable_declared(context, expr_node->varref_node.name, expr_node->line_number);
             break;
 
         case NODE_ADDRDEREF:
@@ -103,7 +114,7 @@ static Void analyze_expr(AnalyzerContext* context, ExprNode* expr_node)
             break;
 
         case NODE_VARADDR:
-            check_variable_declared(context, expr_node->varaddr_node.name);
+            check_variable_declared(context, expr_node->varaddr_node.name, expr_node->line_number);
             break;
 
         case NODE_BINOP:
@@ -137,15 +148,15 @@ static Void analyze_stmt(AnalyzerContext* context, StmtNode* stmt_node)
 {
     switch (stmt_node->type) {
         case NODE_VARDEC:
-            analyze_vardec(context, &stmt_node->vardec_node);
+            analyze_vardec(context, &stmt_node->vardec_node, stmt_node->line_number);
             break;
 
         case NODE_ARRAYDEC:
-            analyze_arraydec(context, &stmt_node->arraydec_node);
+            analyze_arraydec(context, &stmt_node->arraydec_node, stmt_node->line_number);
             break;
 
         case NODE_ASS:
-            analyze_assignment(context, &stmt_node->ass_node);
+            analyze_assignment(context, &stmt_node->ass_node, stmt_node->line_number);
             break;
 
         case NODE_RET:
@@ -170,7 +181,7 @@ static Void analyze_stmt(AnalyzerContext* context, StmtNode* stmt_node)
 
         case NODE_BREAK:
             if (!context->in_loop) {
-                USER_PANIC("Break statement used outside of a loop");
+                USER_PANIC("Line %d: Break statement used outside of a loop", stmt_node->line_number);
             }
             break;
 
@@ -179,10 +190,9 @@ static Void analyze_stmt(AnalyzerContext* context, StmtNode* stmt_node)
             break;
 
         default:
-            PANIC("Unhandled statement node type: %d", stmt_node->type);
+            PANIC("Line %d: Unhandled statement node type: %d", stmt_node->line_number, stmt_node->type);
     }
 }
-
 
 // Analyze function definition
 static Void analyze_fundef(AnalyzerContext* context, FundefNode* fundef_node)
@@ -193,7 +203,7 @@ static Void analyze_fundef(AnalyzerContext* context, FundefNode* fundef_node)
     for (I32 i = 0; i < fundef_node->param_node_list->size; i++) {
         ParamNode* param_node = (ParamNode*)list_get(fundef_node->param_node_list, i);
         if (strcmp(param_node->size, "64") != 0) {
-            USER_PANIC("Only 64-bit parameters are allowed, but parameter '%s' is of size <%s>", param_node->name, param_node->size);
+            USER_PANIC("Line %d: Only 64-bit parameters are allowed, but parameter '%s' is of size <%s>", fundef_node->line_number, param_node->name, param_node->size);
         }
         dictstr_put(context->symbol_table, param_node->name, param_node->size);
     }

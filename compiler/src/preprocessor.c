@@ -1,21 +1,29 @@
 #include "lib.h"
+#include <stdio.h>
 #include <stdlib.h> // malloc(), free()
 #include <string.h> // strstr(), strchr(), strlen(), strcpy(), strcat()
-#include <stdio.h>
 
-
-static I32 escape_sequence_to_ascii(Char* seq) {
-    if (strcmp(seq, "\\n") == 0) return 10;    // Newline
-    if (strcmp(seq, "\\0") == 0) return 0;     // Null terminator
-    if (strcmp(seq, "\\t") == 0) return 9;     // Tab
-    if (strcmp(seq, "\\r") == 0) return 13;    // Carriage return
-    if (strcmp(seq, "\\\\") == 0) return 92;   // Backslash
-    if (strcmp(seq, "\\\'") == 0) return 39;   // Single quote
-    if (strcmp(seq, "\\\"") == 0) return 34;   // Double quote
-    return -1; // Invalid escape sequence
+static I32 escape_sequence_to_ascii(Char* seq)
+{
+    if (strcmp(seq, "\\n") == 0)
+        return 10; // Newline
+    if (strcmp(seq, "\\0") == 0)
+        return 0; // Null terminator
+    if (strcmp(seq, "\\t") == 0)
+        return 9; // Tab
+    if (strcmp(seq, "\\r") == 0)
+        return 13; // Carriage return
+    if (strcmp(seq, "\\\\") == 0)
+        return 92; // Backslash
+    if (strcmp(seq, "\\\'") == 0)
+        return 39; // Single quote
+    if (strcmp(seq, "\\\"") == 0)
+        return 34; // Double quote
+    return -1;     // Invalid escape sequence
 }
 
-static Void convert_chars_to_ascii(Str* source) {
+static Void convert_chars_to_ascii(Str* source)
+{
     Char* src = str_to_char(source);
     Char* pos = src;
 
@@ -34,7 +42,8 @@ static Void convert_chars_to_ascii(Str* source) {
             if (ascii_value == -1) {
                 PANIC("Invalid escape sequence");
             }
-        } else {
+        }
+        else {
             // Regular character
             ascii_value = (I32)character;
         }
@@ -51,7 +60,8 @@ static Void convert_chars_to_ascii(Str* source) {
     }
 }
 
-static Void convert_string_literals_to_ascii_array(Str* source) {
+static Void convert_string_literals_to_ascii_array(Str* source)
+{
     Char* src = str_to_char(source);
     Char* pos = src;
 
@@ -72,7 +82,8 @@ static Void convert_string_literals_to_ascii_array(Str* source) {
                     PANIC("Invalid escape sequence");
                 }
                 p++; // Skip the next character as it's part of the escape sequence
-            } else {
+            }
+            else {
                 ascii_value = (I32)*p;
             }
 
@@ -118,10 +129,11 @@ static Void collect_macros(Str* source, DictStr* macro_dict)
             // Macro with a value
             Char* value_start = macro_end + 1;
             macro_value = strndup(value_start, end_line - value_start);
-        } else {
+        }
+        else {
             // Macro without a value (e.g., #def DEV_MODE)
             macro_end = end_line;
-            macro_value = strdup("1");  // Use "1" as the default value
+            macro_value = strdup("1"); // Use "1" as the default value
         }
 
         Char* macro_name = strndup(macro_start, macro_end - macro_start);
@@ -182,11 +194,13 @@ static Void process_conditionals(Str* source, DictStr* macro_dict)
                 str_remove_range(source, else_pos - src, endif_pos + 6 - src); // Remove from #else to #endif
             }
             str_remove_range(source, pos - src, end_line + 1 - src); // Remove the #ifdef line
-        } else {
+        }
+        else {
             // If macro is not defined, remove the #ifdef block and keep #else or remove all if no #else
             if (else_pos && else_pos < endif_pos) {
                 str_remove_range(source, pos - src, else_pos + 6 - src); // Remove from #ifdef to #else
-            } else {
+            }
+            else {
                 str_remove_range(source, pos - src, endif_pos + 6 - src); // Remove from #ifdef to #endif
             }
         }
@@ -197,7 +211,8 @@ static Void process_conditionals(Str* source, DictStr* macro_dict)
             Char* end_of_endif_line = strchr(endif_pos, '\n');
             if (end_of_endif_line) {
                 str_remove_range(source, endif_pos - str_to_char(source), end_of_endif_line + 1 - str_to_char(source));
-            } else {
+            }
+            else {
                 str_remove_range(source, endif_pos - str_to_char(source), strlen(str_to_char(source)));
             }
         }
@@ -207,9 +222,6 @@ static Void process_conditionals(Str* source, DictStr* macro_dict)
         pos = src; // Reset the position to the start
     }
 }
-
-
-
 
 static Void process_includes(Str* source)
 {
@@ -256,7 +268,8 @@ static Void remove_comments(Str* source)
         while (scan_pos < pos) {
             if (*scan_pos == '"' && (scan_pos == src || *(scan_pos - 1) != '\\')) {
                 in_string = !in_string; // Toggle in_string state
-            } else if (*scan_pos == '\'' && (scan_pos == src || *(scan_pos - 1) != '\\')) {
+            }
+            else if (*scan_pos == '\'' && (scan_pos == src || *(scan_pos - 1) != '\\')) {
                 in_char = !in_char; // Toggle in_char state
             }
             scan_pos++;
@@ -293,7 +306,8 @@ static Void process_annotations(Str* source)
         while (scan_pos < pos) {
             if (*scan_pos == '"' && (scan_pos == src || *(scan_pos - 1) != '\\')) {
                 in_string = !in_string; // Toggle in_string state
-            } else if (*scan_pos == '\'' && (scan_pos == src || *(scan_pos - 1) != '\\')) {
+            }
+            else if (*scan_pos == '\'' && (scan_pos == src || *(scan_pos - 1) != '\\')) {
                 in_char = !in_char; // Toggle in_char state
             }
             scan_pos++;
@@ -311,15 +325,18 @@ static Void process_annotations(Str* source)
             if (!end_line) {
                 str_remove_range(source, pos - src, source->length);
                 break;
-            } else {
+            }
+            else {
                 str_remove_range(source, pos - src, end_line + 1 - src);
             }
-        } else { // skip the word until the next space
+        }
+        else { // skip the word until the next space
             Char* space = strchr(pos, ' ');
             if (!space) {
                 str_remove_range(source, pos - src, source->length);
                 break;
-            } else {
+            }
+            else {
                 str_remove_range(source, pos - src, space - src + 1);
             }
         }
@@ -340,10 +357,10 @@ Str* preprocess_file(const Char* filename, DictStr* macro_dict)
     remove_comments(source);
     process_annotations(source);
 
-    process_includes(source);                   // 1
+    process_includes(source); // 1
     collect_macros(source, macro_dict);
-    process_conditionals(source, macro_dict);   // 3
-    replace_macros(source, macro_dict);         // 2
+    process_conditionals(source, macro_dict); // 3
+    replace_macros(source, macro_dict);       // 2
 
     // Convert characters and strings to ASCII
     convert_chars_to_ascii(source);

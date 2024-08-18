@@ -13,7 +13,7 @@ Str* print_tokenlist(const List* token_list)
             const Char* token_type_name = tokentype_to_string(token->type);
 
             Char temp[1024];
-            snprintf(temp, sizeof(temp), "    {%s, \"%s\"},\n", token_type_name, token->value);
+            snprintf(temp, sizeof(temp), "    {%d, %s, \"%s\"},\n", token->line, token_type_name, token->value);
             str_cat(output, temp);
 
             if (token->type == TOKEN_SEMI) {
