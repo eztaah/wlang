@@ -1,7 +1,101 @@
 #include "lib.h"
 #include <stdlib.h> // malloc(), free()
 #include <string.h> // strstr(), strchr(), strlen(), strcpy(), strcat()
+#include <stdio.h>
 
+
+static I32 escape_sequence_to_ascii(Char* seq) {
+    if (strcmp(seq, "\\n") == 0) return 10;    // Newline
+    if (strcmp(seq, "\\0") == 0) return 0;     // Null terminator
+    if (strcmp(seq, "\\t") == 0) return 9;     // Tab
+    if (strcmp(seq, "\\r") == 0) return 13;    // Carriage return
+    if (strcmp(seq, "\\\\") == 0) return 92;   // Backslash
+    if (strcmp(seq, "\\\'") == 0) return 39;   // Single quote
+    if (strcmp(seq, "\\\"") == 0) return 34;   // Double quote
+    return -1; // Invalid escape sequence
+}
+
+static Void convert_chars_to_ascii(Str* source) {
+    Char* src = str_to_char(source);
+    Char* pos = src;
+
+    while ((pos = strchr(pos, '\'')) != NULL) {
+        Char* end_char = strchr(pos + 1, '\'');
+        if (!end_char) {
+            PANIC("Unmatched single quote in character literal");
+        }
+
+        I32 ascii_value = -1;
+        Char character = *(pos + 1);
+        if (character == '\\') {
+            // Handle escape sequences
+            Char escape_seq[3] = {pos[1], pos[2], '\0'};
+            ascii_value = escape_sequence_to_ascii(escape_seq);
+            if (ascii_value == -1) {
+                PANIC("Invalid escape sequence");
+            }
+        } else {
+            // Regular character
+            ascii_value = (I32)character;
+        }
+
+        Char ascii_str[12]; // Enough to hold any ASCII value as string
+        sprintf(ascii_str, "%d", ascii_value);
+
+        // Replace the character or escape sequence with its ASCII value
+        str_remove_range(source, pos - src, end_char + 1 - src);
+        str_insert(source, pos - src, ascii_str);
+
+        // Update the src pointer since we've modified the source
+        src = str_to_char(source);
+    }
+}
+
+static Void convert_string_literals_to_ascii_array(Str* source) {
+    Char* src = str_to_char(source);
+    Char* pos = src;
+
+    while ((pos = strchr(pos, '"')) != NULL) {
+        Char* end_string = strchr(pos + 1, '"');
+        if (!end_string) {
+            PANIC("Unmatched double quote in string literal");
+        }
+
+        Str* ascii_array = str_new("[");
+        for (Char* p = pos + 1; p < end_string; p++) {
+            I32 ascii_value = -1;
+            if (*p == '\\') {
+                // Handle escape sequences
+                Char escape_seq[3] = {p[0], p[1], '\0'};
+                ascii_value = escape_sequence_to_ascii(escape_seq);
+                if (ascii_value == -1) {
+                    PANIC("Invalid escape sequence");
+                }
+                p++; // Skip the next character as it's part of the escape sequence
+            } else {
+                ascii_value = (I32)*p;
+            }
+
+            Char ascii_str[12]; // Enough to hold any ASCII value as string
+            sprintf(ascii_str, "%d", ascii_value);
+            str_cat(ascii_array, ascii_str);
+            if (p < end_string - 1) {
+                str_cat(ascii_array, ", ");
+            }
+        }
+        str_cat(ascii_array, "]"); // close the array
+
+        // Replace the string literal with the ASCII array
+        str_remove_range(source, pos - src, end_string + 1 - src);
+        str_insert(source, pos - src, str_to_char(ascii_array));
+
+        // Update the src pointer since we've modified the source
+        src = str_to_char(source);
+
+        // Free the temporary Str
+        str_free(ascii_array);
+    }
+}
 
 // Collect and store all macros in the dictionary
 static Void collect_macros(Str* source, DictStr* macro_dict)
@@ -153,11 +247,31 @@ static Void remove_comments(Str* source)
 {
     Char* src = str_to_char(source);
     Char* pos = src;
+    Bool in_string = FALSE;
+    Bool in_char = FALSE;
 
     while ((pos = strchr(pos, ':')) != NULL) {
+        // Check if ':' is inside a string or a character
+        Char* scan_pos = src;
+        while (scan_pos < pos) {
+            if (*scan_pos == '"' && (scan_pos == src || *(scan_pos - 1) != '\\')) {
+                in_string = !in_string; // Toggle in_string state
+            } else if (*scan_pos == '\'' && (scan_pos == src || *(scan_pos - 1) != '\\')) {
+                in_char = !in_char; // Toggle in_char state
+            }
+            scan_pos++;
+        }
+
+        // If ':' is inside a string or character, skip it
+        if (in_string || in_char) {
+            pos++; // Move to the next character and continue
+            continue;
+        }
+
+        // ':' is not inside a string or character, so it is a comment
         Char* end_line = strchr(pos, '\n');
         if (!end_line) {
-            str_remove_range(source, pos - src, source->length); // Remove from : to end of string
+            str_remove_range(source, pos - src, source->length); // Remove from ':' to end of string
             break;
         }
         else {
@@ -170,25 +284,42 @@ static Void process_annotations(Str* source)
 {
     Char* src = str_to_char(source);
     Char* pos = src;
+    Bool in_string = FALSE;
+    Bool in_char = FALSE;
 
     while ((pos = strchr(pos, '!')) != NULL) {
+        // Check if '!' is inside a string, character, or is part of '!='
+        Char* scan_pos = src;
+        while (scan_pos < pos) {
+            if (*scan_pos == '"' && (scan_pos == src || *(scan_pos - 1) != '\\')) {
+                in_string = !in_string; // Toggle in_string state
+            } else if (*scan_pos == '\'' && (scan_pos == src || *(scan_pos - 1) != '\\')) {
+                in_char = !in_char; // Toggle in_char state
+            }
+            scan_pos++;
+        }
+
+        // If '!' is inside a string, character, or followed by '=', skip it
+        if (in_string || in_char || (*(pos + 1) == '=')) {
+            pos++; // Move to the next character and continue
+            continue;
+        }
+
+        // Process the annotation
         if (pos[1] == ' ') { // skip the entire line if ! is followed by a space
             Char* end_line = strchr(pos, '\n');
             if (!end_line) {
                 str_remove_range(source, pos - src, source->length);
                 break;
-            }
-            else {
+            } else {
                 str_remove_range(source, pos - src, end_line + 1 - src);
             }
-        }
-        else { // skip the word until the next space
+        } else { // skip the word until the next space
             Char* space = strchr(pos, ' ');
             if (!space) {
                 str_remove_range(source, pos - src, source->length);
                 break;
-            }
-            else {
+            } else {
                 str_remove_range(source, pos - src, space - src + 1);
             }
         }
@@ -213,6 +344,10 @@ Str* preprocess_file(const Char* filename, DictStr* macro_dict)
     collect_macros(source, macro_dict);
     process_conditionals(source, macro_dict);   // 3
     replace_macros(source, macro_dict);         // 2
+
+    // Convert characters and strings to ASCII
+    convert_chars_to_ascii(source);
+    convert_string_literals_to_ascii_array(source);
 
     remove_comments(source);
     process_annotations(source);
