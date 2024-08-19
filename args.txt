@@ -1,0 +1,15 @@
+wlangc <file.w> [options]     compile a source file with optional flags.
+wlangc --version              display compiler version and exit.
+wlangc --help                 display this help message and exit.
+
+-v, --verbose                   output additional information
+-d, --define <macro>
+
+--no-libc                 Do not link with the libc
+--compile-only            Compile only; do not assemble or link.
+--shared                  Create a shared library.
+
+--Wa <option>            Pass <option> on to the assembler.
+--Wl <option>            Pass <option> on to the linker.
+--Xassembler <arg>        Pass <arg> on to the assembler.
+--Xlinker <arg>           Pass <arg> on to the linker.

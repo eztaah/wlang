@@ -85,8 +85,13 @@ typedef enum {
     MSG_ERROR,
 } MsgType;
 
+
+Void* safe_malloc(UX size);
+Void* safe_calloc(UX num, UX size);
+Void* safe_realloc(Void* ptr, UX new_size);
+
 Char* read_file(const Char* filename);
-Void write_file(const Char* filename, Char* outbuffer);
+Void write_file(const Char* filename, const Char* outbuffer);
 Char* sh(const Char* cmd);
 Void create_dir(const Char* dir);
 void print_v(MsgType msg_type, const Char* text, va_list args);
@@ -95,9 +100,9 @@ void print(MsgType msg_type, const Char* text, ...);
 // error handling
 Void application_panic(const Char* file_path, I32 line, const Char* format, ...);
 Void application_assert(const Char* file, I32 line, Bool cond, const Char* message);
-Void user_panic(const Char* format, ...);
+Void user_panic(const Char* current_filename, I32 line, const Char* format, ...);
 
-#define USER_PANIC(...) user_panic(__VA_ARGS__)
+#define USER_PANIC(current_filename, line, ...) user_panic(current_filename, line, __VA_ARGS__)
 #define PANIC(...) application_panic(__FILE__, __LINE__, __VA_ARGS__)
 #define UNREACHABLE() PANIC("unreachable")
 #define ASSERT(cond, message) application_assert(__FILE__, __LINE__, cond, message)

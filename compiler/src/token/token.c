@@ -1,4 +1,4 @@
-#include <stdlib.h> // malloc()
+#include <stdlib.h> // safe_malloc()
 #include <string.h> // strdup()
 
 #include "lib.h"
@@ -6,7 +6,7 @@
 
 Token* token_new(Str* value, I32 type, I32 line)
 {
-    Token* new_token = malloc(sizeof(Token));
+    Token* new_token = safe_malloc(sizeof(Token));
     new_token->value = strdup(str_to_char(value));
     new_token->line = line;
     str_free(value);

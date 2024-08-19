@@ -7,16 +7,10 @@
 Str* str_new(const Char* value)
 {
     UX length = strlen(value);
-    Char* char_array = malloc(length + 1); // +1 for the null-terminating character
-    if (!char_array) {
-        PANIC("malloc failed");
-    }
+    Char* char_array = safe_malloc(length + 1); // +1 for the null-terminating character
     strcpy(char_array, value);
 
-    Str* str = malloc(sizeof(Str));
-    if (!str) {
-        PANIC("malloc failed");
-    }
+    Str* str = safe_malloc(sizeof(Str));
     str->char_array_location = char_array;
     str->length = length;
     str->capacity = length + 1;
@@ -26,17 +20,11 @@ Str* str_new(const Char* value)
 // Create a new Str with a single character
 Str* str_new_c(const Char c)
 {
-    Char* char_array = malloc(2 * sizeof(Char)); // 2 for the character and the null-terminating character
-    if (!char_array) {
-        PANIC("malloc failed");
-    }
+    Char* char_array = safe_malloc(2 * sizeof(Char)); // 2 for the character and the null-terminating character
     char_array[0] = c;
     char_array[1] = '\0';
 
-    Str* str = malloc(sizeof(Str));
-    if (!str) {
-        PANIC("malloc failed");
-    }
+    Str* str = safe_malloc(sizeof(Str));
     str->char_array_location = char_array;
     str->length = 1;
     str->capacity = 2;
@@ -49,10 +37,7 @@ Void str_cat_str(Str* dest, const Str* src)
     UX new_length = dest->length + src->length;
 
     if (new_length + 1 > dest->capacity) {
-        Char* new_dest = realloc(dest->char_array_location, new_length + 1);
-        if (!new_dest) {
-            PANIC("realloc failed");
-        }
+        Char* new_dest = safe_realloc(dest->char_array_location, new_length + 1);
         dest->char_array_location = new_dest;
         dest->capacity = new_length + 1;
     }
@@ -68,10 +53,7 @@ Void str_cat(Str* dest, const Char* src)
     UX new_length = dest->length + src_len;
 
     if (new_length + 1 > dest->capacity) {
-        Char* new_dest = realloc(dest->char_array_location, new_length + 1);
-        if (!new_dest) {
-            PANIC("realloc failed");
-        }
+        Char* new_dest = safe_realloc(dest->char_array_location, new_length + 1);
         dest->char_array_location = new_dest;
         dest->capacity = new_length + 1;
     }
@@ -84,10 +66,7 @@ Void str_cat(Str* dest, const Char* src)
 Void str_cat_c(Str* dest, const Char c)
 {
     if (dest->length + 2 > dest->capacity) {
-        Char* new_dest = realloc(dest->char_array_location, dest->length + 2);
-        if (!new_dest) {
-            PANIC("realloc failed");
-        }
+        Char* new_dest = safe_realloc(dest->char_array_location, dest->length + 2);
         dest->char_array_location = new_dest;
         dest->capacity = dest->length + 2;
     }
@@ -107,10 +86,7 @@ Void str_insert(Str* dest, UX index, const Char* src)
     UX new_length = dest->length + src_len;
 
     if (new_length + 1 > dest->capacity) {
-        Char* new_dest = realloc(dest->char_array_location, new_length + 1);
-        if (!new_dest) {
-            PANIC("realloc failed");
-        }
+        Char* new_dest = safe_realloc(dest->char_array_location, new_length + 1);
         dest->char_array_location = new_dest;
         dest->capacity = new_length + 1;
     }

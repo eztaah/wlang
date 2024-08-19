@@ -4,7 +4,7 @@
 
 List* list_new(I32 item_size)
 {
-    List* list = calloc(1, sizeof(List));
+    List* list = safe_calloc(1, sizeof(List));
     list->size = 0;
     list->item_size = item_size;
     list->items = 0;
@@ -17,9 +17,9 @@ Void list_push(List* list, Void* item)
     list->size += 1;
 
     if (!list->items)
-        list->items = calloc(1, list->item_size);
+        list->items = safe_calloc(1, list->item_size);
     else
-        list->items = realloc(list->items, (list->size * list->item_size));
+        list->items = safe_realloc(list->items, (list->size * list->item_size));
 
     list->items[list->size - 1] = item;
 }
@@ -43,7 +43,7 @@ Void* list_pop(List* list)
     }
     else {
         // Reallocate the memory for the items array to match the new size
-        list->items = realloc(list->items, list->size * list->item_size);
+        list->items = safe_realloc(list->items, list->size * list->item_size);
     }
 
     return item;

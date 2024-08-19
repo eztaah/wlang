@@ -14,7 +14,7 @@ typedef struct {
 
 static Lexer* lexer_new(const Char* src)
 {
-    Lexer* lexer = calloc(1, sizeof(Lexer));
+    Lexer* lexer = safe_calloc(1, sizeof(Lexer));
     lexer->src = src;
     lexer->src_size = strlen(src);
     lexer->i = 0;
@@ -62,7 +62,7 @@ static Token* lex_eof(Lexer* lexer, I32 type)
 
 static Token* lex_symbol(Lexer* lexer, I32 type)
 {
-    Str* value = str_new_c(lexer->c);
+    Str* value = str_new_c(' ');
     Token* token = token_new(value, type, lexer->line);
 
     lexer_advance(lexer);
@@ -215,7 +215,7 @@ static Token* lex_next_token(Lexer* lexer)
                 return lex_symbol(lexer, TOKEN_NOT_EQUAL);
             }
             lexer_retreat(lexer);
-            USER_PANIC("Unexpected character after `!`: `%c` (ascii: %d)", lexer->c, (I32)lexer->c);
+            USER_PANIC(current_filename, lexer->line, "Unexpected character after `!`: `%c` (ascii: %d)", lexer->c, (I32)lexer->c);
             return NULL;
         case '(':
             return lex_symbol(lexer, TOKEN_LPAREN);
@@ -254,7 +254,7 @@ static Token* lex_next_token(Lexer* lexer)
         case '\0':
             return lex_eof(lexer, TOKEN_EOF);
         default:
-            USER_PANIC("Unexpected character `%c` (ascii: %d)", lexer->c, (I32)lexer->c);
+            USER_PANIC(current_filename, lexer->line, "Unexpected character `%c` (ascii: %d)", lexer->c, (I32)lexer->c);
             return NULL;
     }
 }
