@@ -215,7 +215,7 @@ static Token* lex_next_token(Lexer* lexer)
                 return lex_symbol(lexer, TOKEN_NOT_EQUAL);
             }
             lexer_retreat(lexer);
-            USER_PANIC(current_filename, lexer->line, "Unexpected character after `!`: `%c` (ascii: %d)", lexer->c, (I32)lexer->c);
+            USER_PANIC(current_filename, lexer->line, "unexpected character after `!`: `%c` (ascii: %d)", lexer->c, (I32)lexer->c);
             return NULL;
         case '(':
             return lex_symbol(lexer, TOKEN_LPAREN);
@@ -247,6 +247,10 @@ static Token* lex_next_token(Lexer* lexer)
             }
             lexer_retreat(lexer);
             return lex_symbol(lexer, TOKEN_PIPE);
+        case '~':
+            return lex_symbol(lexer, TOKEN_TILDE);
+        case '#':
+            return lex_symbol(lexer, TOKEN_HASH);
         case '^':
             return lex_symbol(lexer, TOKEN_CARET);
         case ';':
@@ -254,7 +258,7 @@ static Token* lex_next_token(Lexer* lexer)
         case '\0':
             return lex_eof(lexer, TOKEN_EOF);
         default:
-            USER_PANIC(current_filename, lexer->line, "Unexpected character `%c` (ascii: %d)", lexer->c, (I32)lexer->c);
+            USER_PANIC(current_filename, lexer->line, "unexpected character `%c` (ascii: %d)", lexer->c, (I32)lexer->c);
             return NULL;
     }
 }

@@ -8,7 +8,8 @@
 Bool verbose = FALSE;
 Bool compile_only = FALSE;
 Bool no_libc = FALSE;
-Bool shared_library = FALSE;
+Bool no_libw = FALSE;
+Bool static_library = FALSE;
 
 static Void print_usage(Void)
 {
@@ -21,7 +22,7 @@ static Void print_usage(Void)
     printf("    -d, --define <macro>             define a macro\n");
     printf("    --no-libc                        do not link with the libc\n");
     printf("    --compile-only                   compile only; do not assemble or link\n");
-    printf("    --shared                         create a shared library\n");
+    printf("    --lib                            create a static library\n");
     printf("\n");
 }
 
@@ -60,11 +61,14 @@ static List* handle_arguments(I32 argc, const Char* argv[], Dict* macro_dict)
             else if (char_cmp(argv[i], "--no-libc")) {
                 no_libc = TRUE;
             }
+            else if (char_cmp(argv[i], "--no-libw")) {
+                no_libw = TRUE;
+            }
             else if (char_cmp(argv[i], "--compile-only")) {
                 compile_only = TRUE;
             }
-            else if (char_cmp(argv[i], "--shared")) {
-                shared_library = TRUE;
+            else if (char_cmp(argv[i], "--lib")) {
+                static_library = TRUE;
             }
             else {
                 print(MSG_ERROR, "%s is not a valid option\n", argv[i]);
@@ -105,16 +109,22 @@ I32 main(I32 argc, const Char* argv[])
 
         for (I32 i = 0; i < source_files->size; i++) {
             Char* filename = *(Char**)list_get(source_files, i);
-            assemble_file(filename, object_files);
+            I32 ret_code = assemble_file(filename, object_files);
+            if (ret_code != 0) {
+                return ret_code;
+            }
         }
 
-        link_executable(object_files);
+        I32 ret_code = link_executable(object_files);
+        if (ret_code != 0) {
+            return ret_code;
+        }
 
         str_free(object_files);
     }
 
-    if (shared_library) {
-        printf("compilation completed. the generated shared library is located in ./out/lib.so.\n");
+    if (static_library) {
+        printf("compilation completed. the generated shared library is located in ./out/lib.a.\n");
     } else {
         printf("compilation completed. the generated executable is located in ./out/prog.\n");
     }

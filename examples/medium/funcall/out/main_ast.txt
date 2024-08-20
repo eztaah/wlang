@@ -1,0 +1,50 @@
+[
+    FundefNode
+    ├─ name: "w__add"
+    ├─ return_size: "64"
+    ├─ scope: "local"
+    ├─ parameters: List<ParamNode>
+                   ├─ ParamNode
+                      ├─ name: "a"
+                      └─ size: "64"
+                   └─ ParamNode
+                      ├─ name: "b"
+                      └─ size: "64"
+    └─ block_node: BlockNode
+                   └─ content: List<StmtNode>
+                               └─ RetNode
+                                  └─ value: BinopNode
+                                            ├─ op: TOKEN_PLUS
+                                            ├─ left:  VarrefNode
+                                                      └─ name: a
+                                            └─ right: VarrefNode
+                                                      └─ name: b
+    ,
+    FundefNode
+    ├─ name: "w__main"
+    ├─ return_size: "64"
+    ├─ scope: "local"
+    ├─ parameters: List<ParamNode>
+                   └─ EMPTY
+    └─ block_node: BlockNode
+                   └─ content: List<StmtNode>
+                               ├─ VardecNode
+                                  ├─ size: 64
+                                  ├─ name: result
+                                  └─ value: FuncallNode
+                                            ├─ name: "w__add"
+                                            └─ args: List<ExprNode>
+                                                     ├─ NumNode
+                                                        └─ value: 2
+                                                     └─ NumNode
+                                                        └─ value: 3
+                               ├─ FuncallNode
+                                  ├─ name: "w__print_number"
+                                  └─ args: List<ExprNode>
+                                           └─ VarrefNode
+                                              └─ name: result
+                               └─ RetNode
+                                  └─ value: NumNode
+                                            └─ value: 0
+
+]

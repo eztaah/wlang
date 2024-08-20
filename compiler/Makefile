@@ -6,10 +6,10 @@ DEBUG_FLAG = -g -DTHROW_RUNTIME_ERROR
 RELEASE_FLAG = -O3
 
 debug:
-	gcc $(SOURCE_FILES) $(INCLUDE_FLAGS) $(CFLAGS) $(DEBUG_FLAG) -o wlangc
+	gcc $(SOURCE_FILES) $(INCLUDE_FLAGS) $(CFLAGS) $(DEBUG_FLAG) -o ../wlangc
 
 release:
-	gcc $(SOURCE_FILES) $(INCLUDE_FLAGS) $(CFLAGS) $(RELEASE_FLAG) -o wlangc
+	gcc $(SOURCE_FILES) $(INCLUDE_FLAGS) $(CFLAGS) $(RELEASE_FLAG) -o ../wlangc
 
 clean:
-	rm -f wlangc
+	rm -f ../wlangc
