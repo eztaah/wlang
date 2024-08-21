@@ -1,8 +1,8 @@
 SOURCE_FILES = ./main.w ./add.w ./io.w
-FLAGS = --to-executable --verbose
+FLAGS = --verbose
 
 default:
-	../../compiler/wlangc $(SOURCE_FILES) $(FLAGS)
+	../../../wlangc $(SOURCE_FILES) $(FLAGS)
 
 clean:
 	rm -f prog

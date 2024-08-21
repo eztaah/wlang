@@ -580,7 +580,6 @@ static FundefNode* parse_fundef(Parser* parser)
 
 List* parse(const List* token_list)
 {
-    print(MSG_STEP, "parsing...\n");
 
     Parser* parser = parser_new(token_list);
 

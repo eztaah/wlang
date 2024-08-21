@@ -8,17 +8,17 @@ void application_panic(const char* file_path, int line, const char* format, ...)
     va_list args;
     va_start(args, format);
 
-    print(MSG_ERROR, "APPLICATION PANIC: %s:%d: ", file_path, line);
+    print(ERROR, 0, "APPLICATION PANIC: %s:%d: ", file_path, line);
 
     // handle end of the message
-    print_v(MSG_ERROR, format, args);
+    print_v(ERROR, 0, format, args);
 
-    print(MSG_ERROR, "\n");
+    print(ERROR, 0, "\n");
 
     va_end(args);
 
 #ifdef THROW_RUNTIME_ERROR
-    print(MSG_ERROR, "\n");
+    print(ERROR, 0, "\n");
     abort();
 #else
     exit(EXIT_FAILURE);
@@ -42,13 +42,13 @@ void user_panic(const char* current_filename, int line, const char* format, ...)
     va_start(args, format);
 
     // Print the filename and line number in bold
-    print(MSG_ERROR, ANSI_BOLD "%s: line %d: " ANSI_RED_BOLD "error: " ANSI_RESET, current_filename, line);
+    print(ERROR, 0, ANSI_BOLD "%s: line %d: " ANSI_RED_BOLD "error: " ANSI_RESET, current_filename, line);
 
     // Print the custom error message
-    print_v(MSG_ERROR, format, args);
+    print_v(ERROR, 0, format, args);
 
     // End the line with a newline character
-    print(MSG_ERROR, "\n");
+    print(ERROR, 0, "\n");
 
     va_end(args);
 

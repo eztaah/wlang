@@ -265,7 +265,6 @@ static Token* lex_next_token(Lexer* lexer)
 
 List* lex(const char* src)
 {
-    print(MSG_STEP, "lexing...\n");
 
     Lexer* lexer = lexer_new(src);
     List* token_list = list_new(sizeof(Token));

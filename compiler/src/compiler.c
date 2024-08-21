@@ -55,10 +55,12 @@ void compile_file(const char* filename, Dict* macro_dict)
     Str* output_filename = create_output_filename(filename);
 
     // Preprocess the file
+    print(VERBOSE, 1, "preprocessing\n");
     Str* preprocessed_content = preprocess_file(filename, macro_dict);
     write_to_file(output_filename, "_pp.w", str_to_char(preprocessed_content));
 
     // Lexing
+    print(VERBOSE, 1, "lexing\n");
     char* src = str_to_char(preprocessed_content);
     List* token_list = lex(src);
     str_free(preprocessed_content); // Free preprocessed content
@@ -67,18 +69,25 @@ void compile_file(const char* filename, Dict* macro_dict)
     str_free(token_list_printable);
 
     // Parsing
+    print(VERBOSE, 1, "parsing\n");
     List* node_list = parse(token_list);
     list_free(token_list);
     Str* node_list_printable = print_nodelist(node_list);
+
+    // semantic analysis
+    print(VERBOSE, 1, "performing semantic analysis\n");
     analyze_ast(node_list);
     write_to_file(output_filename, "_ast.txt", str_to_char(node_list_printable));
     str_free(node_list_printable);
 
     // AsmG
+    print(VERBOSE, 1, "generating assembly\n");
     Str* asm_code = asme(node_list);
     list_free(node_list);
     write_to_file(output_filename, ".s", str_to_char(asm_code));
     str_free(asm_code);
+
+    print(VERBOSE, 1, "file compiled successfully, assembly code in %s.s\n", str_to_char(output_filename));
 
     str_free(output_filename);
 }
@@ -96,16 +105,13 @@ int assemble_file(const char* filename, Str* object_files)
     str_cat(object_files, str_to_char(object_file));
     str_cat(object_files, " ");
 
-    // Print assembling message
-    print(MSG_STEP, "assembling %s...\n", str_to_char(asm_out_file));
-
     // Build the assembly command
     Str* assemble_cmd = str_new("as ");
     str_cat(assemble_cmd, str_to_char(asm_out_file));
 
     str_cat(assemble_cmd, " -o ");
     str_cat(assemble_cmd, str_to_char(object_file));
-    print(MSG_INFO, "%s\n", str_to_char(assemble_cmd));
+    print(VERBOSE, 1, "$ %s\n", str_to_char(assemble_cmd));
 
     // Execute the assembly command
     CommandResult res = sh(str_to_char(assemble_cmd));
@@ -180,8 +186,7 @@ int link_executable(Str* object_files)
 
 
     // Print linking message and command
-    print(MSG_STEP, "linking...\n");
-    print(MSG_INFO, "%s\n", str_to_char(link_cmd));
+    print(VERBOSE, 1, "$ %s\n", str_to_char(link_cmd));
 
     // Execute the linking command
     CommandResult res = sh(str_to_char(link_cmd));

@@ -46,6 +46,7 @@ static void advance_to_next_line(char** pos)
 
 static void convert_chars_to_ascii(Str* source)
 {
+    print(VERBOSE, 2, "converting character literals to ASCII\n");
     char* src = str_to_char(source);
     char* pos = src;
 
@@ -84,6 +85,7 @@ static void convert_chars_to_ascii(Str* source)
 
 static void convert_string_literals_to_ascii_array(Str* source)
 {
+    print(VERBOSE, 2, "converting string literals to ASCII arrays\n");
     char* src = str_to_char(source);
     char* pos = src;
 
@@ -130,6 +132,7 @@ static void convert_string_literals_to_ascii_array(Str* source)
 
 static void collect_macros(Str* source, Dict* macro_dict)
 {
+    print(VERBOSE, 2, "collecting macros\n");
     char* src = str_to_char(source);
     char* pos = src;
 
@@ -157,6 +160,7 @@ static void collect_macros(Str* source, Dict* macro_dict)
         char* macro_name = strndup(macro_start, macro_end - macro_start);
 
         dict_put(macro_dict, macro_name, str_to_char(str_new(macro_value)));
+        print(VERBOSE, 3, "collect macro: %s = %s\n", macro_name, macro_value);
 
         free(macro_name);
         free(macro_value);
@@ -172,15 +176,17 @@ static void collect_macros(Str* source, Dict* macro_dict)
 
 static void replace_macros(Str* source, Dict* macro_dict)
 {
-    // replace macros in the source string
+    print(VERBOSE, 2, "replacing macros\n");
     for (int i = 0; i < macro_dict->size; ++i) {
         DictEntry* entry = macro_dict->entries[i];
         str_replace(source, entry->key, entry->value);
+        print(VERBOSE, 3, "replace macro: %s with %s\n", entry->key, entry->value);
     }
 }
 
 static void process_conditionals(Str* source, Dict* macro_dict)
 {
+    print(VERBOSE, 2, "processing conditionals\n");
     char* src = str_to_char(source);
     char* pos = src;
 
@@ -195,7 +201,8 @@ static void process_conditionals(Str* source, Dict* macro_dict)
         char* macro_end = end_line;
         char* macro_name = strndup(macro_start, macro_end - macro_start);
         Bool macro_defined = dict_get(macro_dict, macro_name) != NULL;
-        free(macro_name);
+
+        print(VERBOSE, 3, "processing #ifdef for macro: %s\n", macro_name);
 
         // find positions of #else and #endif
         char* else_pos = strstr(end_line, "#else");
@@ -206,6 +213,7 @@ static void process_conditionals(Str* source, Dict* macro_dict)
         }
 
         if (macro_defined) {
+            print(VERBOSE, 3, "macro %s is defined\n", macro_name);
             // if macro is defined, remove the #else block if it exists
             if (else_pos && else_pos < endif_pos) {
                 str_remove_range(source, else_pos - src, endif_pos + 6 - src); // remove from #else to #endif
@@ -213,6 +221,7 @@ static void process_conditionals(Str* source, Dict* macro_dict)
             str_remove_range(source, pos - src, end_line + 1 - src); // remove the #ifdef line
         }
         else {
+            print(VERBOSE, 3, "macro %s is not defined\n", macro_name);
             // if macro is not defined, remove the #ifdef block and keep #else or remove all if no #else
             if (else_pos && else_pos < endif_pos) {
                 str_remove_range(source, pos - src, else_pos + 6 - src); // remove from #ifdef to #else
@@ -237,11 +246,15 @@ static void process_conditionals(Str* source, Dict* macro_dict)
         // update the `src` pointer since we've modified the source
         src = str_to_char(source);
         advance_to_next_line(&pos);
+
+
+        free(macro_name);
     }
 }
 
 static void process_includes(Str* source)
 {
+    print(VERBOSE, 2, "processing includes\n");
     char* src = str_to_char(source);
     char* pos = src;
 
@@ -255,6 +268,8 @@ static void process_includes(Str* source)
         char* file_start = pos + 6; // Start after "#incl "
         char* file_end = end_line;
         char* file_name = strndup(file_start, file_end - file_start);
+
+        print(VERBOSE, 3, "including file: %s\n", file_name);
 
         // read the content of the included file
         char* included_content = read_file(file_name);
@@ -277,6 +292,7 @@ static void process_includes(Str* source)
 
 static void remove_comments(Str* source)
 {
+    print(VERBOSE, 2, "removing comments\n");
     char* src = str_to_char(source);
     char* pos = src;
     Bool in_string = FALSE;
@@ -315,6 +331,7 @@ static void remove_comments(Str* source)
 
 static void remove_annotations(Str* source)
 {
+    print(VERBOSE, 2, "removing annotations\n");
     char* src = str_to_char(source);
     char* pos = src;
     Bool in_string = FALSE;
@@ -380,7 +397,7 @@ Str* preprocess_file(const char* filename, Dict* macro_dict)
     convert_chars_to_ascii(source);
     convert_string_literals_to_ascii_array(source);
 
-    remove_comments(source); // remove comments and annotations again because the included file can contains comments and annotations
+    remove_comments(source); // remove comments and annotations again because the included file can contain comments and annotations
     remove_annotations(source);
 
     str_cat(source, "\n");  // prevent incorrect lexing 
