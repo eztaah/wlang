@@ -685,8 +685,8 @@ static void asme_fundef(AsmG* asmg, const FundefNode* fundef_node)
 
     // add fun prologue for how much space we need
     int required_space = abs(asmg->rbp_offset);
-    if (required_space % 2 == 0) {
-        required_space += 8;
+    if (required_space % 2 == 0) {          // because The System V ABI requires the stack to be 16-byte aligned.
+        required_space += 8;    
     }
     char required_space_str[255];
     sprintf(required_space_str, "%d", required_space);

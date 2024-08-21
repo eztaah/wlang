@@ -1,5 +1,5 @@
-SOURCE_FILES = io/*.w 
-FLAGS = --lib
+SOURCE_FILES = src/*.w 
+FLAGS = --lib --verbose --define USE_C_MEMORY_FUN
 
 default:
 	../wlangc $(SOURCE_FILES) $(FLAGS)
@@ -9,4 +9,4 @@ clean:
 	rm -f prog
 	rm -f out/*
 	rmdir out/
-	rm ../libw.a
+	rm -f ../libw.a
