@@ -3,7 +3,7 @@
 
 #include "node.h"
 
-ParamNode* param_node_new(Char* name, Char* size, I32 line)
+ParamNode* param_node_new(char* name, char* size, int line)
 {
     ParamNode* param_node = (ParamNode*)safe_malloc(sizeof(ParamNode));
     param_node->name = strdup(name);
@@ -13,7 +13,7 @@ ParamNode* param_node_new(Char* name, Char* size, I32 line)
     return param_node;
 }
 
-ExprNode* num_node_new(Char* value, I32 line)
+ExprNode* num_node_new(char* value, int line)
 {
     ExprNode* num_node = (ExprNode*)safe_malloc(sizeof(ExprNode));
     num_node->type = NODE_NUM;
@@ -22,7 +22,7 @@ ExprNode* num_node_new(Char* value, I32 line)
     return num_node;
 }
 
-ExprNode* varref_node_new(Char* name, I32 line)
+ExprNode* varref_node_new(char* name, int line)
 {
     ExprNode* varref_node = (ExprNode*)safe_malloc(sizeof(ExprNode));
     varref_node->type = NODE_VARREF;
@@ -31,17 +31,7 @@ ExprNode* varref_node_new(Char* name, I32 line)
     return varref_node;
 }
 
-ExprNode* addrderef_node_new(ExprNode* expr, I32 line)
-{
-    ExprNode* addrderef_node = (ExprNode*)safe_malloc(sizeof(ExprNode));
-    addrderef_node->type = NODE_ADDRDEREF;
-    addrderef_node->addrderef_node.expr = expr;
-    addrderef_node->line = line;
-
-    return addrderef_node;
-}
-
-ExprNode* varaddr_node_new(Char* name, I32 line)
+ExprNode* varaddr_node_new(char* name, int line)
 {
     ExprNode* varaddr_node = (ExprNode*)safe_malloc(sizeof(ExprNode));
     varaddr_node->type = NODE_VARADDR;
@@ -50,7 +40,7 @@ ExprNode* varaddr_node_new(Char* name, I32 line)
     return varaddr_node;
 }
 
-ExprNode* binop_node_new(ExprNode* left, TokenType op, ExprNode* right, I32 line)
+ExprNode* binop_node_new(ExprNode* left, TokenType op, ExprNode* right, int line)
 {
     ExprNode* binop_node = (ExprNode*)safe_malloc(sizeof(ExprNode));
     binop_node->type = NODE_BINOP;
@@ -61,7 +51,7 @@ ExprNode* binop_node_new(ExprNode* left, TokenType op, ExprNode* right, I32 line
     return binop_node;
 }
 
-ExprNode* unarop_node_new(TokenType op, ExprNode* operand, I32 line)
+ExprNode* unarop_node_new(TokenType op, ExprNode* operand, int line)
 {
     ExprNode* unarop_node = safe_malloc(sizeof(ExprNode));
     unarop_node->type = NODE_UNARYOP;
@@ -71,7 +61,7 @@ ExprNode* unarop_node_new(TokenType op, ExprNode* operand, I32 line)
     return unarop_node;
 }
 
-ExprNode* funcall_node_new(const Char* name, List* expr_node_list, I32 line)
+ExprNode* funcall_node_new(const char* name, List* expr_node_list, int line)
 {
     ExprNode* expr_node = (ExprNode*)safe_malloc(sizeof(ExprNode));
     expr_node->type = NODE_FUNCALL;
@@ -82,7 +72,7 @@ ExprNode* funcall_node_new(const Char* name, List* expr_node_list, I32 line)
     return expr_node;
 }
 
-StmtNode* arraydec_node_new(Char* item_size, Char* name, Char* size, List* expr_node_list, I32 line)
+StmtNode* arraydec_node_new(char* item_size, char* name, char* size, List* expr_node_list, int line)
 {
     StmtNode* stmt_node = (StmtNode*)safe_malloc(sizeof(StmtNode));
     stmt_node->type = NODE_ARRAYDEC;
@@ -95,7 +85,7 @@ StmtNode* arraydec_node_new(Char* item_size, Char* name, Char* size, List* expr_
     return stmt_node;
 }
 
-StmtNode* vardec_node_new(Char* size, Char* name, ExprNode* value, I32 line)
+StmtNode* vardec_node_new(char* size, char* name, ExprNode* value, int line)
 {
     StmtNode* stmt_node = (StmtNode*)safe_malloc(sizeof(StmtNode));
     stmt_node->type = NODE_VARDEC;
@@ -107,7 +97,7 @@ StmtNode* vardec_node_new(Char* size, Char* name, ExprNode* value, I32 line)
     return stmt_node;
 }
 
-StmtNode* if_node_new(ExprNode* cond_node, BlockNode* true_block, BlockNode* false_block, I32 line)
+StmtNode* if_node_new(ExprNode* cond_node, BlockNode* true_block, BlockNode* false_block, int line)
 {
     StmtNode* stmt_node = (StmtNode*)safe_malloc(sizeof(StmtNode));
     stmt_node->type = NODE_IF;
@@ -119,7 +109,7 @@ StmtNode* if_node_new(ExprNode* cond_node, BlockNode* true_block, BlockNode* fal
     return stmt_node;
 }
 
-StmtNode* loop_node_new(BlockNode* block, I32 line)
+StmtNode* loop_node_new(BlockNode* block, int line)
 {
     StmtNode* stmt_node = (StmtNode*)safe_malloc(sizeof(StmtNode));
     stmt_node->type = NODE_LOOP;
@@ -129,7 +119,7 @@ StmtNode* loop_node_new(BlockNode* block, I32 line)
     return stmt_node;
 }
 
-StmtNode* break_node_new(I32 line)
+StmtNode* break_node_new(int line)
 {
     StmtNode* stmt_node = (StmtNode*)safe_malloc(sizeof(StmtNode));
     stmt_node->type = NODE_BREAK;
@@ -138,7 +128,7 @@ StmtNode* break_node_new(I32 line)
     return stmt_node;
 }
 
-StmtNode* ass_node_new(ExprNode* lvalue, ExprNode* value, I32 line)
+StmtNode* ass_node_new(ExprNode* lvalue, ExprNode* value, int line)
 {
     StmtNode* ass_node = (StmtNode*)safe_malloc(sizeof(StmtNode));
     ass_node->type = NODE_ASS;
@@ -149,7 +139,7 @@ StmtNode* ass_node_new(ExprNode* lvalue, ExprNode* value, I32 line)
     return ass_node;
 }
 
-StmtNode* ret_node_new(ExprNode* expr_node, I32 line)
+StmtNode* ret_node_new(ExprNode* expr_node, int line)
 {
     StmtNode* ret_node = (StmtNode*)safe_malloc(sizeof(StmtNode));
     ret_node->type = NODE_RET;
@@ -159,7 +149,7 @@ StmtNode* ret_node_new(ExprNode* expr_node, I32 line)
     return ret_node;
 }
 
-ExprNode* sysc_node_new(List* expr_node_list, I32 line)
+ExprNode* sysc_node_new(List* expr_node_list, int line)
 {
     ExprNode* sysc_node = (ExprNode*)safe_malloc(sizeof(ExprNode));
     sysc_node->type = NODE_SYSC;
@@ -169,7 +159,7 @@ ExprNode* sysc_node_new(List* expr_node_list, I32 line)
     return sysc_node;
 }
 
-FundefNode* fundef_node_new(Char* name, Char* return_size, Char* scope, List* param_node_list, BlockNode* block_node, I32 line)
+FundefNode* fundef_node_new(char* name, char* return_size, char* scope, List* param_node_list, BlockNode* block_node, int line)
 {
     FundefNode* fundef_node = (FundefNode*)safe_malloc(sizeof(FundefNode));
     fundef_node->name = strdup(name);
@@ -189,7 +179,7 @@ FundefNode* fundef_node_new(Char* name, Char* return_size, Char* scope, List* pa
     return fundef_node;
 }
 
-BlockNode* block_node_new(List* stmt_node_list, I32 line)
+BlockNode* block_node_new(List* stmt_node_list, int line)
 {
     BlockNode* block_node = (BlockNode*)safe_malloc(sizeof(BlockNode));
     block_node->stmt_node_list = stmt_node_list;

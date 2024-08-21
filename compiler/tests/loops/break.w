@@ -18,7 +18,7 @@
         }
     }
 
-    ret a == 0 && b == -11;
+    ret a == 0 && b == -10;
 }
 
 : expected exit code : 1

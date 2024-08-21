@@ -5,9 +5,9 @@
 
 #include "compiler.h"
 
-static I32 current_line_number = 1;
+static int current_line_number = 1;
 
-static I32 escape_sequence_to_ascii(Char* seq)
+static int escape_sequence_to_ascii(char* seq)
 {
     if (strcmp(seq, "\\n") == 0) {
         return 10; 
@@ -33,7 +33,7 @@ static I32 escape_sequence_to_ascii(Char* seq)
     return -1;     
 }
 
-static Void advance_to_next_line(Char** pos)
+static void advance_to_next_line(char** pos)
 {
     while (**pos != '\n' && **pos != '\0') {
         (*pos)++;
@@ -44,22 +44,22 @@ static Void advance_to_next_line(Char** pos)
     }
 }
 
-static Void convert_chars_to_ascii(Str* source)
+static void convert_chars_to_ascii(Str* source)
 {
-    Char* src = str_to_char(source);
-    Char* pos = src;
+    char* src = str_to_char(source);
+    char* pos = src;
 
     while ((pos = strchr(pos, '\'')) != NULL) {
-        Char* end_char = strchr(pos + 1, '\'');
+        char* end_char = strchr(pos + 1, '\'');
         if (!end_char) {
             USER_PANIC(current_filename, current_line_number, "unmatched single quote in character literal");
         }
 
-        I32 ascii_value = -1;
-        Char character = *(pos + 1);
+        int ascii_value = -1;
+        char character = *(pos + 1);
         if (character == '\\') {
             // handle escape sequences
-            Char escape_seq[3] = {pos[1], pos[2], '\0'};
+            char escape_seq[3] = {pos[1], pos[2], '\0'};
             ascii_value = escape_sequence_to_ascii(escape_seq);
             if (ascii_value == -1) {
                 USER_PANIC(current_filename, current_line_number, "invalid escape sequence");
@@ -67,10 +67,10 @@ static Void convert_chars_to_ascii(Str* source)
         }
         else {
             // regular character
-            ascii_value = (I32)character;
+            ascii_value = (int)character;
         }
 
-        Char ascii_str[12]; // enough to hold any ASCII value as string
+        char ascii_str[12]; // enough to hold any ASCII value as string
         sprintf(ascii_str, "%d", ascii_value);
 
         // replace the character or escape sequence with its ASCII value
@@ -82,23 +82,23 @@ static Void convert_chars_to_ascii(Str* source)
     }
 }
 
-static Void convert_string_literals_to_ascii_array(Str* source)
+static void convert_string_literals_to_ascii_array(Str* source)
 {
-    Char* src = str_to_char(source);
-    Char* pos = src;
+    char* src = str_to_char(source);
+    char* pos = src;
 
     while ((pos = strchr(pos, '"')) != NULL) {
-        Char* end_string = strchr(pos + 1, '"');
+        char* end_string = strchr(pos + 1, '"');
         if (!end_string) {
             USER_PANIC(current_filename, current_line_number, "unmatched double quote in string literal");
         }
 
         Str* ascii_array = str_new("[");
-        for (Char* p = pos + 1; p < end_string; p++) {
-            I32 ascii_value = -1;
+        for (char* p = pos + 1; p < end_string; p++) {
+            int ascii_value = -1;
             if (*p == '\\') {
                 // handle escape sequences
-                Char escape_seq[3] = {p[0], p[1], '\0'};
+                char escape_seq[3] = {p[0], p[1], '\0'};
                 ascii_value = escape_sequence_to_ascii(escape_seq);
                 if (ascii_value == -1) {
                     USER_PANIC(current_filename, current_line_number, "invalid escape sequence");
@@ -106,10 +106,10 @@ static Void convert_string_literals_to_ascii_array(Str* source)
                 p++; // skip the next character as it's part of the escape sequence
             }
             else {
-                ascii_value = (I32)*p;
+                ascii_value = (int)*p;
             }
 
-            Char ascii_str[12]; // enough to hold any ASCII value as string
+            char ascii_str[12]; // enough to hold any ASCII value as string
             sprintf(ascii_str, "%d", ascii_value);
             str_cat(ascii_array, ascii_str);
             if (p < end_string - 1) {
@@ -128,24 +128,24 @@ static Void convert_string_literals_to_ascii_array(Str* source)
     }
 }
 
-static Void collect_macros(Str* source, Dict* macro_dict)
+static void collect_macros(Str* source, Dict* macro_dict)
 {
-    Char* src = str_to_char(source);
-    Char* pos = src;
+    char* src = str_to_char(source);
+    char* pos = src;
 
     while ((pos = strstr(pos, "#def")) != NULL) {
-        Char* end_line = strchr(pos, '\n');
+        char* end_line = strchr(pos, '\n');
         if (!end_line) {
             break;
         }
 
-        Char* macro_start = pos + 5; // start after "#def "
-        Char* macro_end = strchr(macro_start, ' ');
+        char* macro_start = pos + 5; // start after "#def "
+        char* macro_end = strchr(macro_start, ' ');
 
         // handle macros with or without values
-        Char* macro_value = NULL;
+        char* macro_value = NULL;
         if (macro_end && macro_end < end_line) {
-            Char* value_start = macro_end + 1;
+            char* value_start = macro_end + 1;
             macro_value = strndup(value_start, end_line - value_start);
         }
         else {
@@ -154,7 +154,7 @@ static Void collect_macros(Str* source, Dict* macro_dict)
             macro_value = strdup("1"); // use 1 as the default value
         }
 
-        Char* macro_name = strndup(macro_start, macro_end - macro_start);
+        char* macro_name = strndup(macro_start, macro_end - macro_start);
 
         dict_put(macro_dict, macro_name, str_to_char(str_new(macro_value)));
 
@@ -170,36 +170,36 @@ static Void collect_macros(Str* source, Dict* macro_dict)
     }
 }
 
-static Void replace_macros(Str* source, Dict* macro_dict)
+static void replace_macros(Str* source, Dict* macro_dict)
 {
     // replace macros in the source string
-    for (I32 i = 0; i < macro_dict->size; ++i) {
+    for (int i = 0; i < macro_dict->size; ++i) {
         DictEntry* entry = macro_dict->entries[i];
         str_replace(source, entry->key, entry->value);
     }
 }
 
-static Void process_conditionals(Str* source, Dict* macro_dict)
+static void process_conditionals(Str* source, Dict* macro_dict)
 {
-    Char* src = str_to_char(source);
-    Char* pos = src;
+    char* src = str_to_char(source);
+    char* pos = src;
 
     while ((pos = strstr(pos, "#ifdef")) != NULL) {
-        Char* end_line = strchr(pos, '\n');
+        char* end_line = strchr(pos, '\n');
         if (!end_line) {
             USER_PANIC(current_filename, current_line_number, "unexpected end of file after #ifdef");
         }
 
         // extract the macro name
-        Char* macro_start = pos + 7; // start after "#ifdef "
-        Char* macro_end = end_line;
-        Char* macro_name = strndup(macro_start, macro_end - macro_start);
+        char* macro_start = pos + 7; // start after "#ifdef "
+        char* macro_end = end_line;
+        char* macro_name = strndup(macro_start, macro_end - macro_start);
         Bool macro_defined = dict_get(macro_dict, macro_name) != NULL;
         free(macro_name);
 
         // find positions of #else and #endif
-        Char* else_pos = strstr(end_line, "#else");
-        Char* endif_pos = strstr(end_line, "#endif");
+        char* else_pos = strstr(end_line, "#else");
+        char* endif_pos = strstr(end_line, "#endif");
 
         if (!endif_pos) {
             USER_PANIC(current_filename, current_line_number, "missing #endif for #ifdef");
@@ -225,7 +225,7 @@ static Void process_conditionals(Str* source, Dict* macro_dict)
         // remove the #endif line
         endif_pos = strstr(str_to_char(source), "#endif");
         if (endif_pos) {
-            Char* end_of_endif_line = strchr(endif_pos, '\n');
+            char* end_of_endif_line = strchr(endif_pos, '\n');
             if (end_of_endif_line) {
                 str_remove_range(source, endif_pos - str_to_char(source), end_of_endif_line + 1 - str_to_char(source));
             }
@@ -240,24 +240,24 @@ static Void process_conditionals(Str* source, Dict* macro_dict)
     }
 }
 
-static Void process_includes(Str* source)
+static void process_includes(Str* source)
 {
-    Char* src = str_to_char(source);
-    Char* pos = src;
+    char* src = str_to_char(source);
+    char* pos = src;
 
     while ((pos = strstr(pos, "#incl")) != NULL) {
-        Char* end_line = strchr(pos, '\n');
+        char* end_line = strchr(pos, '\n');
         if (!end_line) {
             break;
         }
 
         // extract file name
-        Char* file_start = pos + 6; // Start after "#incl "
-        Char* file_end = end_line;
-        Char* file_name = strndup(file_start, file_end - file_start);
+        char* file_start = pos + 6; // Start after "#incl "
+        char* file_end = end_line;
+        char* file_name = strndup(file_start, file_end - file_start);
 
         // read the content of the included file
-        Char* included_content = read_file(file_name);
+        char* included_content = read_file(file_name);
         if (!included_content) {
             USER_PANIC(current_filename, current_line_number, "failed to include file: %s", file_name);
         }
@@ -275,16 +275,16 @@ static Void process_includes(Str* source)
     }
 }
 
-static Void remove_comments(Str* source)
+static void remove_comments(Str* source)
 {
-    Char* src = str_to_char(source);
-    Char* pos = src;
+    char* src = str_to_char(source);
+    char* pos = src;
     Bool in_string = FALSE;
     Bool in_char = FALSE;
 
     while ((pos = strchr(pos, ':')) != NULL) {
         // check if ':' is inside a string or a character
-        Char* scan_pos = src;
+        char* scan_pos = src;
         while (scan_pos < pos) {
             if (*scan_pos == '"' && (scan_pos == src || *(scan_pos - 1) != '\\')) {
                 in_string = !in_string;
@@ -302,7 +302,7 @@ static Void remove_comments(Str* source)
         }
 
         // ':' is not inside a string or character, so it is a comment
-        Char* end_line = strchr(pos, '\n');
+        char* end_line = strchr(pos, '\n');
         if (!end_line) {
             str_remove_range(source, pos - src, source->length); // remove from ':' to end of string
             break;
@@ -313,16 +313,16 @@ static Void remove_comments(Str* source)
     }
 }
 
-static Void remove_annotations(Str* source)
+static void remove_annotations(Str* source)
 {
-    Char* src = str_to_char(source);
-    Char* pos = src;
+    char* src = str_to_char(source);
+    char* pos = src;
     Bool in_string = FALSE;
     Bool in_char = FALSE;
 
     while ((pos = strchr(pos, '!')) != NULL) {
         // check if '!' is inside a string, character, or is part of '!='
-        Char* scan_pos = src;
+        char* scan_pos = src;
         while (scan_pos < pos) {
             if (*scan_pos == '"' && (scan_pos == src || *(scan_pos - 1) != '\\')) {
                 in_string = !in_string; 
@@ -341,7 +341,7 @@ static Void remove_annotations(Str* source)
 
         // process the annotation
         if (pos[1] == ' ' || pos[1] == '\t') { // skip the entire line if ! is followed by a space
-            Char* end_line = strchr(pos, '\n');
+            char* end_line = strchr(pos, '\n');
             if (!end_line) {
                 str_remove_range(source, pos - src, source->length);
                 break;
@@ -351,7 +351,7 @@ static Void remove_annotations(Str* source)
             }
         } 
         else { // Skip the word until the next space or tab
-            Char* space = pos + 1;
+            char* space = pos + 1;
             while (*space != ' ' && *space != '\t' && *space != '\n' && *space != '\0') {
                 space++;
             }
@@ -361,9 +361,9 @@ static Void remove_annotations(Str* source)
     }
 }
 
-Str* preprocess_file(const Char* filename, Dict* macro_dict)
+Str* preprocess_file(const char* filename, Dict* macro_dict)
 {
-    Char* raw_content = read_file(filename);
+    char* raw_content = read_file(filename);
 
     Str* source = str_new(raw_content);
     free(raw_content);

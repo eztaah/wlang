@@ -1,8 +1,16 @@
-<64> main()
+ printuu()
 {
-    <64> arr[3] = [1, 2, 3];
+     <64> bonjour = 2;
 
-    <64> i = 1;
+    ret ;
+
+}
+
+ <64> main()
+{
+     <64> arr[3] = [1, 2, 3];
+
+     <64> i = 1;
     loop {
         print_number(^(arr - i*8));
 
@@ -11,6 +19,8 @@
             break;
         }
     }
+
+    printuu();
 
     ret 0;
 }

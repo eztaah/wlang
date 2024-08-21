@@ -3,7 +3,7 @@
 #include "compiler.h"
 #include "lib.h"
 
-Void application_panic(const Char* file_path, I32 line, const Char* format, ...)
+void application_panic(const char* file_path, int line, const char* format, ...)
 {
     va_list args;
     va_start(args, format);
@@ -13,7 +13,7 @@ Void application_panic(const Char* file_path, I32 line, const Char* format, ...)
     // handle end of the message
     print_v(MSG_ERROR, format, args);
 
-    // print(MSG_ERROR, "\n");
+    print(MSG_ERROR, "\n");
 
     va_end(args);
 
@@ -25,7 +25,7 @@ Void application_panic(const Char* file_path, I32 line, const Char* format, ...)
 #endif
 }
 
-Void application_assert(const Char* file, I32 line, Bool cond, const Char* message)
+void application_assert(const char* file, int line, Bool cond, const char* message)
 {
     if (!cond) {
         application_panic(file, line, message);
@@ -36,7 +36,7 @@ Void application_assert(const Char* file, I32 line, Bool cond, const Char* messa
 #define ANSI_RED_BOLD      "\033[1;31m"
 #define ANSI_RESET         "\033[0m"
 
-Void user_panic(const Char* current_filename, I32 line, const Char* format, ...)
+void user_panic(const char* current_filename, int line, const char* format, ...)
 {
     va_list args;
     va_start(args, format);
@@ -48,7 +48,7 @@ Void user_panic(const Char* current_filename, I32 line, const Char* format, ...)
     print_v(MSG_ERROR, format, args);
 
     // End the line with a newline character
-    // print(MSG_ERROR, "\n");
+    print(MSG_ERROR, "\n");
 
     va_end(args);
 

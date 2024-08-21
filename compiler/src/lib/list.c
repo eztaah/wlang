@@ -2,7 +2,7 @@
 
 #include "lib.h"
 
-List* list_new(I32 item_size)
+List* list_new(int item_size)
 {
     List* list = safe_calloc(1, sizeof(List));
     list->size = 0;
@@ -12,7 +12,7 @@ List* list_new(I32 item_size)
     return list;
 }
 
-Void list_push(List* list, Void* item)
+void list_push(List* list, void* item)
 {
     list->size += 1;
 
@@ -24,7 +24,7 @@ Void list_push(List* list, Void* item)
     list->items[list->size - 1] = item;
 }
 
-Void* list_pop(List* list)
+void* list_pop(List* list)
 {
     if (list->size == 0) {
         PANIC("pop from empty list");
@@ -32,7 +32,7 @@ Void* list_pop(List* list)
     }
 
     // Get the last item in the list
-    Void* item = list->items[list->size - 1];
+    void* item = list->items[list->size - 1];
 
     // Reduce the size of the list
     list->size -= 1;
@@ -49,7 +49,7 @@ Void* list_pop(List* list)
     return item;
 }
 
-Void* list_get(const List* list, I32 index)
+void* list_get(const List* list, int index)
 {
     if (index < 0 || index >= list->size) {
         PANIC("index out of bounds");
@@ -58,9 +58,9 @@ Void* list_get(const List* list, I32 index)
     return list->items[index];
 }
 
-Void list_free(List* list)
+void list_free(List* list)
 {
-    for (I32 i = 0; i < list->size; ++i) {
+    for (int i = 0; i < list->size; ++i) {
         free(list_get(list, i)); // free each item
     }
     free(list->items); // free the items array

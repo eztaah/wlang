@@ -4,7 +4,7 @@
 #include "lib.h"
 #include "token.h"
 
-Token* token_new(Str* value, I32 type, I32 line)
+Token* token_new(Str* value, int type, int line)
 {
     Token* new_token = safe_malloc(sizeof(Token));
     new_token->value = strdup(str_to_char(value));
@@ -15,12 +15,12 @@ Token* token_new(Str* value, I32 type, I32 line)
     return new_token;
 }
 
-Void token_free(Token* token)
+void token_free(Token* token)
 {
     free(token);
 }
 
-Char* tokentype_to_string(TokenType tokentype)
+char* tokentype_to_string(TokenType tokentype)
 {
     switch (tokentype) {
         case TOKEN_PLUS:

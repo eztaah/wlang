@@ -11,7 +11,7 @@ Bool no_libc = FALSE;
 Bool no_libw = FALSE;
 Bool static_library = FALSE;
 
-static Void print_usage(Void)
+static void print_usage(void)
 {
     printf("Usage:\n");
     printf("    wlangc <file.w> [options]     compile a source file with optional flags.\n");
@@ -26,9 +26,9 @@ static Void print_usage(Void)
     printf("\n");
 }
 
-static List* handle_arguments(I32 argc, const Char* argv[], Dict* macro_dict)
+static List* handle_arguments(int argc, const char* argv[], Dict* macro_dict)
 {
-    List* source_files = list_new(sizeof(Char*));
+    List* source_files = list_new(sizeof(char*));
 
     // handle base arguments
     if (argc < 2) {
@@ -45,7 +45,7 @@ static List* handle_arguments(I32 argc, const Char* argv[], Dict* macro_dict)
     }
 
     // handle arguments
-    for (I32 i = 1; i < argc; i++) {
+    for (int i = 1; i < argc; i++) {
         if (argv[i][0] == '-') {
             if (char_cmp(argv[i], "-v") || char_cmp(argv[i], "--verbose")) {
                 verbose = TRUE;
@@ -55,7 +55,7 @@ static List* handle_arguments(I32 argc, const Char* argv[], Dict* macro_dict)
                     print(MSG_ERROR, "No macro specified after %s\n", argv[i]);
                     exit(EXIT_FAILURE);
                 }
-                Char* macro_name = strdup(argv[++i]);
+                char* macro_name = strdup(argv[++i]);
                 dict_put(macro_dict, macro_name, str_to_char(str_new("")));
             }
             else if (char_cmp(argv[i], "--no-libc")) {
@@ -91,15 +91,15 @@ static List* handle_arguments(I32 argc, const Char* argv[], Dict* macro_dict)
     return source_files;
 }
 
-I32 main(I32 argc, const Char* argv[])
+int main(int argc, const char* argv[])
 {
     Dict* macro_dict = dict_new();
 
     List* source_files = handle_arguments(argc, argv, macro_dict);
 
     // compile each file
-    for (I32 i = 0; i < source_files->size; i++) {
-        Char* filename = *(Char**)list_get(source_files, i);
+    for (int i = 0; i < source_files->size; i++) {
+        char* filename = *(char**)list_get(source_files, i);
         compile_file(filename, macro_dict);
     }
 
@@ -107,15 +107,15 @@ I32 main(I32 argc, const Char* argv[])
     if (!compile_only) {
         Str* object_files = str_new("");
 
-        for (I32 i = 0; i < source_files->size; i++) {
-            Char* filename = *(Char**)list_get(source_files, i);
-            I32 ret_code = assemble_file(filename, object_files);
+        for (int i = 0; i < source_files->size; i++) {
+            char* filename = *(char**)list_get(source_files, i);
+            int ret_code = assemble_file(filename, object_files);
             if (ret_code != 0) {
                 return ret_code;
             }
         }
 
-        I32 ret_code = link_executable(object_files);
+        int ret_code = link_executable(object_files);
         if (ret_code != 0) {
             return ret_code;
         }

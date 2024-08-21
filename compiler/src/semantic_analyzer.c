@@ -31,25 +31,25 @@ static AnalyzerContext* analyzer_context_new()
     return context;
 }
 
-static Void analyzer_context_free(AnalyzerContext* context)
+static void analyzer_context_free(AnalyzerContext* context)
 {
     // dict_free(context->symbol_table);
     free(context);
 }
 
-static Void analyze_stmt(AnalyzerContext* context, StmtNode* stmt_node);
-static Void analyze_expr(AnalyzerContext* context, ExprNode* expr_node);
+static void analyze_stmt(AnalyzerContext* context, StmtNode* stmt_node);
+static void analyze_expr(AnalyzerContext* context, ExprNode* expr_node);
 
-static Void analyze_block(AnalyzerContext* context, BlockNode* block_node)
+static void analyze_block(AnalyzerContext* context, BlockNode* block_node)
 {
-    for (I32 i = 0; i < block_node->stmt_node_list->size; i++) {
+    for (int i = 0; i < block_node->stmt_node_list->size; i++) {
         StmtNode* stmt_node = (StmtNode*)list_get(block_node->stmt_node_list, i);
         analyze_stmt(context, stmt_node);
     }
 }
 
 // Check if the variable is declared
-static Void check_variable_declared(AnalyzerContext* context, const Char* name, I32 line)
+static void check_variable_declared(AnalyzerContext* context, const char* name, int line)
 {
     if (dict_get(context->symbol_table, name) == NULL) {
         USER_PANIC(current_filename, line, "variable '%s' referenced before declaration", name);
@@ -57,7 +57,7 @@ static Void check_variable_declared(AnalyzerContext* context, const Char* name, 
 }
 
 // Analyze assignment
-static Void analyze_assignment(AnalyzerContext* context, AssNode* ass_node, I32 line)
+static void analyze_assignment(AnalyzerContext* context, AssNode* ass_node, int line)
 {
     if (ass_node->lvalue->type == NODE_VARREF) {
         check_variable_declared(context, ass_node->lvalue->varref_node.name, line);
@@ -66,7 +66,7 @@ static Void analyze_assignment(AnalyzerContext* context, AssNode* ass_node, I32 
 }
 
 // Analyze variable declaration
-static Void analyze_vardec(AnalyzerContext* context, VardecNode* vardec_node, I32 line)
+static void analyze_vardec(AnalyzerContext* context, VardecNode* vardec_node, int line)
 {
     if (strcmp(vardec_node->size, "64") != 0) {
         USER_PANIC(current_filename, line, "only 64-bit variables are allowed, but '%s' is of size <%s>", vardec_node->name, vardec_node->size);
@@ -84,7 +84,7 @@ static Void analyze_vardec(AnalyzerContext* context, VardecNode* vardec_node, I3
 }
 
 // Analyze array declaration
-static Void analyze_arraydec(AnalyzerContext* context, ArraydecNode* arraydec_node, I32 line)
+static void analyze_arraydec(AnalyzerContext* context, ArraydecNode* arraydec_node, int line)
 {
     if (strcmp(arraydec_node->item_size, "64") != 0) {
         USER_PANIC(current_filename, line, " Only 64-bit variables are allowed, but array '%s' contains elements of size <%s>", arraydec_node->name, arraydec_node->item_size);
@@ -97,22 +97,18 @@ static Void analyze_arraydec(AnalyzerContext* context, ArraydecNode* arraydec_no
     dict_put(context->symbol_table, arraydec_node->name, "64");
 
     if (arraydec_node->expr_node_list) {
-        for (I32 i = 0; i < arraydec_node->expr_node_list->size; i++) {
+        for (int i = 0; i < arraydec_node->expr_node_list->size; i++) {
             analyze_expr(context, list_get(arraydec_node->expr_node_list, i));
         }
     }
 }
 
 // Analyze expression
-static Void analyze_expr(AnalyzerContext* context, ExprNode* expr_node)
+static void analyze_expr(AnalyzerContext* context, ExprNode* expr_node)
 {
     switch (expr_node->type) {
         case NODE_VARREF:
             check_variable_declared(context, expr_node->varref_node.name, expr_node->line);
-            break;
-
-        case NODE_ADDRDEREF:
-            analyze_expr(context, expr_node->addrderef_node.expr);
             break;
 
         case NODE_VARADDR:
@@ -133,8 +129,13 @@ static Void analyze_expr(AnalyzerContext* context, ExprNode* expr_node)
             if (expr_node->funcall_node.expr_node_list->size > 6) {
                 USER_PANIC(current_filename, expr_node->line, "function call to '%s' contains more than six arguments", expr_node->funcall_node.name);
             }
-            for (I32 i = 0; i < expr_node->funcall_node.expr_node_list->size; i++) {
-                analyze_expr(context, list_get(expr_node->funcall_node.expr_node_list, i));
+            // Analyze each argument in the function call
+            for (int i = 0; i < expr_node->funcall_node.expr_node_list->size; i++) {
+                ExprNode* arg_node = list_get(expr_node->funcall_node.expr_node_list, i);
+                if (arg_node->type == NODE_FUNCALL) {
+                    USER_PANIC(current_filename, arg_node->line, "function call '%s' used as an argument is not allowed", arg_node->funcall_node.name);
+                }
+                analyze_expr(context, arg_node);
             }
             break;
 
@@ -142,7 +143,7 @@ static Void analyze_expr(AnalyzerContext* context, ExprNode* expr_node)
             if (expr_node->sysc_node.expr_node_list->size != 7) {
                 USER_PANIC(current_filename, expr_node->line, "syscall should contain exactly seven arguments");
             }
-            for (I32 i = 0; i < expr_node->sysc_node.expr_node_list->size; i++) {
+            for (int i = 0; i < expr_node->sysc_node.expr_node_list->size; i++) {
                 analyze_expr(context, list_get(expr_node->sysc_node.expr_node_list, i));
             }
             break;
@@ -153,7 +154,7 @@ static Void analyze_expr(AnalyzerContext* context, ExprNode* expr_node)
 }
 
 // Analyze statement
-static Void analyze_stmt(AnalyzerContext* context, StmtNode* stmt_node)
+static void analyze_stmt(AnalyzerContext* context, StmtNode* stmt_node)
 {
     switch (stmt_node->type) {
         case NODE_VARDEC:
@@ -169,7 +170,9 @@ static Void analyze_stmt(AnalyzerContext* context, StmtNode* stmt_node)
             break;
 
         case NODE_RET:
-            analyze_expr(context, stmt_node->ret_node.expr_node);
+            if (stmt_node->ret_node.expr_node) {
+                analyze_expr(context, stmt_node->ret_node.expr_node);
+            }
             break;
 
         case NODE_IF:
@@ -203,7 +206,7 @@ static Void analyze_stmt(AnalyzerContext* context, StmtNode* stmt_node)
     }
 }
 
-static Void analyze_fundef(AnalyzerContext* context, FundefNode* fundef_node)
+static void analyze_fundef(AnalyzerContext* context, FundefNode* fundef_node)
 {
     context->symbol_table = dict_new();
 
@@ -213,7 +216,7 @@ static Void analyze_fundef(AnalyzerContext* context, FundefNode* fundef_node)
     }
 
     // Analyze parameters
-    for (I32 i = 0; i < fundef_node->param_node_list->size; i++) {
+    for (int i = 0; i < fundef_node->param_node_list->size; i++) {
         ParamNode* param_node = (ParamNode*)list_get(fundef_node->param_node_list, i);
         if (strcmp(param_node->size, "64") != 0) {
             USER_PANIC(current_filename, param_node->line, "only 64-bit parameters are allowed, but parameter '%s' is of size <%s>", param_node->name, param_node->size);
@@ -222,7 +225,7 @@ static Void analyze_fundef(AnalyzerContext* context, FundefNode* fundef_node)
     }
 
     // Analyze function body
-    for (I32 i = 0; i < fundef_node->block_node->stmt_node_list->size; i++) {
+    for (int i = 0; i < fundef_node->block_node->stmt_node_list->size; i++) {
         analyze_stmt(context, (StmtNode*)list_get(fundef_node->block_node->stmt_node_list, i));
     }
 
@@ -230,11 +233,11 @@ static Void analyze_fundef(AnalyzerContext* context, FundefNode* fundef_node)
 }
 
 // Perform semantic analysis on the AST
-Void analyze_ast(List* fundef_node_list)
+void analyze_ast(List* fundef_node_list)
 {
     AnalyzerContext* context = analyzer_context_new();
 
-    for (I32 i = 0; i < fundef_node_list->size; i++) {
+    for (int i = 0; i < fundef_node_list->size; i++) {
         FundefNode* fundef_node = (FundefNode*)list_get(fundef_node_list, i);
         analyze_fundef(context, fundef_node);
     }
