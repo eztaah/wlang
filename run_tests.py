@@ -38,25 +38,31 @@ def run_test(test_file):
     with open(test_file, 'r') as file:
         lines = file.readlines()
 
-    # Determine if the test checks exit code or output
+    # Determine if the test checks exit code, output, or requires input
     if not lines:
         print(f"{BOLD}{RED}{format_test_path(test_file)}: FAIL{RESET}")
         print(f"    {YELLOW}Test specification missing{RESET}")
         fail_count += 1
         return
 
-    last_line = lines[-1].strip()
+    input_command = None
+    expected_output = None
+    check_exit_code = False
 
-    if ': expected exit code :' in last_line:
-        expected_output = last_line.split(': expected exit code : ')[-1].strip()
-        check_exit_code = True
-    elif ': expected output :' in last_line:
-        # Capturing exactly what is written after ": expected output :"
-        expected_output = last_line.split(': expected output : ', 1)[-1]
-        # Replace escaped characters like \\n with \n
-        expected_output = expected_output.replace("\\n", "\n").replace("\\t", "\t").replace("\\0", "\0")
-        check_exit_code = False
-    else:
+    for line in lines:
+        line = line.strip()
+
+        if line.startswith(': input :'):
+            input_command = line.split(': input :')[-1].strip()
+        elif ': expected exit code :' in line:
+            expected_output = line.split(': expected exit code : ')[-1].strip()
+            check_exit_code = True
+        elif ': expected output :' in line:
+            expected_output = line.split(': expected output : ', 1)[-1]
+            expected_output = expected_output.replace("\\n", "\n").replace("\\t", "\t").replace("\\0", "\0")
+            check_exit_code = False
+
+    if expected_output is None:
         print(f"{BOLD}{RED}{format_test_path(test_file)}: FAIL{RESET}")
         print(f"    {YELLOW}Test specification missing{RESET}")
         fail_count += 1
@@ -90,8 +96,17 @@ def run_test(test_file):
     # Run the compiled executable and capture the exit code or output
     try:
         run_command = [os.path.join(OUT_DIR, EXECUTABLE_NAME)]
-        result = subprocess.run(run_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=TIMEOUT_SECONDS)
         
+        if input_command:
+            # Execute the input command and pipe its output to the program's stdin
+            input_process = subprocess.Popen(input_command, shell=True, stdout=subprocess.PIPE)
+            result = subprocess.run(run_command, stdin=input_process.stdout, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=TIMEOUT_SECONDS)
+            input_process.stdout.close()
+            input_process.wait()
+        else:
+            # Run the program without additional input
+            result = subprocess.run(run_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=TIMEOUT_SECONDS)
+
         if check_exit_code:
             # Compare the actual exit code with the expected one
             actual_output = str(result.returncode)
@@ -172,3 +187,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

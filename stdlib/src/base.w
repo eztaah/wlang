@@ -21,7 +21,7 @@ glb !digit <64> ascii_to_digit(!ascii <64> ascii_code)
     ret ascii_code - 48;
 }
 
-glb !int <64> ascii_array_to_int(!ascii& <64> str_array, !int <64> array_size)
+glb !int <64> ascii_array_to_int(!ascii& <64> ascii_array, !int <64> array_size)
 {
     !int <64> result = 0;
     !int <64> i = 1;
@@ -31,7 +31,8 @@ glb !int <64> ascii_array_to_int(!ascii& <64> str_array, !int <64> array_size)
             break; 
         }
 
-        !ascii <64> current_char = ^(str_array - i*8);
+        !ascii <64> current_char = ^(ascii_array - i*8);
+
 
         : Check for null terminator or newline character
         if (current_char == '\0' || current_char == '\n') {
@@ -40,6 +41,7 @@ glb !int <64> ascii_array_to_int(!ascii& <64> str_array, !int <64> array_size)
 
         !digit <64> current_digit = ascii_to_digit(current_char);
         result = result * 10 + current_digit;
+
 
         i = i + 1;
     }
@@ -106,8 +108,6 @@ glb !ascii& <64> int_to_ascii_array(!int <64> number)
         ^(ascii_array - i*8) = '\0';
         i = i + 1;
     }
-
-    print_ascii_array(ascii_array, MAX_DIGIT);
 
     ret ascii_array;
 }

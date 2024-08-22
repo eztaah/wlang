@@ -398,18 +398,22 @@ static void asme_lexpr(AsmG* asmg, const ExprNode* expr_node);
 
 static void asme_ass(AsmG* asmg, const AssNode* ass_node)
 {
+    str_cat(asmg->fun_body, "\n    # variable assignment\n");
 
-    str_cat(asmg->fun_body, "\n    # variable assignement\n");
-
-    // get the lvalue and put it into rbx       (rbx will contain a location)
+    // Get the lvalue and put it into rax (rax will contain the address)
     asme_lexpr(asmg, ass_node->lvalue);
-    str_cat(asmg->fun_body, "    movq    %rax, %r15\n");
 
-    // get the value of the variable and put it into rax
+    // Store the address on the stack
+    str_cat(asmg->fun_body, "    pushq   %rax\n");
+
+    // Get the value of the variable and put it into rax
     asme_expr(asmg, ass_node->value); // the value of the variable will be in rax
 
-    // instruction
-    str_cat(asmg->fun_body, "    movq    %rax, (%r15)\n");
+    // Pop the address back from the stack
+    str_cat(asmg->fun_body, "    popq    %rbx\n");
+
+    // Store the value at the address
+    str_cat(asmg->fun_body, "    movq    %rax, (%rbx)\n");
 }
 
 static void asme_if(AsmG* asmg, const IfNode* if_node)
@@ -576,31 +580,29 @@ static void asme_arraydec(AsmG* asmg, const ArraydecNode* arraydec_node)
         }
     }
 
-    asmg->rbp_offset -= 8 * array_size; // we need to do that here in case you define an array without initializing it
+    asmg->rbp_offset -= 8 * (array_size + 1); 
 }
 
 
 static void asme_ret(AsmG* asmg, const RetNode* ret_node)
 {
-
     str_cat(asmg->fun_body, "\n    # return statement\n");
 
-    // handle expression
+    // Handle the expression, if there is any
     if (ret_node->expr_node) {
-        asme_expr(asmg, ret_node->expr_node); // this will put the value into rax
+        asme_expr(asmg, ret_node->expr_node); // This will put the return value into rax
     }
 
-    str_cat(asmg->fun_body, "\n    # epilogue (from ret)\n");
-
-    str_cat(asmg->fun_body, "    movq    %rbp, %rsp\n");
-    str_cat(asmg->fun_body, "    popq     %rbp\n");
-    str_cat(asmg->fun_body, "    ret\n"); // we can use rax after to use the return value
+    // Jump to the epilogue label with a unique identifier
+    char epilogue_label[64];
+    sprintf(epilogue_label, "    jmp     .Lepilogue_%s\n", str_to_char(asmg->var_prefix));
+    str_cat(asmg->fun_body, epilogue_label);
 }
 
 static void asme_fundef(AsmG* asmg, const FundefNode* fundef_node)
 {
     if (strcmp(fundef_node->name, "w__main") == 0) {
-        // start code
+        // Start code
         str_cat(asmg->global, "    .global _start\n");
         str_cat(asmg->start, "\n_start:\n");
         str_cat(asmg->start, "    # function call\n");
@@ -611,43 +613,50 @@ static void asme_fundef(AsmG* asmg, const FundefNode* fundef_node)
         str_cat(asmg->start, "    syscall\n");
     }
 
-    // check if function is global
+    // Check if the function is global
     if (strcmp(fundef_node->scope, "global") == 0) {
         str_cat(asmg->global, "    .global ");
         str_cat(asmg->global, fundef_node->name);
         str_cat(asmg->global, "\n");
     }
 
-    // clear fun_body and fun_prol
+    // Clear fun_body and fun_prol
     str_free(asmg->fun_prol);
     asmg->fun_prol = str_new("");
 
     str_free(asmg->fun_body);
     asmg->fun_body = str_new("");
 
-    // function label
+    // Function label
     str_cat(asmg->fun_prol, "\n\n");
     str_cat(asmg->fun_prol, fundef_node->name);
     str_cat(asmg->fun_prol, ":\n");
 
-    // function prologue
+    // Function prologue
     str_cat(asmg->fun_prol, "    # prologue\n");
     str_cat(asmg->fun_prol, "    pushq   %rbp\n");
     str_cat(asmg->fun_prol, "    movq    %rsp, %rbp\n");
 
-    // pushing arguments onto the stack frame
+    // Preserve callee-saved registers
+    str_cat(asmg->fun_prol, "    pushq   %rbx\n");
+    str_cat(asmg->fun_prol, "    pushq   %r12\n");
+    str_cat(asmg->fun_prol, "    pushq   %r13\n");
+    str_cat(asmg->fun_prol, "    pushq   %r14\n");
+    str_cat(asmg->fun_prol, "    pushq   %r15\n");
+
+    // Pushing arguments onto the stack frame (if needed)
     if (fundef_node->param_node_list->size != 0) {
         str_cat(asmg->fun_body, "\n    # retrieve arguments\n");
     }
 
-    asmg->rbp_offset = -8; // because when we declare the first variable, it needs to have space
+    asmg->rbp_offset = -8; // Ensure space for the first variable
 
     int num_params = fundef_node->param_node_list->size;
 
     for (int i = 0; i < num_params; i++) {
         const ParamNode* param_node = (ParamNode*)fundef_node->param_node_list->items[i];
 
-        // get full variable name
+        // Get full variable name
         Str* full_var_name = str_new(fundef_node->name);
         str_cat(full_var_name, "_");
         str_cat(full_var_name, param_node->name);
@@ -660,7 +669,7 @@ static void asme_fundef(AsmG* asmg, const FundefNode* fundef_node)
         print(VERBOSE, 2, "add in the dict: \"%s\" at location %s\n", str_to_char(full_var_name), var_pos_c);
 
         if (i < 6) {
-            // move the arguments from the registers (rdi, rsi, rdx, rcx, r8, r9) to the stack
+            // Move the arguments from the registers (rdi, rsi, rdx, rcx, r8, r9) to the stack
             const char* reg_names[6] = {"%rdi", "%rsi", "%rdx", "%rcx", "%r8", "%r9"};
             str_cat(asmg->fun_body, "    movq    ");
             str_cat(asmg->fun_body, reg_names[i]);
@@ -668,7 +677,7 @@ static void asme_fundef(AsmG* asmg, const FundefNode* fundef_node)
             str_cat(asmg->fun_body, var_pos_c);
             str_cat(asmg->fun_body, "\n");
         } else {
-            // retrieve the arguments passed via the stack
+            // Retrieve the arguments passed via the stack
             int stack_offset = (i - 6 + 1) * 8;
             char stack_offset_c[256];
             sprintf(stack_offset_c, "%d(%%rbp)", stack_offset + 8); // 8 is added for the return address offset
@@ -680,23 +689,23 @@ static void asme_fundef(AsmG* asmg, const FundefNode* fundef_node)
             str_cat(asmg->fun_body, "\n");
         }
 
-        // decrease the offset for the next argument
+        // Decrease the offset for the next argument
         asmg->rbp_offset -= 8;
     }
 
-    // put the function name in var_prefix
+    // Put the function name in var_prefix
     str_free(asmg->var_prefix);
     asmg->var_prefix = str_new(fundef_node->name);
 
-    // generate code for each stmt of the block_node
+    // Generate code for each stmt of the block_node
     for (int i = 0; i < fundef_node->block_node->stmt_node_list->size; i++) {
         const StmtNode* stmt_node = (StmtNode*)fundef_node->block_node->stmt_node_list->items[i];
         asme_stmt(asmg, stmt_node);
     }
 
-    // add fun prologue for how much space we need
+    // Add fun prologue for how much space we need
     int required_space = abs(asmg->rbp_offset);
-    if (required_space % 2 == 0) {          // because The System V ABI requires the stack to be 16-byte aligned.
+    if (required_space % 16 != 0) {          // The System V ABI requires the stack to be 16-byte aligned.
         required_space += 8;    
     }
     char required_space_str[255];
@@ -705,13 +714,24 @@ static void asme_fundef(AsmG* asmg, const FundefNode* fundef_node)
     str_cat(asmg->fun_prol, required_space_str);
     str_cat(asmg->fun_prol, ", %rsp\n");
 
-    // handle case where the function returns nothing
-    str_cat(asmg->fun_body, "\n    # epilogue (from brace)\n");
+    // Epilogue section with a unique label
+    char epilogue_label[64];
+    sprintf(epilogue_label, ".Lepilogue_%s:\n", str_to_char(asmg->var_prefix));
+    str_cat(asmg->fun_body, epilogue_label);
+    str_cat(asmg->fun_body, "\n    # epilogue\n");
+
+    // Restore callee-saved registers
+    str_cat(asmg->fun_body, "    popq    %r15\n");
+    str_cat(asmg->fun_body, "    popq    %r14\n");
+    str_cat(asmg->fun_body, "    popq    %r13\n");
+    str_cat(asmg->fun_body, "    popq    %r12\n");
+    str_cat(asmg->fun_body, "    popq    %rbx\n");
+
     str_cat(asmg->fun_body, "    movq    %rbp, %rsp\n");
-    str_cat(asmg->fun_body, "    popq     %rbp\n");
+    str_cat(asmg->fun_body, "    popq    %rbp\n");
     str_cat(asmg->fun_body, "    ret\n");
 
-    // combine all code
+    // Combine all code
     Str* full_fun_code = str_new("");
     str_cat_str(full_fun_code, asmg->fun_prol);
     str_cat_str(full_fun_code, asmg->fun_body);

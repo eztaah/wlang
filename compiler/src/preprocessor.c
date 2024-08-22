@@ -95,40 +95,51 @@ static void convert_string_literals_to_ascii_array(Str* source)
             USER_PANIC(current_filename, current_line_number, "unmatched double quote in string literal");
         }
 
+        // Create a new Str to store the ASCII array
         Str* ascii_array = str_new("[");
+
         for (char* p = pos + 1; p < end_string; p++) {
             int ascii_value = -1;
             if (*p == '\\') {
-                // handle escape sequences
+                // Handle escape sequences
                 char escape_seq[3] = {p[0], p[1], '\0'};
                 ascii_value = escape_sequence_to_ascii(escape_seq);
                 if (ascii_value == -1) {
                     USER_PANIC(current_filename, current_line_number, "invalid escape sequence");
                 }
-                p++; // skip the next character as it's part of the escape sequence
-            }
-            else {
+                p++; // Skip the next character as it's part of the escape sequence
+            } else {
                 ascii_value = (int)*p;
             }
 
-            char ascii_str[12]; // enough to hold any ASCII value as string
+            char ascii_str[12]; // Enough to hold any ASCII value as string
             sprintf(ascii_str, "%d", ascii_value);
             str_cat(ascii_array, ascii_str);
             if (p < end_string - 1) {
                 str_cat(ascii_array, ", ");
             }
         }
-        str_cat(ascii_array, "]"); // close the array
 
-        // replace the string literal with the ASCII array
-        str_remove_range(source, pos - src, end_string + 1 - src);
-        str_insert(source, pos - src, str_to_char(ascii_array));
+        str_cat(ascii_array, "]"); // Close the array
 
-        // update the src pointer because we modified the source
+        // Get the current position offset
+        int start_pos = pos - src;
+        int end_pos = end_string + 1 - src;
+
+        // Replace the string literal with the ASCII array
+        str_remove_range(source, start_pos, end_pos);
+        str_insert(source, start_pos, str_to_char(ascii_array));
+
+        // Update the `src` pointer because we modified the source
         src = str_to_char(source);
+        pos = src + start_pos + ascii_array->length; // Move the pointer past the inserted array
+
         str_free(ascii_array);
     }
 }
+
+
+
 
 static void collect_macros(Str* source, Dict* macro_dict)
 {
