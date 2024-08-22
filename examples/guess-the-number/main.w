@@ -12,10 +12,10 @@
     !ascii <64> congrats_msg[48] = "Congratulations! You have found the right price!\n";
     !ascii <64> range_msg[39] = "Guess the number (between 1 and 100): \n";
 
-    print_str_array(range_msg, 53);
+    print_ascii_array(range_msg, 53);
 
     loop {
-        print_str_array(prompt_msg, 18);
+        print_ascii_array(prompt_msg, 18);
 
         : Lecture du nombre saisi par l utilisateur
         !ascii& <64> input_str = input_str_array();
@@ -27,14 +27,14 @@
         attempts = attempts + 1;
 
         if (guess < secret_number) {
-            print_str_array(more_msg, 11);
+            print_ascii_array(more_msg, 11);
         } 
         else {
             if (guess > secret_number) {
-                print_str_array(less_msg, 11);
+                print_ascii_array(less_msg, 11);
             } 
             else {
-                print_str_array(congrats_msg, 48);
+                print_ascii_array(congrats_msg, 48);
                 break;
             }
         } 

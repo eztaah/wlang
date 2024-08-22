@@ -184,73 +184,95 @@ static void replace_macros(Str* source, Dict* macro_dict)
     }
 }
 
+// static void remove_endif_line()
+// {
+
+// }
+
 static void process_conditionals(Str* source, Dict* macro_dict)
 {
     print(VERBOSE, 2, "processing conditionals\n");
     char* src = str_to_char(source);
     char* pos = src;
 
-    while ((pos = strstr(pos, "#ifdef")) != NULL) {
+    while ((pos = strstr(pos, "#if")) != NULL) {
+        Bool is_ifndef = (strncmp(pos, "#ifndef", 7) == 0);
         char* end_line = strchr(pos, '\n');
         if (!end_line) {
-            USER_PANIC(current_filename, current_line_number, "unexpected end of file after #ifdef");
+            USER_PANIC(current_filename, current_line_number, "unexpected end of file after #if directive");
         }
 
-        // extract the macro name
-        char* macro_start = pos + 7; // start after "#ifdef "
+        // Extract the macro name
+        char* macro_start = pos + (is_ifndef ? 8 : 7); // 7 for #ifdef, 8 for #ifndef
         char* macro_end = end_line;
         char* macro_name = strndup(macro_start, macro_end - macro_start);
         Bool macro_defined = dict_get(macro_dict, macro_name) != NULL;
 
-        print(VERBOSE, 3, "processing #ifdef for macro: %s\n", macro_name);
+        // For #ifndef, invert the macro_defined check
+        if (is_ifndef) {
+            macro_defined = !macro_defined;
+        }
 
-        // find positions of #else and #endif
+        print(VERBOSE, 3, "processing %s for macro: %s\n", is_ifndef ? "#ifndef" : "#ifdef", macro_name);
+
+        // Find positions of #else and #endif
         char* else_pos = strstr(end_line, "#else");
         char* endif_pos = strstr(end_line, "#endif");
 
         if (!endif_pos) {
-            USER_PANIC(current_filename, current_line_number, "missing #endif for #ifdef");
+            USER_PANIC(current_filename, current_line_number, "missing #endif for #if directive");
         }
 
         if (macro_defined) {
-            print(VERBOSE, 3, "macro %s is defined\n", macro_name);
-            // if macro is defined, remove the #else block if it exists
+            print(VERBOSE, 3, "macro %s condition is true\n", macro_name);
+            // If macro condition is true, remove the #else block if it exists
             if (else_pos && else_pos < endif_pos) {
                 str_remove_range(source, else_pos - src, endif_pos + 6 - src); // remove from #else to #endif
             }
-            str_remove_range(source, pos - src, end_line + 1 - src); // remove the #ifdef line
-        }
-        else {
-            print(VERBOSE, 3, "macro %s is not defined\n", macro_name);
-            // if macro is not defined, remove the #ifdef block and keep #else or remove all if no #else
-            if (else_pos && else_pos < endif_pos) {
-                str_remove_range(source, pos - src, else_pos + 6 - src); // remove from #ifdef to #else
-            }
             else {
-                str_remove_range(source, pos - src, endif_pos + 6 - src); // remove from #ifdef to #endif
+                // remove the #endif line
+                endif_pos = strstr(str_to_char(source), "#endif");
+                if (endif_pos) {
+                    char* end_of_endif_line = strchr(endif_pos, '\n');
+                    if (end_of_endif_line) {
+                        str_remove_range(source, endif_pos - str_to_char(source), end_of_endif_line + 1 - str_to_char(source));
+                    }
+                    else {
+                        str_remove_range(source, endif_pos - str_to_char(source), strlen(str_to_char(source)));
+                    }
+                }
+            }
+            str_remove_range(source, pos - src, end_line + 1 - src); // remove the #if line
+        } 
+        else {
+            print(VERBOSE, 3, "macro %s condition is false\n", macro_name);
+            // If macro condition is false, remove the #if block and keep #else or remove all if no #else
+            if (else_pos && else_pos < endif_pos) {
+                str_remove_range(source, pos - src, else_pos + 6 - src); // remove from #if to #else
+            } else {
+                str_remove_range(source, pos - src, endif_pos + 6 - src); // remove from #if to #endif
+            }
+            // remove the #endif line
+            endif_pos = strstr(str_to_char(source), "#endif");
+            if (endif_pos) {
+                char* end_of_endif_line = strchr(endif_pos, '\n');
+                if (end_of_endif_line) {
+                    str_remove_range(source, endif_pos - str_to_char(source), end_of_endif_line + 1 - str_to_char(source));
+                }
+                else {
+                    str_remove_range(source, endif_pos - str_to_char(source), strlen(str_to_char(source)));
+                }
             }
         }
 
-        // // remove the #endif line
-        // endif_pos = strstr(str_to_char(source), "#endif");
-        // if (endif_pos) {
-        //     char* end_of_endif_line = strchr(endif_pos, '\n');
-        //     if (end_of_endif_line) {
-        //         str_remove_range(source, endif_pos - str_to_char(source), end_of_endif_line + 1 - str_to_char(source));
-        //     }
-        //     else {
-        //         str_remove_range(source, endif_pos - str_to_char(source), strlen(str_to_char(source)));
-        //     }
-        // }
-
-        // update the `src` pointer since we've modified the source
+        // Update the `src` pointer since we've modified the source
         src = str_to_char(source);
         advance_to_next_line(&pos);
-
 
         free(macro_name);
     }
 }
+
 
 static void process_includes(Str* source)
 {

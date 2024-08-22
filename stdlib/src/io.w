@@ -4,7 +4,7 @@
         @exit(1);
     }
 
-    !ascii <64> asciicode = num + 48;
+    !ascii <64> asciicode = digit_to_ascii(num);
     %sysc(1, 1, &asciicode, 1, 0, 0, 0);
 }
 
@@ -35,23 +35,49 @@
     else {
         _print_number_recursive(num);
     }
+}
 
-    _print_newline();
+glb !void print_libw_version()
+{
+    !ascii <64> libw_version[19] = "libw version 0.3.0\n";
+    print_ascii_array(libw_version, 19);
+}
+
+glb !void print_ascii(!ascii <64> ascii)
+{
+    %sysc(1, 1, &ascii, 1, 0, 0, 0);
 }
 
 glb !void print_array(!int& <64> array_addr, !int <64> array_size)
 {
+    : Print opening bracket
+    !ascii <64> open_bracket = '[';
+    print_ascii(open_bracket);
+
     !int <64> i = 1;
     loop {
         !int <64> number = ^(array_addr - i*8);
-        _print_number_no_newline(number);  
+        _print_number_no_newline(number);
+
+        : Print comma and space if not the last element
+        if (i != array_size) {
+            !ascii <64> comma = ',';
+            !ascii <64> space = ' ';  
+            print_ascii(comma);
+            print_ascii(space);
+        }
 
         i = i + 1;
         if (i == array_size + 1) {
             break;
         }  
     }
-    _print_newline();
+
+    : Print closing bracket and newline
+    !ascii <64> close_bracket = ']'; 
+    !ascii <64> newline = '\n';
+    print_ascii(close_bracket);
+    print_ascii(newline);
 }
 
 glb !void print_number(!int <64> num)
@@ -79,19 +105,27 @@ glb !void print_ascii_array(!int& <64> array_addr, !int <64> array_size)
         ^(str_addr + i) = ^(array_addr - (i+1)*8);  
 
         i = i + 1;
+
+#ifndef PRINT_NULL_CHAR
+        : Stop if a null character is encountered
+        if (^(str_addr + (i-1)) == '\0') {
+            break;
+        }
+#endif
+
         if (i == array_size + 1) {
             break;
         }  
     }
 
     : print the string
-    %sysc(1, 1, str_addr, array_size, 0, 0, 0);
+    %sysc(1, 1, str_addr, i - 1, 0, 0, 0);  : 'i - 1' because 'i' is incremented after the last valid char
 
     free(str_addr, array_size);
 }
 
 #def MAX_SIZE 100
-glb !void& <64> input()
+glb !ascii& <64> input()
 {
     : allocate memory for the input string (temporarily stores 8-bit characters)
     !ascii& <64> buffer = malloc(MAX_SIZE);
@@ -100,7 +134,7 @@ glb !void& <64> input()
     @read(0, buffer, MAX_SIZE);
 
     : allocate memory for the output array (64-bit per element)
-    !void& <64> str_array_addr[MAX_SIZE * 8] = malloc(MAX_SIZE * 8);
+    !void& <64> str_array_addr[MAX_SIZE];
 
     : copy and expand each 8-bit character to 64 bits
     !int <64> i = 0;

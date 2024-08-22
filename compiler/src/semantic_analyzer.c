@@ -125,10 +125,6 @@ static void analyze_expr(AnalyzerContext* context, ExprNode* expr_node)
             break;
 
         case NODE_FUNCALL:
-            // Check if the function call has more than six arguments
-            if (expr_node->funcall_node.expr_node_list->size > 6) {
-                USER_PANIC(current_filename, expr_node->line, "function call to '%s' contains more than six arguments", expr_node->funcall_node.name);
-            }
             // Analyze each argument in the function call
             for (int i = 0; i < expr_node->funcall_node.expr_node_list->size; i++) {
                 ExprNode* arg_node = list_get(expr_node->funcall_node.expr_node_list, i);
@@ -209,11 +205,6 @@ static void analyze_stmt(AnalyzerContext* context, StmtNode* stmt_node)
 static void analyze_fundef(AnalyzerContext* context, FundefNode* fundef_node)
 {
     context->symbol_table = dict_new();
-
-    // Check if the function has more than six parameters
-    if (fundef_node->param_node_list->size > 6) {
-        USER_PANIC(current_filename, fundef_node->line, "function '%s' contains more than six parameters", fundef_node->name);
-    }
 
     // Analyze parameters
     for (int i = 0; i < fundef_node->param_node_list->size; i++) {

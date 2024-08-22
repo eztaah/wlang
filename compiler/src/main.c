@@ -5,6 +5,8 @@
 #include "compiler.h"
 #include "lib.h"
 
+#define COMPILER_VERSION "0.3.0"
+
 Bool verbose = FALSE;
 Bool compile_only = FALSE;
 Bool no_libc = FALSE;
@@ -40,7 +42,7 @@ static List* handle_arguments(int argc, const char* argv[], Dict* macro_dict)
         exit(EXIT_SUCCESS);
     }
     else if (char_cmp(argv[1], "--version")) {
-        printf("wlangc v0.3\n");
+        printf("wlangc %s\n", COMPILER_VERSION);
         exit(EXIT_SUCCESS);
     }
 
