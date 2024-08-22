@@ -638,11 +638,11 @@ static void asme_fundef(AsmG* asmg, const FundefNode* fundef_node)
     str_cat(asmg->fun_prol, "    movq    %rsp, %rbp\n");
 
     // Preserve callee-saved registers
-    str_cat(asmg->fun_prol, "    pushq   %rbx\n");
-    str_cat(asmg->fun_prol, "    pushq   %r12\n");
-    str_cat(asmg->fun_prol, "    pushq   %r13\n");
-    str_cat(asmg->fun_prol, "    pushq   %r14\n");
-    str_cat(asmg->fun_prol, "    pushq   %r15\n");
+    // str_cat(asmg->fun_prol, "    pushq   %rbx\n");
+    // str_cat(asmg->fun_prol, "    pushq   %r12\n");
+    // str_cat(asmg->fun_prol, "    pushq   %r13\n");
+    // str_cat(asmg->fun_prol, "    pushq   %r14\n");
+    // str_cat(asmg->fun_prol, "    pushq   %r15\n");
 
     // Pushing arguments onto the stack frame (if needed)
     if (fundef_node->param_node_list->size != 0) {
@@ -721,11 +721,11 @@ static void asme_fundef(AsmG* asmg, const FundefNode* fundef_node)
     str_cat(asmg->fun_body, "\n    # epilogue\n");
 
     // Restore callee-saved registers
-    str_cat(asmg->fun_body, "    popq    %r15\n");
-    str_cat(asmg->fun_body, "    popq    %r14\n");
-    str_cat(asmg->fun_body, "    popq    %r13\n");
-    str_cat(asmg->fun_body, "    popq    %r12\n");
-    str_cat(asmg->fun_body, "    popq    %rbx\n");
+    // str_cat(asmg->fun_body, "    popq    %r15\n");
+    // str_cat(asmg->fun_body, "    popq    %r14\n");
+    // str_cat(asmg->fun_body, "    popq    %r13\n");
+    // str_cat(asmg->fun_body, "    popq    %r12\n");
+    // str_cat(asmg->fun_body, "    popq    %rbx\n");
 
     str_cat(asmg->fun_body, "    movq    %rbp, %rsp\n");
     str_cat(asmg->fun_body, "    popq    %rbp\n");

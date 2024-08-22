@@ -10,6 +10,7 @@ extern char* current_filename;
 
 extern Bool no_libc;
 extern Bool no_libw;
+extern Bool no_start_fun;
 extern Bool static_library;
 
 // compiler driver
