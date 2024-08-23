@@ -3,6 +3,11 @@ glb !void exit(!int <64> status)
     %sysc(60, status, 0, 0, 0, 0, 0);
 }
 
+glb !void sleep(!int <64> duration)
+{
+    @sleep(duration);
+}
+
 glb !ascii <64> digit_to_ascii(!digit <64> num)
 {
     if (num < 0 || num > 9) {
