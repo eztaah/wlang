@@ -1,3 +1,6 @@
+# le script attend en argument la version 
+
+
 # create release folder for each releases (linux and windows)
 mkdir wlang + version  # wlang-1.0.0_linux_amd64
 mkdir wlang + version  # wlang-1.0.0_win64

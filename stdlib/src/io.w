@@ -2,6 +2,11 @@
 #def STDOUT_FILENO 1
 #def STDERR_FILENO 2
 
+: performs a write operation to the specified file descriptor
+:
+: this function writes `count` bytes from the buffer `buf` to the file descriptor `fd`.
+: it uses a system call to perform the write operation. if the write fails, it prints 
+: an error message and terminates the program.
 _write(<64> fd, !cstr& <64> buf, <64> count)
 {
 #ifdef C_WRITE
@@ -17,6 +22,11 @@ _write(<64> fd, !cstr& <64> buf, <64> count)
     }
 }
 
+: performs a read operation from the specified file descriptor
+:
+: this function reads `count` bytes from the file descriptor `fd` into the buffer `buf`.
+: it uses a system call to perform the read operation. if the read fails, it prints 
+: an error message and terminates the program.
 _read(<64> fd, !cstr& <64> buf, <64> count)
 {
 #ifdef C_READ
@@ -32,6 +42,11 @@ _read(<64> fd, !cstr& <64> buf, <64> count)
     }
 }
 
+: prints a single digit (0-9) to the standard output
+:
+: this function converts a digit to its ASCII representation and prints it to 
+: the standard output using the `_write` function. if the digit is outside the 
+: valid range (0-9), it prints an error message and terminates the program.
 _print_digt(!digt <64> digt)
 {
     if (digt < 0 || digt > 9) {
@@ -44,11 +59,19 @@ _print_digt(!digt <64> digt)
     _write(STDOUT_FILENO, &aiic, 1);
 }
 
+: prints a single ASCII character to the standard output
+:
+: this function prints a single ASCII character (`aiic`) to the standard output 
+: using the `_write` function.
 glb print_aiic(!aiic <64> aiic)
 {
     _write(STDOUT_FILENO, &aiic, 1);
 }
 
+: recursively prints an integer by processing each digit
+:
+: this function recursively processes each digit of the integer `num`, from the 
+: most significant to the least significant, and prints each digit using `_print_digt`.
 _print_num_recursive(<64> num)
 {
     if (num >= 10) {
@@ -59,6 +82,11 @@ _print_num_recursive(<64> num)
     _print_digt(digt);
 }
 
+: prints an integer, handling negative numbers
+:
+: this function prints an integer `num` to the standard output. it handles negative 
+: numbers by printing a minus sign first, then calling `_print_num_recursive` to print 
+: the absolute value of the number. if `num` is zero, it prints `0`.
 glb print_num(<64> num)
 {
     if (num < 0) {
@@ -75,6 +103,11 @@ glb print_num(<64> num)
     }
 }
 
+: prints the contents of an array as a formatted list
+:
+: this function prints the elements of an array, formatted as a list (e.g., `[1, 2, 3]`).
+: it iterates over the array, printing each element followed by a comma and a space,
+: except for the last element, which is followed by a closing bracket and a newline.
 glb print_array(!array& <64> array_addr, <64> array_size)
 {
     : Print opening bracket
@@ -103,11 +136,21 @@ glb print_array(!array& <64> array_addr, <64> array_size)
     print_aiic('\n');
 }
 
+: prints a cstr (standard C string)
+:
+: this function prints a cstr (which is a standard C string where each character 
+: is stored on 8 bits) to the standard output using the `_write` function.
 glb print_cstr(!cstr& <64> cstr, <64> str_size)
 {
     _write(STDOUT_FILENO, cstr, str_size);
 }
 
+: prints a wstr (wide string) by converting it to a cstr
+:
+: this function converts a wstr (where each character is stored on 64 bits) to a 
+: cstr (where each character is stored on 8 bits) and then prints it to the standard 
+: output. after conversion, the cstr is printed using `print_cstr` and the dynamically 
+: allocated memory is freed.
 glb print_wstr(!wstr& <64> wstr, <64> str_size)
 {
     : allocate memory for the string
@@ -136,16 +179,23 @@ glb print_wstr(!wstr& <64> wstr, <64> str_size)
     : print the generated string
     print_cstr(cstr, str_size);
 
+    : free the allocated memory
     free(cstr, str_size);
 }
 
-glb !void input(!cstr& <64> cstr, !int <64> str_size)
+: reads input from stdin into a cstr and converts it to a wstr
+:
+: this function reads a string from stdin into a cstr (where each character is stored 
+: on 8 bits) and then converts it into a wstr (where each character is stored on 64 bits).
+: the cstr is read using `_read`, and each character is expanded to 64 bits and stored 
+: in the wstr buffer.
+glb input(!cstr& <64> cstr, <64> str_size)
 {
     : read the input string from stdin
     _read(STDIN_FILENO, cstr, str_size);
 
     : copy and expand each 8-bit character to 64 bits
-    !int <64> i = 1;
+    <64> i = 1;
     loop {
         if (i >= str_size) {
             break;  
@@ -163,3 +213,4 @@ glb !void input(!cstr& <64> cstr, !int <64> str_size)
 
     ret cstr;
 }
+
