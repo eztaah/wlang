@@ -16,7 +16,7 @@ extern Bool static_library;
 // compiler driver
 void compile_file(const char* filename, Dict* macro_dict);
 int assemble_file(const char* filename, Str* object_files);
-int link_executable(Str* object_files);
+int link_executable(Str* object_files, const char* argv0);
 
 // compiler
 Str* preprocess_file(const char* filename, Dict* macro_dict);

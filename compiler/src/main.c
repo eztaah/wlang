@@ -170,7 +170,7 @@ int main(int argc, const char* argv[])
         }
 
         print(VERBOSE, 0, "linking\n");
-        int ret_code = link_executable(object_files);
+        int ret_code = link_executable(object_files, argv[0]);
         if (ret_code != 0) {
             return ret_code;
         }
