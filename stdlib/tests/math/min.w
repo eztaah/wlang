@@ -1,6 +1,6 @@
-!int <64> main()
+<64> main()
 {
-    !int <64> result = min(10, 20);
+    <64> result = min(10, 20);
 
     ret result;
 }

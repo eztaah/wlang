@@ -1,7 +1,7 @@
 : prints the version of the libw library.
 glb print_libw_version()
 {
-    !wstr& <64> version[11] = "libw 0.3.0\n";
+    !wstr& <64> version[11] = "libw 1.0.0\n";
     print_wstr(version, 11);
 }
 
@@ -72,3 +72,37 @@ glb <64> rand()
 {
     ret @rand();
 }
+
+: compares two wide strings (wstr) for equality
+:
+: this function compares two wide strings (`wstr1` and `wstr2`) to determine if they are equal.
+: it returns `1` if the strings are equal and `0` if they are different. the comparison is 
+: performed character by character.
+glb <64> wstr_cmp(!wstr& <64> wstr1, !wstr& <64> wstr2, <64> str_size1, <64> str_size2)
+{
+    : If the sizes are different, the strings cannot be equal
+    if (str_size1 != str_size2) {
+        ret 0;
+    }
+
+    : Compare each character in the strings
+    <64> i = 1;
+    loop {
+        if (i == str_size1 + 1) {
+            break;
+        }
+
+        !aiic <64> char1 = ^(wstr1 - i*8);
+        !aiic <64> char2 = ^(wstr2 - i*8);
+
+        if (char1 != char2) {
+            ret 0;
+        }
+
+        i = i + 1;
+    }
+
+    : If we reach this point, the strings are equal
+    ret 1;
+}
+

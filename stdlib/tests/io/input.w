@@ -1,9 +1,9 @@
-!int <64> main()
+<64> main()
 {
-    !ascii& <64> buffer[10];
+    !wstr& <64> buffer[10];
     input(buffer, 10);
 
-    print_ascii_array(buffer, 10);
+    print_wstr(buffer, 10);
 
     ret 0;
 }

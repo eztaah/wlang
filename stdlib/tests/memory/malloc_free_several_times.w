@@ -1,4 +1,4 @@
-!int <64> main()
+<64> main()
 {
     : First allocation and use
     !void& <64> mem1 = malloc(8);

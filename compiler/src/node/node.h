@@ -4,14 +4,19 @@
 #include "lib.h"
 #include "token.h"
 
+// other nodes
 typedef struct {
     char* name;
     char* size;
     int line;
 } ParamNode;
 
-// OTHER NODE
+typedef struct {
+    List* stmt_node_list;
+    int line;
+} BlockNode;
 
+// expr nodes
 typedef struct ExprNode ExprNode;
 
 typedef struct {
@@ -75,13 +80,7 @@ struct ExprNode {
     };
 };
 
-// EXPRESSION NODES
-
-typedef struct {
-    List* stmt_node_list;
-    int line;
-} BlockNode;
-
+// stmt nodes
 typedef struct {
     char* item_size;
     char* name;
@@ -148,8 +147,8 @@ typedef struct {
     };
 } StmtNode;
 
-// STATEMENT NODES
 
+// fundef node
 typedef struct {
     char* name;
     char* return_size;
@@ -159,8 +158,7 @@ typedef struct {
     int line;
 } FundefNode;
 
-// DEFINITION NODES
-
+// instanciate nodes 
 ParamNode* param_node_new(char* name, char* size, int line);
 
 ExprNode* num_node_new(char* value, int line);
@@ -180,7 +178,6 @@ StmtNode* ass_node_new(ExprNode* lvalue, ExprNode* value, int line);
 StmtNode* ret_node_new(ExprNode* expr_node, int line);
 
 FundefNode* fundef_node_new(char* name, char* return_size, char* scope, List* param_node_list, BlockNode* block_node, int line);
-
 BlockNode* block_node_new(List* def_node_list, int line);
 
 Str* print_nodelist(const List* node_list);

@@ -1,10 +1,10 @@
-!int <64> main()
+<64> main()
 {
-    !ascii <64> str[5] = "1234\n";
-    !int <64> result = ascii_array_to_int(str, 5);
-    print_number(result);
+    !wstr& <64> str[5] = "1234\n";
+    <64> result = wstr_to_int(str, 5);
+    print_num(result);
 
     ret 0;
 }
 
-: expected output : 1234\n
+: expected output : 1234

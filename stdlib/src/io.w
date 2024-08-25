@@ -142,7 +142,24 @@ glb print_array(!array& <64> array_addr, <64> array_size)
 : is stored on 8 bits) to the standard output using the `_write` function.
 glb print_cstr(!cstr& <64> cstr, <64> str_size)
 {
-    _write(STDOUT_FILENO, cstr, str_size);
+    : get real str_size (stopping at \0)
+    <64> i = 0;
+    loop {
+#ifndef PRINT_NULL_CHAR
+        if (^(cstr + i) == '\0') {
+            break;
+        }
+#else
+#endif
+        if (i == str_size) {
+            : if we stop because we reached the size of wstr
+            break;
+        }  
+
+        i = i + 1;
+    }
+    _write(STDOUT_FILENO, cstr, i);
+    
 }
 
 : prints a wstr (wide string) by converting it to a cstr
@@ -165,6 +182,7 @@ glb print_wstr(!wstr& <64> wstr, <64> str_size)
         if (^(cstr + i) == '\0') {
             break;
         }
+#else
 #endif
 
         if (i == str_size + 1) {
@@ -189,8 +207,10 @@ glb print_wstr(!wstr& <64> wstr, <64> str_size)
 : on 8 bits) and then converts it into a wstr (where each character is stored on 64 bits).
 : the cstr is read using `_read`, and each character is expanded to 64 bits and stored 
 : in the wstr buffer.
-glb input(!cstr& <64> cstr, <64> str_size)
+glb input(!wstr& <64> wstr, <64> str_size)
 {
+    !cstr& <64> cstr = malloc(str_size);
+
     : read the input string from stdin
     _read(STDIN_FILENO, cstr, str_size);
 
@@ -206,11 +226,11 @@ glb input(!cstr& <64> cstr, <64> str_size)
         !aiic <64> char_64bit = char_8bit & 0xFF;  : Mask to ensure only the lower 8 bits are kept
         
         : Store the 64-bit value in the array
-        ^(cstr - i * 8) = char_64bit;
+        ^(wstr - i * 8) = char_64bit;
 
         i = i + 1;
     }
 
-    ret cstr;
+    free(cstr, str_size);
 }
 

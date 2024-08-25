@@ -80,11 +80,8 @@ glb <64> wstr_to_int(!wstr& <64> wstr, <64> str_size)
 : is reversed to correct the order.
 : 
 : the returned string will always have the size MAX_DIGIT because it is not possible to intialize an array with a value that is not known at compile time
-#def MAX_DIGIT 20
-glb !wstr& <64> int_to_wstr(<64> num)
+glb !wstr& <64> int_to_wstr(!wstr& <64> wstr, <64> str_size, <64> num)
 {
-    !wstr& <64> wstr[MAX_DIGIT];
-
     : handle negative numbers
     <64> is_negative = 0;
     if (num < 0) {
@@ -94,13 +91,6 @@ glb !wstr& <64> int_to_wstr(<64> num)
 
     <64> i = 1;
     loop {
-        : ensure the number of digits does not exceed MAX_DIGIT
-        if (i > MAX_DIGIT - is_negative) {
-            !wstr& <64> err_msg[48] = "error: libw/base/int_to_wstr: number exceeds MAX_DIGIT\n";
-            print_wstr(err_msg, 48);
-            exit(1);
-        }
-
         : Convert the current digit to ASCII and store it
         !digt <64> current_digt = num % 10;
         !aiic <64> aiic = digt_to_aiic(current_digt);
@@ -140,7 +130,7 @@ glb !wstr& <64> int_to_wstr(<64> num)
 
     : fill the remaining array with \0 characters after reversing
     loop {
-        if (i >= MAX_DIGIT) {
+        if (i >= str_size) {
             break;
         }
         ^(wstr - i*8) = '\0';
@@ -192,7 +182,7 @@ glb !cstr& wstr_to_cstr(!wstr& <64> wstr, <64> str_size)
 : it in the wstr buffer. 
 : 
 : after the conversion, the original cstr is freed as it was dynamically allocated.
-glb cstr_to_wstr(!cstr& <64> cstr, !wstr& <64> wstr_buffer, <64> str_size)
+glb cstr_to_wstr(!cstr& <64> cstr, !wstr& <64> wstr, <64> str_size)
 {
     : copy and expand each 8-bit character to 64 bits
     <64> i = 1;
@@ -205,11 +195,8 @@ glb cstr_to_wstr(!cstr& <64> cstr, !wstr& <64> wstr_buffer, <64> str_size)
         !aiic <64> char_64bit = char_8bit & 0xFF;  : mask to ensure only the lower 8 bits are kept
         
         : store the 64-bit value in the wstr array
-        ^(wstr_buffer - i * 8) = char_64bit;
+        ^(wstr - i * 8) = char_64bit;
 
         i = i + 1;
     }
-
-    : free the cstr memory as it was dynamically allocated
-    free(cstr, str_size);
 }

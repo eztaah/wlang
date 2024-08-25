@@ -1,8 +1,12 @@
 SOURCE_FILES = src/*.w 
-FLAGS = --lib --verbose --define C_MEMORY --define C_WRITE  # there is no need to add --no-libw because we are creating a .a lib
+FLAGS = --lib --define C_MEMORY  # there is no need to add --no-libw because we are creating a .a lib
 
 default:
 	../wlangc $(SOURCE_FILES) $(FLAGS)
+	mv ./out/lib.a ../libw.a
+
+verbose: 
+	../wlangc $(SOURCE_FILES) $(FLAGS) --verbose
 	mv ./out/lib.a ../libw.a
 
 clean:

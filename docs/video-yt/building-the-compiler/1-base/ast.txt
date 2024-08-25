@@ -1,5 +1,0 @@
-program = Program(expr)
-
-expr = Constant(int) | Binary(binary_operator, expr, expr)
-
-binary_operator = Add | Subtract | Multiply | Divide | Remainder

@@ -1,7 +1,9 @@
-!int <64> main()
+<64> main()
 {
-    !ascii& <64> result = int_to_ascii_array(1234);
-    : print_ascii_array(result, 20);
+    !wstr& <64> result[4];
+    int_to_wstr(result, 4, 1234);
+
+    print_wstr(result, 20);
 
     ret 0;
 }

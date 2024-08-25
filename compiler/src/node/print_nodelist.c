@@ -15,7 +15,7 @@ static void print_node_header(const char* node_type, const char* label, const ch
     if (!node_type || !label || !output) {
         return;
     }
-    
+
     char buffer[256];
     snprintf(buffer, sizeof(buffer), "%s\n", node_type);
     str_cat(output, buffer);
@@ -510,4 +510,3 @@ Str* print_nodelist(const List* node_list)
 
     return output;
 }
-

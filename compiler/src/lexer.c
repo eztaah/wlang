@@ -1,5 +1,5 @@
 #include <ctype.h>  // isalpha(), isdigit()
-#include <stdlib.h> // exit()
+#include <stdlib.h> // exit(), free()
 #include <string.h> // strlen()
 
 #include "compiler.h"
@@ -7,7 +7,7 @@
 typedef struct {
     const char* src;
     size_t src_size;
-    char c;
+    char c;    
     unsigned int i;
     int line;
 } Lexer;
@@ -19,7 +19,7 @@ static Lexer* lexer_new(const char* src)
     lexer->src_size = strlen(src);
     lexer->i = 0;
     lexer->c = src[lexer->i];
-    lexer->line = 1;
+    lexer->line = 1;  // start at line 1
 
     return lexer;
 }
@@ -56,7 +56,6 @@ static Token* lex_eof(Lexer* lexer, int type)
 {
     Str* value = str_new_c(' ');
     Token* token = token_new(value, type, lexer->line);
-
     return token;
 }
 
@@ -70,6 +69,7 @@ static Token* lex_symbol(Lexer* lexer, int type)
     return token;
 }
 
+// supports decimal, hexadecimal (0x), and binary (0b) numbers
 static Token* lex_number(Lexer* lexer)
 {
     Str* value = str_new("");
@@ -104,7 +104,7 @@ static Token* lex_number(Lexer* lexer)
             }
         }
     }
-    else { // if it's not a prefix, it's a normal decimal number
+    else { // normal decimal number
         while (isdigit(lexer->c)) {
             str_cat_c(value, lexer->c);
             lexer_advance(lexer);
@@ -118,6 +118,7 @@ static Token* lex_word(Lexer* lexer)
 {
     Str* value = str_new("");
 
+    // collect characters of the identifier
     while (isalpha(lexer->c) || isdigit(lexer->c) || lexer->c == '_') {
         str_cat_c(value, lexer->c);
         lexer_advance(lexer);
@@ -144,7 +145,7 @@ static Token* lex_word(Lexer* lexer)
         token_type = TOKEN_BREAK;
     }
     else {
-        token_type = TOKEN_ID;
+        token_type = TOKEN_ID;  // identifier
     }
 
     return token_new(value, token_type, lexer->line);
@@ -265,15 +266,14 @@ static Token* lex_next_token(Lexer* lexer)
 
 List* lex(const char* src)
 {
+    Lexer* lexer = lexer_new(src); 
+    List* token_list = list_new(sizeof(Token)); 
 
-    Lexer* lexer = lexer_new(src);
-    List* token_list = list_new(sizeof(Token));
-
-    while (lexer->c != '\0') {
-        Token* token = lex_next_token(lexer);
+    while (lexer->c != '\0') { 
+        Token* token = lex_next_token(lexer); 
         list_push(token_list, token);
     }
 
-    lexer_free(lexer);
+    lexer_free(lexer); 
     return token_list;
 }
