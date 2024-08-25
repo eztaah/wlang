@@ -11,8 +11,8 @@
 glb !aiic <64> digt_to_aiic(!digt <64> digt)
 {
     if (digt < 0 || digt > 9) {
-        !wstr& <64> err_msg[64] = "error: libw/base/digt_to_aiic: invalid digit, must be between 0 and 9\n";
-        print_wstr(err_msg, 64);
+        !wstr& <64> err_msg[70] = "error: libw/base/digt_to_aiic: invalid digit, must be between 0 and 9\n";
+        print_wstr(err_msg, 70);
         exit(1);
     }
 
@@ -31,8 +31,8 @@ glb !aiic <64> digt_to_aiic(!digt <64> digt)
 glb !digt <64> aiic_to_digt(!aiic <64> aiic)
 {
     if (aiic < 48 || aiic > 57) {
-        !wstr& <64> err_msg[65] = "error: libw/base/aiic_to_digt: invalid ASCII code, must be between 48 and 57\n";
-        print_wstr(err_msg, 65);
+        !wstr& <64> err_msg[77] = "error: libw/base/aiic_to_digt: invalid ASCII code, must be between 48 and 57\n";
+        print_wstr(err_msg, 77);
         exit(1);
     }
 
@@ -96,8 +96,8 @@ glb !wstr& <64> int_to_wstr(<64> num)
     loop {
         : ensure the number of digits does not exceed MAX_DIGIT
         if (i > MAX_DIGIT - is_negative) {
-            !wstr& <64> err_msg[64] = "error: libw/base/int_to_wstr: number exceeds MAX_DIGIT\n";
-            print_wstr(err_msg, 64);
+            !wstr& <64> err_msg[48] = "error: libw/base/int_to_wstr: number exceeds MAX_DIGIT\n";
+            print_wstr(err_msg, 48);
             exit(1);
         }
 
@@ -192,7 +192,7 @@ glb !cstr& wstr_to_cstr(!wstr& <64> wstr, <64> str_size)
 : it in the wstr buffer. 
 : 
 : after the conversion, the original cstr is freed as it was dynamically allocated.
-glb cstr_to_wstr(!cstr& <64> cstr, !wstr& wstr_buffer, <64> str_size)
+glb cstr_to_wstr(!cstr& <64> cstr, !wstr& <64> wstr_buffer, <64> str_size)
 {
     : copy and expand each 8-bit character to 64 bits
     <64> i = 1;

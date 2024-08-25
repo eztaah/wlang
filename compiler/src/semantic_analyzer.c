@@ -86,22 +86,36 @@ static void analyze_vardec(AnalyzerContext* context, VardecNode* vardec_node, in
 // Analyze array declaration
 static void analyze_arraydec(AnalyzerContext* context, ArraydecNode* arraydec_node, int line)
 {
+    // Ensure the array element size is 64 bits
     if (strcmp(arraydec_node->item_size, "64") != 0) {
-        USER_PANIC(current_filename, line, " Only 64-bit variables are allowed, but array '%s' contains elements of size <%s>", arraydec_node->name, arraydec_node->item_size);
+        USER_PANIC(current_filename, line, "only 64-bit variables are allowed, but array '%s' contains elements of size <%s>", arraydec_node->name, arraydec_node->item_size);
     }
 
+    // Check if the array has already been declared
     if (dict_get(context->symbol_table, arraydec_node->name) != NULL) {
         USER_PANIC(current_filename, line, "array '%s' already declared", arraydec_node->name);
     }
 
+    // Add the array to the symbol table
     dict_put(context->symbol_table, arraydec_node->name, "64");
 
+    // If there is an initialization list, analyze it
     if (arraydec_node->expr_node_list) {
+        int actual_size = arraydec_node->expr_node_list->size;
+        int declared_size = atoi(arraydec_node->size);
+
+        // Compare declared size with actual size
+        if (declared_size != actual_size) {
+            USER_PANIC(current_filename, line, "array '%s' declared with size [%s] but initialized with %d elements", arraydec_node->name, arraydec_node->size, actual_size);
+        }
+
+        // Analyze each expression in the initialization list
         for (int i = 0; i < arraydec_node->expr_node_list->size; i++) {
             analyze_expr(context, list_get(arraydec_node->expr_node_list, i));
         }
     }
 }
+
 
 // Analyze expression
 static void analyze_expr(AnalyzerContext* context, ExprNode* expr_node)
