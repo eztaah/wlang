@@ -7,7 +7,7 @@
 typedef struct {
     const char* src;
     size_t src_size;
-    char c;    
+    char c;
     unsigned int i;
     int line;
 } Lexer;
@@ -19,7 +19,7 @@ static Lexer* lexer_new(const char* src)
     lexer->src_size = strlen(src);
     lexer->i = 0;
     lexer->c = src[lexer->i];
-    lexer->line = 1;  // start at line 1
+    lexer->line = 1; // start at line 1
 
     return lexer;
 }
@@ -145,7 +145,7 @@ static Token* lex_word(Lexer* lexer)
         token_type = TOKEN_BREAK;
     }
     else {
-        token_type = TOKEN_ID;  // identifier
+        token_type = TOKEN_ID; // identifier
     }
 
     return token_new(value, token_type, lexer->line);
@@ -266,14 +266,14 @@ static Token* lex_next_token(Lexer* lexer)
 
 List* lex(const char* src)
 {
-    Lexer* lexer = lexer_new(src); 
-    List* token_list = list_new(sizeof(Token)); 
+    Lexer* lexer = lexer_new(src);
+    List* token_list = list_new(sizeof(Token));
 
-    while (lexer->c != '\0') { 
-        Token* token = lex_next_token(lexer); 
+    while (lexer->c != '\0') {
+        Token* token = lex_next_token(lexer);
         list_push(token_list, token);
     }
 
-    lexer_free(lexer); 
+    lexer_free(lexer);
     return token_list;
 }

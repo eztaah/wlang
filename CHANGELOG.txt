@@ -1,28 +1,16 @@
 ---------------------------------------------------------------------------------------------------
-Version: 0.3
-Date: ?
-
-    - compilation multifiles (ajout du symbol glb pour les fonctions globals)
-    - ajout possibilité d'utiliser les fonctions de la libc (avec le @ symbol)
-    - ajout dereferencement (avec ^)
-
-    - rename syscall to sysc
-    - change @ to % symbol for compiler defined functions (like %sysc)
-    
----------------------------------------------------------------------------------------------------
-Version: 0.2
-Date: 10.08.2024
+Version: 1.0.0  
+Date: 26.08.2024
 
   Major Features:
-    - unary operations (e.g., `-`)  
-    - basic memory operations (address-of operator `&`) 
-    - function definitions and function calls  
-    - `@syscall` directive  
-
----------------------------------------------------------------------------------------------------
-Version: 0.1
-Date: 07.08.2024
-
-  Major Features:
-    - basic arithmetic operations (+, -, *, /)  
-    - variable declarations  
+    - arithmetic, logical, bitwise, and comparison operations (+, -, *, /, &&, ||, >>, ==, >, etc)
+    - variable declarations and assignments
+    - array declarations
+    - support for pointers and dereferencement
+    - support for 64-bit integer variables only
+    - function declarations with parameter passing and return statements
+    - conditional statements (if, else)
+    - loop constructs (loop, break)
+    - support for annotations using '!' syntax
+    - support for macros (#def, #ifdef, #ifndef, #else, #endif)
+    - standard library with support for IO operations, memory management, math, etc

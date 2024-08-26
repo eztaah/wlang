@@ -92,29 +92,29 @@ update_ball(!int& <64> ball_pos_x, !int& <64> ball_pos_y, !int& <64> ball_speed_
 
     : check for collision with top/bottom walls
     if (^(ball_pos_y) <= 0 || ^(ball_pos_y) >= SCREEN_HEIGHT - BALL_SIZE) {
-        ^(ball_speed_y) = -^(ball_speed_y);  : reverse vertical direction
+        ^(ball_speed_y) = -^(ball_speed_y);  
     }
 
     : check for collision with left paddle
     if (^(ball_pos_x) <= PADDLE_WIDTH && ^(ball_pos_y) >= ^(left_paddle_y) && ^(ball_pos_y) <= ^(left_paddle_y) + PADDLE_HEIGHT) {
-        ^(ball_speed_x) = -^(ball_speed_x);  : reverse horizontal direction
+        ^(ball_speed_x) = -^(ball_speed_x); 
     } 
     else {
         : check for collision with right paddle
         if (^(ball_pos_x) >= SCREEN_WIDTH - PADDLE_WIDTH - BALL_SIZE && ^(ball_pos_y) >= ^(right_paddle_y) && ^(ball_pos_y) <= ^(right_paddle_y) + PADDLE_HEIGHT) {
-            ^(ball_speed_x) = -^(ball_speed_x);  : reverse horizontal direction
+            ^(ball_speed_x) = -^(ball_speed_x); 
         }
     }
 
     : check if ball has passed left edge
     if (^(ball_pos_x) <= 0) {
-        ^(right_score) = ^(right_score) + 1;  : increment right player's score
+        ^(right_score) = ^(right_score) + 1;  
         init_game(ball_pos_x, ball_pos_y, ball_speed_x, ball_speed_y, left_paddle_y, right_paddle_y);  : reset game
     } 
     else {
         : check if ball has passed right edge
         if (^(ball_pos_x) >= SCREEN_WIDTH) {
-            ^(left_score) = ^(left_score) + 1;  : increment left player's score
+            ^(left_score) = ^(left_score) + 1; 
             init_game(ball_pos_x, ball_pos_y, ball_speed_x, ball_speed_y, left_paddle_y, right_paddle_y);  : reset game
         }
     }
@@ -126,7 +126,7 @@ draw_game(<64> ball_pos_x, <64> ball_pos_y, <64> left_paddle_y, <64> right_paddl
     !color_struct& <64> white_color = create_color_struct(255, 255, 255, 255);  : white
     !color_struct& <64> background_color = create_color_struct(10, 61, 139, 255);  : blue
 
-    !wstr& <64> score_text[2];  : buffer for score text
+    !wstr& <64> score_text[2];  
 
     @BeginDrawing();
     @ClearBackground(^background_color);  : clear the background with blue color

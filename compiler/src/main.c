@@ -26,6 +26,7 @@ static void print_usage(void)
     printf("    -v, --verbose                    output information during compilation\n");
     printf("    -d, --define <macro>             define a macro\n");
     printf("    --no-libc                        do not link with the libc\n");
+    printf("    --no-libw                        do not link with the libw\n");
     printf("    --compile-only                   compile only; do not assemble or link\n");
     printf("    --no-start-fun                   no _start function, and do not rename main to w__main\n");
     printf("    --lib                            create a static library\n");

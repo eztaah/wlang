@@ -50,7 +50,7 @@ static void convert_chars_to_ascii(Str* source)
     char* src = str_to_char(source);
     char* pos = src;
 
-    while ((pos = strchr(pos, '\'')) != NULL) {  // find the next single quote
+    while ((pos = strchr(pos, '\'')) != NULL) { // find the next single quote
         char* end_char = strchr(pos + 1, '\'');
         if (!end_char) {
             USER_PANIC(current_filename, current_line_number, "unmatched single quote in character literal");
@@ -72,10 +72,10 @@ static void convert_chars_to_ascii(Str* source)
         char ascii_str[12];
         sprintf(ascii_str, "%d", ascii_value);
 
-        str_remove_range(source, pos - src, end_char + 1 - src);  // remove the character literal
-        str_insert(source, pos - src, ascii_str);  // insert the ASCII value
+        str_remove_range(source, pos - src, end_char + 1 - src); // remove the character literal
+        str_insert(source, pos - src, ascii_str);                // insert the ASCII value
 
-        src = str_to_char(source);  // update src in case the string was reallocated
+        src = str_to_char(source); // update src in case the string was reallocated
     }
 }
 
@@ -85,7 +85,7 @@ static void convert_string_literals_to_ascii_array(Str* source)
     char* src = str_to_char(source);
     char* pos = src;
 
-    while ((pos = strchr(pos, '"')) != NULL) {  // find the next double quote
+    while ((pos = strchr(pos, '"')) != NULL) { // find the next double quote
         char* end_string = strchr(pos + 1, '"');
         if (!end_string) {
             USER_PANIC(current_filename, current_line_number, "unmatched double quote in string literal");
@@ -100,7 +100,7 @@ static void convert_string_literals_to_ascii_array(Str* source)
                 if (ascii_value == -1) {
                     USER_PANIC(current_filename, current_line_number, "invalid escape sequence");
                 }
-                p++;  // skip the next character because it's part of the escape sequence
+                p++; // skip the next character because it's part of the escape sequence
             }
             else {
                 ascii_value = (int)*p;
@@ -108,20 +108,20 @@ static void convert_string_literals_to_ascii_array(Str* source)
 
             char ascii_str[12];
             sprintf(ascii_str, "%d", ascii_value);
-            str_cat(ascii_array, ascii_str);  // add the ASCII value to the array
+            str_cat(ascii_array, ascii_str); // add the ASCII value to the array
             if (p < end_string - 1) {
-                str_cat(ascii_array, ", ");  // add a comma separator
+                str_cat(ascii_array, ", "); // add a comma separator
             }
         }
 
-        str_cat(ascii_array, "]");  // close the array
+        str_cat(ascii_array, "]"); // close the array
         int start_pos = pos - src;
         int end_pos = end_string + 1 - src;
 
-        str_remove_range(source, start_pos, end_pos);  // remove the string literal
-        str_insert(source, start_pos, str_to_char(ascii_array));  // insert the ASCII array
+        str_remove_range(source, start_pos, end_pos);            // remove the string literal
+        str_insert(source, start_pos, str_to_char(ascii_array)); // insert the ASCII array
 
-        src = str_to_char(source);  // update src in case the string was reallocated
+        src = str_to_char(source); // update src in case the string was reallocated
         pos = src + start_pos + ascii_array->length;
         str_free(ascii_array);
     }
@@ -135,7 +135,7 @@ static void collect_macros(Str* source, Dict* macro_dict)
     char* src = str_to_char(source);
     char* pos = src;
 
-    while ((pos = strstr(pos, "#def")) != NULL) {  // find the next macro definition
+    while ((pos = strstr(pos, "#def")) != NULL) { // find the next macro definition
         char* end_line = strchr(pos, '\n');
         if (!end_line) {
             break;
@@ -163,14 +163,14 @@ static void collect_macros(Str* source, Dict* macro_dict)
         char* macro_name = strndup(macro_start, macro_end - macro_start);
         char* macro_value = strndup(value_start, end_line - value_start);
 
-        dict_put(macro_dict, macro_name, macro_value);  // store the macro in the dictionary
+        dict_put(macro_dict, macro_name, macro_value); // store the macro in the dictionary
         print(VERBOSE, 3, "collect macro: %s = %s\n", macro_name, macro_value);
 
         free(macro_name);
         free(macro_value);
 
-        str_remove_range(source, pos - src, end_line - src);  // remove the macro definition from the source code
-        src = str_to_char(source);  // update src in case the string was reallocated
+        str_remove_range(source, pos - src, end_line - src); // remove the macro definition from the source code
+        src = str_to_char(source);                           // update src in case the string was reallocated
     }
 }
 
@@ -181,7 +181,7 @@ static void replace_macros(Str* source, Dict* macro_dict)
     print(VERBOSE, 2, "replacing macros\n");
     for (int i = 0; i < macro_dict->size; ++i) {
         DictEntry* entry = macro_dict->entries[i];
-        str_replace(source, entry->key, entry->value);  // replace the macro with its value
+        str_replace(source, entry->key, entry->value); // replace the macro with its value
         print(VERBOSE, 3, "replace macro: %s with %s\n", entry->key, entry->value);
     }
 }
@@ -194,7 +194,7 @@ static void process_conditionals(Str* source, Dict* macro_dict)
     char* pos = src;
 
     while ((pos = strstr(pos, "#if")) != NULL) {
-        Bool is_ifndef = (strncmp(pos, "#ifndef", 7) == 0);  // check if it's an #ifndef directive
+        Bool is_ifndef = (strncmp(pos, "#ifndef", 7) == 0); // check if it's an #ifndef directive
         char* end_line = strchr(pos, '\n');
         if (!end_line) {
             USER_PANIC(current_filename, current_line_number, "unexpected end of file after #if directive");
@@ -421,7 +421,7 @@ Str* preprocess_file(const char* filename, Dict* macro_dict)
     remove_comments(source);
     remove_annotations(source);
 
-    str_cat(source, "\n");  // add a newline at the end to prevent incorrect lexing
+    str_cat(source, "\n"); // add a newline at the end to prevent incorrect lexing
 
-    return source; 
+    return source;
 }

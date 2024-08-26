@@ -37,7 +37,7 @@ void* list_pop(List* list)
     if (list->size == 0) {
         free(list->items);
         list->items = NULL;
-    } 
+    }
     else {
         list->items = safe_realloc(list->items, list->size * list->item_size);
     }

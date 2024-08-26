@@ -7,7 +7,7 @@ if [ -z "$1" ]; then
 fi
 
 VERSION=$1
-RELEASE_DIR="wlang-${VERSION}_linux_amd64"
+RELEASE_DIR="wlang-${VERSION}_linux_x86_64"
 
 # Create release folder
 mkdir -p "${RELEASE_DIR}"
@@ -28,7 +28,7 @@ mv ./libw.a "./${RELEASE_DIR}/libw.a"
 
 # Copy additional files to the release folder
 cp ./CHANGELOG.txt "./${RELEASE_DIR}/CHANGELOG.txt"
-cp ./release-data/README-release.md "./${RELEASE_DIR}/README.md"
+cp ./release-data/README-release.txt "./${RELEASE_DIR}/README.txt"
 
 # Copy the hello-world example
 cp -r ./release-data/hello-world "./${RELEASE_DIR}/"
@@ -36,7 +36,7 @@ cp -r ./release-data/hello-world "./${RELEASE_DIR}/"
 # Compress release folder into a tar.gz archive
 tar -czvf "${RELEASE_DIR}.tar.gz" "${RELEASE_DIR}"
 
-# Clean up the release directory (optional)
+# Clean up the release directory
 rm -rf "${RELEASE_DIR}"
 
 echo "Release ${VERSION} created: ${RELEASE_DIR}.tar.gz"

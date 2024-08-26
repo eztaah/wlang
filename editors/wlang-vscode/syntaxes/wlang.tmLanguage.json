@@ -43,7 +43,7 @@
                 },
                 {
                     "name": "keyword.control.w",
-                    "match": "#\\b(incl|def|ifdef|else|endif)\\b"
+                    "match": "#\\b(def|ifdef|ifndef|else|endif)\\b"
                 }
             ]
         },

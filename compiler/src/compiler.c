@@ -2,8 +2,8 @@
 #include <stdlib.h> // exit(), free()
 #include <string.h> // strdup()
 
-#include "lib.h"
 #include "compiler.h"
+#include "lib.h"
 
 char* current_filename = NULL;
 
@@ -51,7 +51,7 @@ static void write_to_file(const Str* base_path, const char* extension, const cha
 // performs preprocessing, lexing, parsing, and semantic analysis
 void compile_file(const char* filename, Dict* macro_dict)
 {
-    current_filename = strdup(filename);  // save the current filename
+    current_filename = strdup(filename); // save the current filename
 
     create_dir("out");
 
@@ -127,17 +127,19 @@ int assemble_file(const char* filename, Str* object_files)
     str_free(asm_out_file);
     str_free(object_file);
 
-    return res.return_code;  // return the result code from `as`
+    return res.return_code; // return the result code from `as`
 }
 
-char* get_executable_dir(const char* argv0) {
+char* get_executable_dir(const char* argv0)
+{
     char* exec_path = strdup(argv0);
     char* last_slash = strrchr(exec_path, '/');
 
     if (last_slash != NULL) {
-        *last_slash = '\0';  // terminate the string just before the last '/'
+        *last_slash = '\0'; // terminate the string just before the last '/'
         return exec_path;
-    } else {
+    }
+    else {
         free(exec_path);
         PANIC("failed to determine executable location");
         return NULL;
@@ -153,7 +155,7 @@ int link_executable(Str* object_files, const char* argv0)
         // create the linking command for a static library
         link_cmd = str_new("ar rcs out/lib.a ");
         str_cat(link_cmd, str_to_char(object_files));
-    } 
+    }
     else {
         // create the linking command for a regular executable
         link_cmd = str_new("ld -o out/prog ");
@@ -165,7 +167,7 @@ int link_executable(Str* object_files, const char* argv0)
             str_cat(link_cmd, "-L");
             str_cat(link_cmd, exec_dir);
             str_cat(link_cmd, " -l:libw.a ");
-            free(exec_dir);  // free the executable directory string
+            free(exec_dir); // free the executable directory string
         }
         if (!no_libc) {
             str_cat(link_cmd, "-lc -dynamic-linker /lib64/ld-linux-x86-64.so.2");
@@ -180,5 +182,5 @@ int link_executable(Str* object_files, const char* argv0)
 
     str_free(link_cmd);
 
-    return res.return_code;  // return the result code from `ld`
+    return res.return_code; // return the result code from `ld`
 }

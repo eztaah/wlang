@@ -147,7 +147,6 @@ typedef struct {
     };
 } StmtNode;
 
-
 // fundef node
 typedef struct {
     char* name;
@@ -158,7 +157,7 @@ typedef struct {
     int line;
 } FundefNode;
 
-// instanciate nodes 
+// instanciate nodes
 ParamNode* param_node_new(char* name, char* size, int line);
 
 ExprNode* num_node_new(char* value, int line);

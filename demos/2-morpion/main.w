@@ -1,32 +1,32 @@
 print_board(!wstr& <64> board) {
-    !wstr& <64> row_separator[13] = "\n---|---|---\n";  : separator for rows
+    !wstr& <64> row_separator[13] = "\n---|---|---\n"; 
     loop {
-        print_aiic(^(board - 1*8));  : print the first cell in the row
-        !wstr& <64> separator[3] = " | ";  : separator for columns
+        print_aiic(^(board - 1*8));
+        !wstr& <64> separator[3] = " | "; 
         print_wstr(separator, 3);
-        print_aiic(^(board - 2*8));  : print the second cell in the row
+        print_aiic(^(board - 2*8)); 
         print_wstr(separator, 3);
-        print_aiic(^(board - 3*8));  : print the third cell in the row
-        print_wstr(row_separator, 13);  : print the row separator
+        print_aiic(^(board - 3*8)); 
+        print_wstr(row_separator, 13); 
         break;
     }
     loop {
-        print_aiic(^(board - 4*8));  : print the fourth cell in the row
+        print_aiic(^(board - 4*8));  
         print_wstr(separator, 3);
-        print_aiic(^(board - 5*8));  : print the fifth cell in the row
+        print_aiic(^(board - 5*8));  
         print_wstr(separator, 3);
-        print_aiic(^(board - 6*8));  : print the sixth cell in the row
+        print_aiic(^(board - 6*8)); 
         print_wstr(row_separator, 13);
         break;
     }
     loop {
-        print_aiic(^(board - 7*8));  : print the seventh cell in the row
+        print_aiic(^(board - 7*8)); 
         print_wstr(separator, 3);
-        print_aiic(^(board - 8*8));  : print the eighth cell in the row
+        print_aiic(^(board - 8*8)); 
         print_wstr(separator, 3);
-        print_aiic(^(board - 9*8));  : print the ninth cell in the row
+        print_aiic(^(board - 9*8)); 
         !wstr& <64> newline[1] = "\n";
-        print_wstr(newline, 1);  : print a newline after the last row
+        print_wstr(newline, 1); 
         break;
     }
 }
@@ -87,13 +87,13 @@ print_board(!wstr& <64> board) {
     <64> moves = 0;  : counter for the number of moves played
 
     loop {
-        print_board(board);  : display the current state of the board
+        print_board(board); 
 
         : user input
         print_wstr(instructions, 25);
 
         !wstr& <64> buffer[10];  : buffer to store the input
-        input(buffer, 10);  : read user input into the buffer
+        input(buffer, 10);
         <64> position = wstr_to_int(buffer, 10) - 1;  : convert input to board index (0-8)
 
         : validate the move
@@ -127,7 +127,7 @@ print_board(!wstr& <64> board) {
             }
         } 
         else {
-            !wstr& <64> invalid_msg[23] = "Invalid move try again\n";  
+            !wstr& <64> invalid_msg[23] = "invalid move try again\n";  
             print_wstr(invalid_msg, 23);
         }
     }
