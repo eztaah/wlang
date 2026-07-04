@@ -14,3 +14,10 @@ CODING STYLE :
 
 # formatter le code
 $ clang-format -i ./src/*
+
+
+
+créer une chaine de caractere : 
+char my_string[] = "bonjour";
+
+strcmp()
