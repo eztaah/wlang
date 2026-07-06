@@ -1,150 +1,238 @@
+// #include <stdlib.h>
+#include <ctype.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
+
 #include "global.h"
+#include "lib/lib.h"
+#include "token.h"
+
+typedef struct {
+    Char* src;
+    // size_t src_size;
+    Char c;
+    U32 i;
+} Lexer;
 
 
-char *token_to_string(token_type type)
+static void lexer_advance(Lexer* lexer)
 {
-    switch (type) {
-        case QUOTE:
-            return "QUOTE";
-        case CST:
-            return "CST";
-        case VAR:
-            return "VAR";
-        case NUMBER:
-            return "NUMBER";
-        case PLUS:
-            return "PLUS";
-        case BIN_AND:
-            return "BIN_AND";
-        case BIN_OR:
-            return "BIN_OR";
-        case XOR:
-            return "XOR";
-        case SHIFT_LEFT:
-            return "SHIFT_LEFT";
-        case SHIFT_RIGHT:
-            return "SHIFT_RIGHT";
-        case TIMES:
-            return "TIMES";
-        case MINUS:
-            return "MINUS";
-        case DIVIDE:
-            return "DIVIDE";
-        case MODULO:
-            return "MODULO";
-        case EQUALS:
-            return "EQUALS";
-        case EQUALS_EQUALS:
-            return "EQUALS_EQUALS";
-        case NOT_EQUALS:
-            return "NOT_EQUALS";
-        case LESS_THAN:
-            return "LESS_THAN";
-        case LESS_THAN_EQUALS:
-            return "LESS_THAN_EQUALS";
-        case GREATER_THAN:
-            return "GREATER_THAN";
-        case GREATER_THAN_EQUALS:
-            return "GREATER_THAN_EQUALS";
-        case OR:
-            return "OR";
-        case AND:
-            return "AND";
-        case LPAREN:
-            return "LPAREN";
-        case RPAREN:
-            return "RPAREN";
-        case LBRACE:
-            return "LBRACE";
-        case RBRACE:
-            return "RBRACE";
-        case COMMA:
-            return "COMMA";
-        case COLON:
-            return "COLON";
-        case TYPE:
-            return "TYPE";
-        case IF:
-            return "IF";
-        case WHILE:
-            return "WHILE";
-        case ELSE:
-            return "ELSE";
-        case IDENTIFIER:
-            return "IDENTIFIER";
-        case EOF_TOKEN:
-            return "EOF_TOKEN";
-        case END_LINE:
-            return "END_LINE";
-        default:
-            //display_and_throw_internal_error("in token_to_string(): \'" + std::to_string(type) + "\' does not have string equivalent");
-            exit(1);
+    lexer->i += 1;
+
+    ASSERT(lexer->i < strlen(lexer->src), "we should not be here");
+    lexer->c = lexer->src[lexer->i];
+}
+
+static Token* lex_next_token_assumes(Lexer* lexer, I32 type)
+{
+    Char* value = calloc(2, sizeof(Char));
+    value[0] = lexer->c;
+    value[1] = '\0';
+
+    Token* token = instanciate_token(value, type);
+
+    lexer_advance(lexer);
+
+    return token;
+}
+
+static Token* lex_symbol(Lexer* lexer, I32 type)
+{
+    Char* value = calloc(2, sizeof(Char));
+    value[0] = lexer->c;
+    value[1] = '\0';
+
+    Token* token = instanciate_token(value, type);
+
+    lexer_advance(lexer);
+
+    return token;
+}
+
+static Token* lex_number(Lexer* lexer)
+{
+    Char* value = calloc(1, sizeof(Char));
+
+    while (isdigit(lexer->c)) {
+        strcat_improved(value, (Char[]){lexer->c, 0});
+        lexer_advance(lexer);
+    }
+
+    return instanciate_token(value, TOKEN_INT);
+}
+
+static void skip_whitespace(Lexer* lexer)
+{
+    while (lexer->c == 13 || lexer->c == 10 || lexer->c == ' ' || lexer->c == '\t') {
+        lexer_advance(lexer);
     }
 }
 
-char* get_printable_lexer_output(Token *tokens, size_t num_tokens) {
-    char *output = malloc(1024); // Initial buffer size, adjust as needed
-    if (!output) return NULL;
+static Token* lex_next_token(Lexer* lexer)
+{
+    ASSERT(lexer->c != '\0', "lexer->c should not be \\0");
 
-    size_t output_size = 1024;
-    size_t length = 0;
-    int ident_level = 0;
+    skip_whitespace(lexer);
 
-    length += snprintf(output + length, output_size - length, "[\n");
+    if (isdigit(lexer->c)) {
+        return lex_number(lexer);
+    }    
 
-    for (size_t i = 0; i < num_tokens; ++i) {
-        Token token = tokens[i];
-        char *token_type_name = token_to_string(token.type); // Implement this function based on your needs
-        char indent[1024];
-        memset(indent, ' ', ident_level * 4);
-        indent[ident_level * 4] = '\0';
+    switch (lexer->c) {
+        case '+': 
+            return lex_symbol(lexer, TOKEN_PLUS);
+        case '-': 
+            return lex_symbol(lexer, TOKEN_MINUS);
+        case '/': 
+            return lex_symbol(lexer, TOKEN_DIV);
+        case '*': 
+            return lex_symbol(lexer, TOKEN_MUL);
+        case '\0': 
+            break;
+        default: 
+            printf("[Lexer]: Unexpected character `%c` (%d)\n", lexer->c, (int)lexer->c); 
+            exit(1); 
+            break;
+    }
+}
 
-        char *format = "    (%d, %s, '%s'),\n";
-        if (token.type == END_LINE) {
-            if (i + 1 < num_tokens && tokens[i + 1].type == RBRACE) {
-                format = "    (%d, %s, '%s'),\n";
-            } else {
-                format = "    (%d, %s, '%s'),\n\n";
-            }
-        } else if (token.type == RBRACE) {
-            ident_level--;
-            memset(indent, ' ', ident_level * 4);
-            indent[ident_level * 4] = '\0';
-            format = "    (%d, %s, '%s'),\n\n";
-        }
+static void destroy_lexer(Lexer* lexer)
+{
+    free(lexer);
+}
 
-        if (token.type == LBRACE) ident_level++;
+/**
+ * This function create a lexer (you can see a lexer as a tool that contain data)
+ */
+static Lexer* instanciate_lexer(Char* src)
+{
+    Lexer* lexer = calloc(1, sizeof(Lexer));
+    lexer->src = src;
+    // lexer->src_size = strlen(src);
+    lexer->i = 0;
+    lexer->c = src[lexer->i];
 
-        int needed = snprintf(NULL, 0, format, token.line_number, token_type_name, token.value);
-        needed += snprintf(NULL, 0, "%s", indent);
+    return lexer;
+}
 
-        if (length + needed >= output_size) {
-            output_size *= 2;
-            output = realloc(output, output_size);
-            if (!output) return NULL;
-        }
+/**
+ * This function will return a list with all the tokens 
+ */
+Token** lex(Char* src) {
+    Lexer* lexer = instanciate_lexer(src);
+    List* token_list = init_list(sizeof(Token));
 
-        length += snprintf(output + length, output_size - length, "%s", indent);
-        length += snprintf(output + length, output_size - length, format, token.line_number, token_type_name, token.value);
+    while (lexer->c != '\0') {
+        Token* token = lex_next_token(lexer);
+        list_push(token_list, token);
     }
 
-    // Remove the last comma and newline
-    if (length > 2) {
-        output[length - 2] = '\0'; // Cuts off the last comma and newline
+    // Add the EOF token to the array
+    Token* token = lex_next_token_assumes(lexer, TOKEN_EOF);
+    list_push(token_list, token);
+
+    destroy_lexer(token);
+    return token_list;
+}
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////
+// List* lex_old(Char* src)
+// {
+//     I32 i = 0;
+//     I32 src_length = strlen(src);
+//     List* token_list = init_list(sizeof(Token));
+
+//     while (i < src_length) {
+
+//         // ignoring spaces, tabs, new lines
+//         if (src[i] == ' ' || src[i] == '\t') {
+//             i++;
+//         }
+
+//         else if (src[i] == '\n') {
+//             i++;
+//         }
+
+//         // handling numbers
+//         else if (isdigit(src[i])) {
+//             Char num[256] = ""; // il faut allouer plus de memoire pour num car on va ajouter des nombres au fur et a mesure
+//             while (i < src_length && isdigit(src[i])) {
+//                 Char temp[2] = {src[i], '\0'};
+//                 strcat(num, temp);
+//                 i++;
+//             }
+//             printf("creation TOKEN_INT");
+//             list_push(token_list, create_token(num, TOKEN_INT));
+//         }
+
+//         // handling operators
+//         else if (src[i] == '+') {
+//             printf("creation TOKEN_PLUS");
+//             list_push(token_list, create_token(" ", TOKEN_PLUS));
+//             i++;
+//         }
+//         else if (src[i] == '-') {
+//             printf("creation TOKEN_MINUS");
+//             list_push(token_list, create_token(" ", TOKEN_MINUS));
+//             i++;
+//         }
+//         else if (src[i] == '*') {
+//             printf("creation TOKEN_MUL");
+//             list_push(token_list, create_token(" ", TOKEN_MUL));
+//             i++;
+//         }
+//         else if (src[i] == '/' && src[i + 1] == '/') {
+//             printf("creation TOKEN_DIV");
+//             list_push(token_list, create_token(" ", TOKEN_DIV));
+//             i += 2;
+//         }
+//     }
+
+//     list_push(token_list, create_token(" ", TOKEN_EOF));
+
+//     return token_list;
+// }
+
+Char* convert_lexer_output_to_char(List* lexer_output)
+{
+    Char* output = init_empty_string();
+
+    for (I32 i = 0; i < lexer_output->size; i++) {
+        const Token* token = (Token*)lexer_output->items[i];
+        strcat_improved(output, token_to_string(*token));
+        strcat_improved(output, ", ");
     }
-    length += snprintf(output + length, output_size - length, "\n]");
 
     return output;
 }
 
-Token* lex(const char *code) {
-    static Token tokens[] = {
-        {3, IDENTIFIER, "variable"},
-        {5, NUMBER, "123"},
-        {7, EOF_TOKEN, ""}
-    };
-    return tokens;
-}
+// Char*convert_lexer_output_to_char(List *lexer_output)
+// {
+//     // Calculer la taille totale nécessaire
+//     size_t total_length = 1; // Pour le caractère nul de fin
+//     for (size_t i = 0; i < lexer_output->size; i++) {
+//         Token *token = (Token*)lexer_output->items[i];
+//         total_length += strlen(token_to_string(*token)) + 2; // Ajouter 2 pour ", "
+//     }
+
+//     // Allouer la mémoire pour la chaîne de sortie
+//     Char*output = malloc(total_length);
+//     if (!output) {
+//         perror("Unable to allocate memory for lexer output string");
+//         exit(EXIT_FAILURE);
+//     }
+//     output[0] = '\0'; // Initialiser la chaîne vide
+
+//     // Construire la chaîne de sortie
+//     for (size_t i = 0; i < lexer_output->size; i++) {
+//         Token *token = (Token*)lexer_output->items[i];
+//         strcat(output, token_to_string(*token));
+//         if (i < lexer_output->size - 1) {
+//             strcat(output, ", ");
+//         }
+//     }
+
+//     return output;
+// }
