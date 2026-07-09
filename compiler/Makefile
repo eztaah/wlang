@@ -7,4 +7,3 @@ debug:
 
 clean: 
 	rm -f compiler
-

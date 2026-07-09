@@ -4,7 +4,7 @@
 #include "lexer.h"
 
 
-static void compile(Char* src)
+static Void compile(Char* src)
 {
     // Lexing
     printf("Lexing...\n");
@@ -16,7 +16,7 @@ static void compile(Char* src)
     write_file("out/lexer_output.txt", convert_lexer_output_to_char(lexer_output));
 }
 
-void compile_file(const Char* filename)
+Void compile_file(const Char* filename)
 {
     Char* src = read_file(filename);
     compile(src);

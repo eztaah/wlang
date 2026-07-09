@@ -35,7 +35,7 @@ Char* read_file(const Char* filename)
     return buffer;
 }
 
-void write_file(const Char* filename, Char* outbuffer)
+Void write_file(const Char* filename, Char* outbuffer)
 {
     FILE* fp;
 

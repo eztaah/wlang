@@ -15,7 +15,7 @@ B32 strings_are_equals(const Char* s1, const Char* s2)
 }
 
 
-Char* init_empty_string(void)
+Char* init_empty_string(Void)
 {
     Char* str = malloc(1);
     if (!str) {

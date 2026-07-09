@@ -14,8 +14,7 @@ typedef struct {
     U32 i;
 } Lexer;
 
-
-static void lexer_advance(Lexer* lexer)
+static Void lexer_advance(Lexer* lexer)
 {
     lexer->i += 1;
 
@@ -61,7 +60,7 @@ static Token* lex_number(Lexer* lexer)
     return instanciate_token(value, TOKEN_INT);
 }
 
-static void skip_whitespace(Lexer* lexer)
+static Void skip_whitespace(Lexer* lexer)
 {
     while (lexer->c == 13 || lexer->c == 10 || lexer->c == ' ' || lexer->c == '\t') {
         lexer_advance(lexer);
@@ -96,7 +95,7 @@ static Token* lex_next_token(Lexer* lexer)
     }
 }
 
-static void destroy_lexer(Lexer* lexer)
+static Void destroy_lexer(Lexer* lexer)
 {
     free(lexer);
 }
