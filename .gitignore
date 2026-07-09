@@ -1,5 +1,3 @@
-compiler
-prog
 .vscode/
 !vscode-syntax-highlighting/.vscode
 out/
@@ -36,4 +34,4 @@ out/
 *.exe
 *.out
 *.app
-compiler
+w-compiler
