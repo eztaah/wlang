@@ -10,6 +10,7 @@
 B32 dev_mode = false;
 B32 runtime_error_flag = false;
 Char* output_path;
+Char* source_path;
 
 static Void print_usage(Void) {
     printf("Usage:\n");
@@ -38,10 +39,13 @@ static Void handle_arguments(const I32 argc, Char* argv[])
         print_usage();
         exit(EXIT_SUCCESS);
     }
-    else if (strings_are_equals(argv[1], "--version")) {
+    else if (strings_are_equals(argv[1], "--version") || strings_are_equals(argv[1], "-v")) {
         printf("compiler version 1.1\n");
         exit(EXIT_SUCCESS);
     }
+
+    // handle source file argument 
+    source_path = argv[1];
 
     // handle optional arguments
     for (I32 i = 2; i < argc; i++) {
@@ -76,7 +80,7 @@ I32 main(I32 argc, Char* argv[])
     // TODO: return a list with all the flags, and pass it to the compile_file function
     handle_arguments(argc, argv);
 
-    compile_file(output_path);
+    compile_file(source_path);
 
     return 0;
 }

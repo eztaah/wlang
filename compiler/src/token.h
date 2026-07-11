@@ -1,14 +1,26 @@
 #ifndef TOKEN_H
 #define TOKEN_H
 
+#include "lib/lib.h"
+
 typedef struct TOKEN_STRUCT {
     Char* value;
     enum {
-        TOKEN_INT,
         TOKEN_PLUS,
         TOKEN_MINUS,
         TOKEN_DIV,
         TOKEN_MUL,
+
+        TOKEN_INT,
+        TOKEN_CST,
+        TOKEN_VAR,
+        TOKEN_ID,
+        TOKEN_TYPE,
+
+        TOKEN_COLON,
+        TOKEN_EQUAL,
+
+        TOKEN_END_STATEMENT,
         TOKEN_EOF,
     } type;
 } Token;

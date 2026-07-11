@@ -8,12 +8,10 @@ static Void compile(Char* src)
 {
     // Lexing
     printf("Lexing...\n");
-    List* lexer_output = lex(src);
-
-    printf("coucou\n");
+    List* token_list = lex(src);
 
     // Write the output in a file
-    write_file("out/lexer_output.txt", convert_lexer_output_to_char(lexer_output));
+    write_file("out/lexer_output.txt", convert_token_list_to_char(token_list));
 }
 
 Void compile_file(const Char* filename)

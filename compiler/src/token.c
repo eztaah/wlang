@@ -15,9 +15,6 @@ Token* instanciate_token(const Char* value, I32 type)
 Char* token_to_string(Token token)
 {
     switch (token.type) {
-        case TOKEN_INT:
-            return "TOKEN_INT";
-            break;
         case TOKEN_PLUS:
             return "TOKEN_PLUS";
             break;
@@ -29,6 +26,30 @@ Char* token_to_string(Token token)
             break;
         case TOKEN_MUL:
             return "TOKEN_MUL";
+            break;
+        case TOKEN_INT:
+            return "TOKEN_INT";
+            break;
+        case TOKEN_CST:
+            return "TOKEN_CST";
+            break;
+        case TOKEN_VAR:
+            return "TOKEN_VAR";
+            break;
+        case TOKEN_ID:
+            return "TOKEN_ID";
+            break;
+        case TOKEN_TYPE:
+            return "TOKEN_TYPE";
+            break;
+        case TOKEN_COLON:
+            return "TOKEN_COLON";
+            break;
+        case TOKEN_EQUAL:
+            return "TOKEN_EQUAL";
+            break;
+        case TOKEN_END_STATEMENT:
+            return "TOKEN_END_STATEMENT";
             break;
         case TOKEN_EOF:
             return "TOKEN_EOF";

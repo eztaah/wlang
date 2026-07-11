@@ -9,16 +9,16 @@
 
 typedef struct {
     Char* src;
-    // size_t src_size;
+    size_t src_size;
     Char c;
     U32 i;
 } Lexer;
 
 static Void lexer_advance(Lexer* lexer)
 {
+    ASSERT(lexer->i < lexer->src_size, "we should not be here");
     lexer->i += 1;
 
-    ASSERT(lexer->i < strlen(lexer->src), "we should not be here");
     lexer->c = lexer->src[lexer->i];
 }
 
@@ -29,8 +29,6 @@ static Token* lex_next_token_assumes(Lexer* lexer, I32 type)
     value[1] = '\0';
 
     Token* token = instanciate_token(value, type);
-
-    lexer_advance(lexer);
 
     return token;
 }
@@ -53,18 +51,62 @@ static Token* lex_number(Lexer* lexer)
     Char* value = calloc(1, sizeof(Char));
 
     while (isdigit(lexer->c)) {
-        strcat_improved(value, (Char[]){lexer->c, 0});
+        value = strcat_improved(value, (Char[]){lexer->c, 0});
         lexer_advance(lexer);
     }
 
     return instanciate_token(value, TOKEN_INT);
 }
 
-static Void skip_whitespace(Lexer* lexer)
+static Token* lex_word(Lexer* lexer)
 {
-    while (lexer->c == 13 || lexer->c == 10 || lexer->c == ' ' || lexer->c == '\t') {
+    I32 token_type;
+    Char* value = calloc(1, sizeof(Char));
+
+    while (isalpha(lexer->c) || isdigit(lexer->c)) {
+        value = strcat_improved(value, (Char[]){lexer->c, 0});
         lexer_advance(lexer);
     }
+
+    if (strings_are_equals(value, "cst")) {
+        token_type = TOKEN_CST;
+    }
+    else if (strings_are_equals(value, "var")) {
+        token_type = TOKEN_VAR;
+    }
+    else if (strings_are_equals(value, "I32")) {
+        token_type = TOKEN_TYPE;
+    }
+    // for variables names
+    else {
+        token_type = TOKEN_ID;
+    }
+
+    return instanciate_token(value, token_type);
+}
+
+static Void skip_whitespace(Lexer* lexer)
+{
+    while (lexer->c == ' ' || lexer->c == '\t') {
+        lexer_advance(lexer);
+    }
+}
+
+static Token* lex_end_statement(Lexer* lexer)
+{
+    Char* value = calloc(2, sizeof(Char));
+    value[0] = ' ';
+    value[1] = '\0';
+
+    Token* token = instanciate_token(value, TOKEN_END_STATEMENT);
+    lexer_advance(lexer);
+
+    // handle other \n or carriage return 
+    while (lexer->c == 10 || lexer->c == 13) {
+        lexer_advance(lexer);
+    }
+
+    return token;
 }
 
 static Token* lex_next_token(Lexer* lexer)
@@ -73,9 +115,18 @@ static Token* lex_next_token(Lexer* lexer)
 
     skip_whitespace(lexer);
 
+    if (isalpha(lexer->c)) {
+        return lex_word(lexer);
+    }
+
     if (isdigit(lexer->c)) {
         return lex_number(lexer);
-    }    
+    }   
+
+    // handle end of statement 
+    if (lexer->c == 10 || lexer->c == 13) {
+        return lex_end_statement(lexer);
+    }
 
     switch (lexer->c) {
         case '+': 
@@ -86,6 +137,10 @@ static Token* lex_next_token(Lexer* lexer)
             return lex_symbol(lexer, TOKEN_DIV);
         case '*': 
             return lex_symbol(lexer, TOKEN_MUL);
+        case ':': 
+            return lex_symbol(lexer, TOKEN_COLON);
+        case '=': 
+            return lex_symbol(lexer, TOKEN_EQUAL);
         case '\0': 
             break;
         default: 
@@ -93,6 +148,8 @@ static Token* lex_next_token(Lexer* lexer)
             exit(1); 
             break;
     }
+
+    return NULL;
 }
 
 static Void destroy_lexer(Lexer* lexer)
@@ -107,7 +164,7 @@ static Lexer* instanciate_lexer(Char* src)
 {
     Lexer* lexer = calloc(1, sizeof(Lexer));
     lexer->src = src;
-    // lexer->src_size = strlen(src);
+    lexer->src_size = strlen(src);
     lexer->i = 0;
     lexer->c = src[lexer->i];
 
@@ -117,7 +174,7 @@ static Lexer* instanciate_lexer(Char* src)
 /**
  * This function will return a list with all the tokens 
  */
-Token** lex(Char* src) {
+List* lex(Char* src) {
     Lexer* lexer = instanciate_lexer(src);
     List* token_list = init_list(sizeof(Token));
 
@@ -130,108 +187,29 @@ Token** lex(Char* src) {
     Token* token = lex_next_token_assumes(lexer, TOKEN_EOF);
     list_push(token_list, token);
 
-    destroy_lexer(token);
+    destroy_lexer(lexer);
     return token_list;
 }
 
-
-
-//////////////////////////////////////////////////////////////////////////////////////////
-// List* lex_old(Char* src)
-// {
-//     I32 i = 0;
-//     I32 src_length = strlen(src);
-//     List* token_list = init_list(sizeof(Token));
-
-//     while (i < src_length) {
-
-//         // ignoring spaces, tabs, new lines
-//         if (src[i] == ' ' || src[i] == '\t') {
-//             i++;
-//         }
-
-//         else if (src[i] == '\n') {
-//             i++;
-//         }
-
-//         // handling numbers
-//         else if (isdigit(src[i])) {
-//             Char num[256] = ""; // il faut allouer plus de memoire pour num car on va ajouter des nombres au fur et a mesure
-//             while (i < src_length && isdigit(src[i])) {
-//                 Char temp[2] = {src[i], '\0'};
-//                 strcat(num, temp);
-//                 i++;
-//             }
-//             printf("creation TOKEN_INT");
-//             list_push(token_list, create_token(num, TOKEN_INT));
-//         }
-
-//         // handling operators
-//         else if (src[i] == '+') {
-//             printf("creation TOKEN_PLUS");
-//             list_push(token_list, create_token(" ", TOKEN_PLUS));
-//             i++;
-//         }
-//         else if (src[i] == '-') {
-//             printf("creation TOKEN_MINUS");
-//             list_push(token_list, create_token(" ", TOKEN_MINUS));
-//             i++;
-//         }
-//         else if (src[i] == '*') {
-//             printf("creation TOKEN_MUL");
-//             list_push(token_list, create_token(" ", TOKEN_MUL));
-//             i++;
-//         }
-//         else if (src[i] == '/' && src[i + 1] == '/') {
-//             printf("creation TOKEN_DIV");
-//             list_push(token_list, create_token(" ", TOKEN_DIV));
-//             i += 2;
-//         }
-//     }
-
-//     list_push(token_list, create_token(" ", TOKEN_EOF));
-
-//     return token_list;
-// }
-
-Char* convert_lexer_output_to_char(List* lexer_output)
+Char* convert_token_list_to_char(List* token_list) 
 {
     Char* output = init_empty_string();
 
-    for (I32 i = 0; i < lexer_output->size; i++) {
-        const Token* token = (Token*)lexer_output->items[i];
-        strcat_improved(output, token_to_string(*token));
-        strcat_improved(output, ", ");
+    output = strcat_improved(output, "[\n");
+
+    for (I32 i = 0; i < token_list->size; i++) {
+        const Token* token = (Token*)token_list->items[i];
+        const Char* token_type_name = token_to_string(*token);
+        
+        char temp[1024];
+        snprintf(temp, sizeof(temp), "    ('%s', '%s'),\n", token_type_name, token->value);
+        output = strcat_improved(output, temp);
+
+        if (token->type == TOKEN_END_STATEMENT) {
+            output = strcat_improved(output, "\n");
+        }
     }
+    output = strcat_improved(output, "\n]");
 
     return output;
 }
-
-// Char*convert_lexer_output_to_char(List *lexer_output)
-// {
-//     // Calculer la taille totale nécessaire
-//     size_t total_length = 1; // Pour le caractère nul de fin
-//     for (size_t i = 0; i < lexer_output->size; i++) {
-//         Token *token = (Token*)lexer_output->items[i];
-//         total_length += strlen(token_to_string(*token)) + 2; // Ajouter 2 pour ", "
-//     }
-
-//     // Allouer la mémoire pour la chaîne de sortie
-//     Char*output = malloc(total_length);
-//     if (!output) {
-//         perror("Unable to allocate memory for lexer output string");
-//         exit(EXIT_FAILURE);
-//     }
-//     output[0] = '\0'; // Initialiser la chaîne vide
-
-//     // Construire la chaîne de sortie
-//     for (size_t i = 0; i < lexer_output->size; i++) {
-//         Token *token = (Token*)lexer_output->items[i];
-//         strcat(output, token_to_string(*token));
-//         if (i < lexer_output->size - 1) {
-//             strcat(output, ", ");
-//         }
-//     }
-
-//     return output;
-// }
