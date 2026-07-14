@@ -5,6 +5,7 @@
 #include "parser.h"
 #include "global.h"
 #include <string.h>
+#include "generator.h"
 
 static Void compile(Char* src)
 {
@@ -23,9 +24,14 @@ static Void compile(Char* src)
         output = print_ast(stmt, output, "", true, false);
     }
 
+    // Generating assembly code
+    printf("Generating assembly...\n");
+    Char* asm_output = generate(node_list);
+
     // Write the output to a file
     write_file("out/lexer_output.txt", convert_token_list_to_char(token_list));
     write_file("out/parser_output.txt", output);
+    write_file("out/asm_output.s", asm_output);
 
     // Clean up
     free(output);

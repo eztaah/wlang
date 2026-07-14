@@ -2,6 +2,12 @@
 # $ clang-format -i ./src/*
 # $ find ./src -name '*.c' -o -name '*.h' | xargs clang-format -i
 
+# règles : 
+#    - les commentaire expliquent pourquoi, le code explique comment
+#    - il faut faire des petites fonctions
+#    - les noms de fonctions sont des verbes
+
+
 BasedOnStyle: LLVM
 UseTab: Never
 TabWidth: 4

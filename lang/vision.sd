@@ -1,0 +1,9 @@
+- pas optimisations car le compilateur fait ce qu’on lui demande
+
+- Ce language est entre le C et l’assembly
+
+- On peut coder en assembleur natif dedans
+
+- Pas besoin de créer de tableau. On a juste à crée la fonction malloc, et ensuite on peut faire un tableau dans la bibliothèque standard direct
+
+- tout les types commencent par des majuscules
