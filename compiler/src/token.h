@@ -3,26 +3,28 @@
 
 #include "lib/lib.h"
 
-typedef struct TOKEN_STRUCT {
+typedef enum {
+    TOKEN_PLUS,
+    TOKEN_MINUS,
+    TOKEN_DIV,
+    TOKEN_MUL,
+
+    TOKEN_INT,
+    TOKEN_CST,
+    TOKEN_VAR,
+    TOKEN_ID,
+    TOKEN_TYPE,
+
+    TOKEN_COLON,
+    TOKEN_EQUAL,
+
+    TOKEN_END_STATEMENT,
+    TOKEN_EOF
+} TokenType;
+
+typedef struct {
     Char* value;
-    enum {
-        TOKEN_PLUS,
-        TOKEN_MINUS,
-        TOKEN_DIV,
-        TOKEN_MUL,
-
-        TOKEN_INT,
-        TOKEN_CST,
-        TOKEN_VAR,
-        TOKEN_ID,
-        TOKEN_TYPE,
-
-        TOKEN_COLON,
-        TOKEN_EQUAL,
-
-        TOKEN_END_STATEMENT,
-        TOKEN_EOF,
-    } type;
+    TokenType type;
 } Token;
 
 Char* token_to_string(Token token);
