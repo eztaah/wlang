@@ -7,3 +7,4 @@ debug:
 
 clean: 
 	rm -f wcompiler
+	rm -f out/*

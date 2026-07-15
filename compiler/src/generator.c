@@ -10,7 +10,7 @@ typedef struct Generator Generator;
 static Void generate_expression_node(Generator* generator, const ExpressionNode* expr_node);
 
 typedef struct Generator {
-    List* node_list;
+    const List* node_list;
     I32 index;
     Char* output;
     I32 offset;
@@ -26,7 +26,8 @@ typedef struct Generator {
     List* variables; // List of strings (variable offsets)
 } Generator;
 
-static Generator* instanciate_generator(List* node_list) {
+static Generator* instanciate_generator(const List* node_list)
+{
     Generator* generator = calloc(1, sizeof(Generator));
     generator->node_list = node_list;
     generator->index = 0;
@@ -45,7 +46,8 @@ static Generator* instanciate_generator(List* node_list) {
     return generator;
 }
 
-static Void free_generator(Generator* generator) {
+static Void destroy_generator(Generator* generator)
+{
     free(generator->output);
     free(generator->data_instructions);
     free(generator->bss_instructions);
@@ -55,7 +57,8 @@ static Void free_generator(Generator* generator) {
     free(generator);
 }
 
-static Char* concat_instructions(List* instructions) {
+static Char* concat_instructions(List* instructions)
+{
     Char* result = init_empty_string();
     for (I32 i = 0; i < instructions->size; i++) {
         result = strcat_improved(result, (Char*)instructions->items[i]);
@@ -64,13 +67,15 @@ static Char* concat_instructions(List* instructions) {
     return result;
 }
 
-static Void generate_number_node(Generator* generator, const NumberNode* nnode) {
+static Void generate_number_node(Generator* generator, const NumberNode* nnode)
+{
     list_push(generator->start_function_instructions, init_string_with_value("    movq    $"));
     list_push(generator->start_function_instructions, nnode->value);
     list_push(generator->start_function_instructions, init_string_with_value(", %rax"));
 }
 
-static Void generate_binop_node(Generator* generator, const BinOpNode* bnode) {
+static Void generate_binop_node(Generator* generator, const BinOpNode* bnode)
+{
     generate_expression_node(generator, bnode->right);
     list_push(generator->start_function_instructions, init_string_with_value("    pushq   %rax"));
     generate_expression_node(generator, bnode->left);
@@ -91,12 +96,26 @@ static Void generate_binop_node(Generator* generator, const BinOpNode* bnode) {
             list_push(generator->start_function_instructions, init_string_with_value("    idiv    %rbx"));
             break;
         default:
-            fprintf(stderr, "Unknown operator in BinOpNode\n");
-            exit(EXIT_FAILURE);
+            UNREACHABLE();
     }
 }
 
-static Void generate_var_decl_node(Generator* generator, const VarDeclNode* vnode) {
+static Void generate_expression_node(Generator* generator, const ExpressionNode* expr_node)
+{
+    switch (expr_node->type) {
+        case NODE_NUMBER:
+            generate_number_node(generator, &expr_node->number_node);
+            break;
+        case NODE_BINOP:
+            generate_binop_node(generator, &expr_node->bin_op_node);
+            break;
+        default:
+            UNREACHABLE();
+    }
+}
+
+static Void generate_var_decl_node(Generator* generator, const VarDeclNode* vnode)
+{
     Char* var_offset = malloc(20);
     sprintf(var_offset, "%d(%%rbp)", generator->offset);
     list_push(generator->variables, var_offset);
@@ -108,32 +127,21 @@ static Void generate_var_decl_node(Generator* generator, const VarDeclNode* vnod
     generator->offset -= 8;
 }
 
-static Void generate_expression_node(Generator* generator, const ExpressionNode* expr_node) {
-    switch (expr_node->type) {
-        case NODE_NUMBER:
-            generate_number_node(generator, &expr_node->number_node);
-            break;
-        case NODE_BINOP:
-            generate_binop_node(generator, &expr_node->bin_op_node);
-            break;
-        default:
-            fprintf(stderr, "Unknown expression node type in generate_expression_node\n");
-            exit(EXIT_FAILURE);
-    }
-}
-
-static Void generate_internal(Generator* generator, const StatementNode* node) {
+static Void generate_internal(Generator* generator, const StatementNode* node)
+{
     switch (node->type) {
         case NODE_VAR_DECL:
             generate_var_decl_node(generator, &node->var_decl);
             break;
         default:
-            fprintf(stderr, "Unknown statement node type in generate_internal\n");
-            exit(EXIT_FAILURE);
+            UNREACHABLE();
     }
 }
 
-Char* generate(List* node_list) {
+Char* generate(const List* node_list)
+{
+    printf("Generating assembly...\n");
+
     Generator* generator = instanciate_generator(node_list);
 
     // Setup initial instructions
@@ -142,11 +150,11 @@ Char* generate(List* node_list) {
     list_push(generator->text_instructions, init_string_with_value("    .section .text"));
     list_push(generator->text_instructions, init_string_with_value("    .global _start"));
     list_push(generator->start_function_instructions, init_string_with_value("_start:"));
-    list_push(generator->start_function_instructions, init_string_with_value("    pushq   %rbp"));
-    list_push(generator->start_function_instructions, init_string_with_value("    movq    %rsp, %rbp"));
+    list_push(generator->start_function_instructions, init_string_with_value("    pushq   %rbp"));         // save old stack pointer ?
+    list_push(generator->start_function_instructions, init_string_with_value("    movq    %rsp, %rbp"));   // ?????
 
-    // Handle space for variables
-    int stack_space = node_list->size * 8;
+    // Pépare la pile pour etre capable d'acceuillir toutes les variables déclarées dans le code
+    I32 stack_space = node_list->size * 8;
     if (node_list->size % 2 == 0) {
         stack_space += 8;
     }
@@ -158,7 +166,8 @@ Char* generate(List* node_list) {
 
     // Generate assembly code for each node
     for (I32 i = 0; i < node_list->size; i++) {
-        generate_internal(generator, (StatementNode*)node_list->items[i]);
+        const StatementNode* node = (const StatementNode*)node_list->items[i];
+        generate_internal(generator, node);
     }
 
     // Finalize assembly code
@@ -173,7 +182,6 @@ Char* generate(List* node_list) {
     Char* bss_section = concat_instructions(generator->bss_instructions);
     Char* text_section = concat_instructions(generator->text_instructions);
     Char* start_section = concat_instructions(generator->start_function_instructions);
-
     generator->output = strcat_improved(generator->output, data_section);
     generator->output = strcat_improved(generator->output, bss_section);
     generator->output = strcat_improved(generator->output, text_section);
@@ -186,6 +194,6 @@ Char* generate(List* node_list) {
     free(start_section);
 
     Char* result = strdup(generator->output);
-    free_generator(generator);
+    destroy_generator(generator);
     return result;
 }

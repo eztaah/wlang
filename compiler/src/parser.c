@@ -20,6 +20,12 @@ static Parser* instanciate_parser(const List* token_list)
     return parser;
 }
 
+static Void destroy_parser(Parser* parser)
+{
+    free(parser);
+    // TODO: Verify if we need to free the parser->token_list
+}
+
 static Token parser_eat(Parser* parser)
 {
     Token current_token = parser->current_token;
@@ -34,7 +40,7 @@ static Token parser_eat_assumes(Parser* parser, TokenType expected_token_type)
 {
     Token token = parser->current_token;
     if (token.type != expected_token_type) {
-        printf("Error: expected token type %d but got %d\n", expected_token_type, token.type);
+        printf("Error: expected token type %d but got %d\n", expected_token_type, token.type); // we don't want to handle it the the PANIC macro as it is an error that can be triggered by the user
         exit(EXIT_FAILURE);
     }
     return parser_eat(parser);
@@ -49,10 +55,10 @@ static ExpressionNode* parse_term(Parser* parser)
     return NULL;
 }
 
-static ExpressionNode* parse_expr(Parser* parser) 
+static ExpressionNode* parse_expr(Parser* parser)
 {
     ExpressionNode* left = parse_term(parser);
-    while (parser->index < parser->token_list_size && 
+    while (parser->index < parser->token_list_size &&
            (parser->current_token.type == TOKEN_PLUS || parser->current_token.type == TOKEN_MINUS || parser->current_token.type == TOKEN_MUL || parser->current_token.type == TOKEN_DIV)) {
         Token op = parser_eat(parser);
         ExpressionNode* right = parse_term(parser);
@@ -61,20 +67,20 @@ static ExpressionNode* parse_expr(Parser* parser)
     return left;
 }
 
-static VarDeclNode* parse_var_decl(Parser* parser)
+static StatementNode* parse_var_decl(Parser* parser)
 {
     // handling cst and var keywords
     parser_eat(parser);
 
     // handling name
     Token name_token = parser_eat_assumes(parser, TOKEN_ID);
-    char* name = strdup(name_token.value);
+    Char* name = strdup(name_token.value);
 
     parser_eat_assumes(parser, TOKEN_COLON);
 
     // handling type
     Token type_token = parser_eat_assumes(parser, TOKEN_TYPE);
-    char* type = strdup(type_token.value);
+    Char* type = strdup(type_token.value);
 
     // handling content
     parser_eat_assumes(parser, TOKEN_EQUAL);
@@ -83,14 +89,11 @@ static VarDeclNode* parse_var_decl(Parser* parser)
     return instanciate_var_decl_node(type, name, value);
 }
 
-static StatementNode* parse_stmt(Parser* parser) 
+static StatementNode* parse_stmt(Parser* parser)
 {
-    if (parser->current_token.type == TOKEN_VAR || parser->current_token.type == TOKEN_CST) {
-        VarDeclNode* var_decl = parse_var_decl(parser);
-        StatementNode* stmt = malloc(sizeof(StatementNode));
-        stmt->type = NODE_VAR_DECL;
-        stmt->var_decl = *var_decl;
-        return stmt;
+    if (parser->current_token.type == TOKEN_MUT) {
+        StatementNode* var_decl_node = parse_var_decl(parser);
+        return var_decl_node;
     }
     // If no valid statement is found, consume the current token to advance the parser
     parser_eat(parser);
@@ -99,14 +102,18 @@ static StatementNode* parse_stmt(Parser* parser)
 
 List* parse(const List* token_list)
 {
+    printf("Parsing...\n");
+
     Parser* parser = instanciate_parser(token_list);
     List* statement_list = init_list(sizeof(StatementNode));
-    
+
     while (parser->index < parser->token_list_size) {
         StatementNode* stmt = parse_stmt(parser);
         if (stmt) {
             list_push(statement_list, stmt);
         }
     }
+
+    destroy_parser(parser);
     return statement_list;
 }

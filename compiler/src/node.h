@@ -16,7 +16,7 @@ typedef struct {
     ExpressionNode* right;
 } BinOpNode;
 
-struct ExpressionNode{
+struct ExpressionNode {
     enum {
         NODE_NUMBER = 10,
         NODE_BINOP,
@@ -52,8 +52,6 @@ typedef struct {
 
 ExpressionNode* instanciate_number_node(Char* value);
 ExpressionNode* instanciate_binop_node(ExpressionNode* left, TokenType op, ExpressionNode* right);
-VarDeclNode* instanciate_var_decl_node(const Char* type, const Char* name, ExpressionNode* value);
-
-Char* print_ast(const StatementNode* node, Char* output, const Char* indent, B32 last, B32 is_value);
+StatementNode* instanciate_var_decl_node(const Char* type, const Char* name, ExpressionNode* value);
 
 #endif

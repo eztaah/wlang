@@ -3,7 +3,7 @@
 
 List* init_list(I32 item_size)
 {
-    List* list = calloc(1, sizeof(struct LIST_STRUCT));
+    List* list = calloc(1, sizeof(List));
     list->size = 0;
     list->item_size = item_size;
     list->items = 0;
@@ -23,15 +23,20 @@ Void list_push(List* list, Void* item)
     list->items[list->size - 1] = item;
 }
 
-I32 list_indexof_str(List* list, Char* item)
+Void* list_get(const List* list, I32 index)
 {
-    for (I32 i = 0; i < list->size; i++) {
-        if (!list->items[i])
-            continue;
-
-        if (strcmp((Char*)list->items[i], item) == 0)
-            return (I32)-i;
+    if (index < 0 || index >= list->size) {
+        PANIC("index out of bounds");
+        return NULL;
     }
+    return list->items[index];
+}
 
-    return -1;
+Void destroy_list(List* list)
+{
+    for (I32 i = 0; i < list->size; ++i) {
+        free(list_get(list, i)); // free each item
+    }
+    free(list->items); // free the items array
+    free(list);        // free the list structure itself
 }

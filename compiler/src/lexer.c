@@ -16,7 +16,7 @@ typedef struct {
 
 static Void lexer_advance(Lexer* lexer)
 {
-    ASSERT(lexer->i < lexer->src_size, "we should not be here");
+    ASSERT(lexer->i < lexer->src_size, "lexer position should be < lexer->src_size");
     lexer->i += 1;
 
     lexer->c = lexer->src[lexer->i];
@@ -69,10 +69,10 @@ static Token* lex_word(Lexer* lexer)
     }
 
     if (strings_are_equals(value, "cst")) {
-        token_type = TOKEN_CST;
+        token_type = TOKEN_MUT;
     }
     else if (strings_are_equals(value, "var")) {
-        token_type = TOKEN_VAR;
+        token_type = TOKEN_MUT;
     }
     else if (strings_are_equals(value, "I32")) {
         token_type = TOKEN_TYPE;
@@ -101,7 +101,7 @@ static Token* lex_end_statement(Lexer* lexer)
     Token* token = instanciate_token(value, TOKEN_END_STATEMENT);
     lexer_advance(lexer);
 
-    // handle other \n or carriage return 
+    // handle other \n or carriage return
     while (lexer->c == 10 || lexer->c == 13) {
         lexer_advance(lexer);
     }
@@ -121,40 +121,35 @@ static Token* lex_next_token(Lexer* lexer)
 
     if (isdigit(lexer->c)) {
         return lex_number(lexer);
-    }   
+    }
 
-    // handle end of statement 
+    // handle end of statement
     if (lexer->c == 10 || lexer->c == 13) {
         return lex_end_statement(lexer);
     }
 
     switch (lexer->c) {
-        case '+': 
+        case '+':
             return lex_symbol(lexer, TOKEN_PLUS);
-        case '-': 
+        case '-':
             return lex_symbol(lexer, TOKEN_MINUS);
-        case '/': 
+        case '/':
             return lex_symbol(lexer, TOKEN_DIV);
-        case '*': 
+        case '*':
             return lex_symbol(lexer, TOKEN_MUL);
-        case ':': 
+        case ':':
             return lex_symbol(lexer, TOKEN_COLON);
-        case '=': 
+        case '=':
             return lex_symbol(lexer, TOKEN_EQUAL);
-        case '\0': 
+        case '\0':
             break;
-        default: 
-            printf("[Lexer]: Unexpected character `%c` (%d)\n", lexer->c, (int)lexer->c); 
-            exit(1); 
+        default:
+            printf("[Lexer]: Unexpected character `%c` (%d)\n", lexer->c, (I32)lexer->c);
+            exit(1);
             break;
     }
 
     return NULL;
-}
-
-static Void destroy_lexer(Lexer* lexer)
-{
-    free(lexer);
 }
 
 /**
@@ -171,10 +166,15 @@ static Lexer* instanciate_lexer(Char* src)
     return lexer;
 }
 
-/**
- * This function will return a list with all the tokens 
- */
-List* lex(Char* src) {
+static Void destroy_lexer(Lexer* lexer)
+{
+    free(lexer);
+}
+
+List* lex(Char* src)
+{
+    printf("Lexing...\n");
+
     Lexer* lexer = instanciate_lexer(src);
     List* token_list = init_list(sizeof(Token));
 
@@ -189,27 +189,4 @@ List* lex(Char* src) {
 
     destroy_lexer(lexer);
     return token_list;
-}
-
-Char* convert_token_list_to_char(List* token_list) 
-{
-    Char* output = init_empty_string();
-
-    output = strcat_improved(output, "[\n");
-
-    for (I32 i = 0; i < token_list->size; i++) {
-        const Token* token = (Token*)token_list->items[i];
-        const Char* token_type_name = token_to_string(*token);
-        
-        Char temp[1024];
-        snprintf(temp, sizeof(temp), "    ('%s', '%s'),\n", token_type_name, token->value);
-        output = strcat_improved(output, temp);
-
-        if (token->type == TOKEN_END_STATEMENT) {
-            output = strcat_improved(output, "\n");
-        }
-    }
-    output = strcat_improved(output, "\n]");
-
-    return output;
 }
