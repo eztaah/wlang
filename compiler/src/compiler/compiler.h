@@ -5,10 +5,10 @@
 #include "node.h"
 #include "token.h"
 
-extern B32 dev_mode;
+extern Bool dev_mode;
 
 List* lex(Char* src);
 List* parse(const List* token_list);
-Char* generate(const List* node_list);
+Str* generate(const List* node_list);
 
 #endif // COMPILER_H

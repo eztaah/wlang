@@ -1,71 +1,110 @@
 #include "lib.h"
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
-Char* str_new(const Char* value)
+Str* str_new(const Char* value) 
 {
-    size_t length = strlen(value);
-    Char* str = malloc(length + 1); // +1 pour le caractère nul de fin
+    UX length = strlen(value);
+    Char* char_array = malloc(length + 1); // +1 pour le caractère nul de fin
+    if (!char_array) {
+        PANIC("malloc failed");
+    }
+    strcpy(char_array, value);
+
+    Str* str = malloc(sizeof(Str));
     if (!str) {
         PANIC("malloc failed");
     }
-    strcpy(str, value);
+    str->char_array_location = char_array;
     return str;
 }
 
-Char* str_new_c(const Char c)
+Str* str_new_c(const Char c) 
 {
-    Char* str = malloc(2 * sizeof(Char));
+    Char* char_array = malloc(2 * sizeof(Char)); // 2 pour le caractère et le caractère nul de fin
+    if (!char_array) {
+        PANIC("malloc failed");
+    }
+    char_array[0] = c;
+    char_array[1] = '\0';
+
+    Str* str = malloc(sizeof(Str));
     if (!str) {
         PANIC("malloc failed");
     }
-    str[0] = c;
-    str[1] = '\0';
+    str->char_array_location = char_array;
     return str;
 }
 
-/**
- * Concatenate src to dest, and realloc to match the new dest size
- */
-Char* str_cat(Char* dest, const Char* src)
+Void str_cat_str(Str* dest, const Str* src)
 {
-    size_t dest_len = strlen(dest);
-    size_t src_len = strlen(src);
+    UX dest_len = strlen(dest->char_array_location);
+    UX src_len = strlen(src->char_array_location);
 
-    Char* new_dest = realloc(dest, dest_len + src_len + 1);
+    Char* new_dest = realloc(dest->char_array_location, dest_len + src_len + 1);
+    if (!new_dest) {
+        PANIC("realloc failed");
+    }
+
+    strcpy(new_dest + dest_len, src->char_array_location);
+    dest->char_array_location = new_dest;
+}
+
+Void str_cat(Str* dest, const Char* src) 
+{
+    UX dest_len = strlen(dest->char_array_location);
+    UX src_len = strlen(src);
+
+    Char* new_dest = realloc(dest->char_array_location, dest_len + src_len + 1);
     if (!new_dest) {
         PANIC("realloc failed");
     }
 
     strcpy(new_dest + dest_len, src);
-
-    return new_dest;
+    dest->char_array_location = new_dest;
 }
 
-Char* str_cat_c(Char* dest, const Char c)
+Void str_cat_c(Str* dest, const Char c) 
 {
-    size_t dest_len = strlen(dest);
-    Char* new_dest = realloc(dest, dest_len + 2);
+    UX dest_len = strlen(dest->char_array_location);
+    Char* new_dest = realloc(dest->char_array_location, dest_len + 2);
     if (!new_dest) {
         PANIC("realloc failed");
     }
     new_dest[dest_len] = c;
     new_dest[dest_len + 1] = '\0';
 
-    return new_dest;
+    dest->char_array_location = new_dest;
 }
 
-B32 str_cmp(const Char* s1, const Char* s2)
+Bool str_cmp(const Str* s1, const Char* s2)
 {
-    if (strcmp(s1, s2) == 0) {
-        return true;
+    if (strcmp(s1->char_array_location, s2) == 0) {
+        return TRUE;
     }
     else {
-        return false;
+        return FALSE;
     }
 }
 
-Void str_free(Char* str)
+Bool char_cmp(const Char* s1, const Char* s2)
 {
+    if (strcmp(s1, s2) == 0) {
+        return TRUE;
+    }
+    else {
+        return FALSE;
+    }
+}
+
+Char* str_to_char(const Str* str) 
+{
+    return str->char_array_location;
+}
+
+Void str_free(Str* str) 
+{
+    free(str->char_array_location);
     free(str);
 }

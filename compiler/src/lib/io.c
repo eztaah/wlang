@@ -10,8 +10,8 @@ Char* read_file(const Char* filename)
 {
     FILE* fp;
     Char* line = NULL;
-    size_t len = 0;
-    ssize_t read;
+    UX len = 0;
+    IX read;
 
     fp = fopen(filename, "rb");
     if (fp == NULL) {

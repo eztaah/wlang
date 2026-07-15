@@ -4,10 +4,11 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 typedef struct {
     Char* src;
-    size_t src_size;
+    UX src_size;
     Char c;
     U32 i;
 } Lexer;
@@ -22,7 +23,7 @@ static Void lexer_advance(Lexer* lexer)
 
 static Token* lex_next_token_assumes(Lexer* lexer, I32 type)
 {
-    Char* value = str_new_c(lexer->c);
+    Str* value = str_new_c(lexer->c);
     Token* token = token_new(value, type);
 
     return token;
@@ -30,7 +31,7 @@ static Token* lex_next_token_assumes(Lexer* lexer, I32 type)
 
 static Token* lex_symbol(Lexer* lexer, I32 type)
 {
-    Char* value = str_new_c(lexer->c);
+    Str* value = str_new_c(lexer->c);
     Token* token = token_new(value, type);
 
     lexer_advance(lexer);
@@ -40,10 +41,10 @@ static Token* lex_symbol(Lexer* lexer, I32 type)
 
 static Token* lex_number(Lexer* lexer)
 {
-    Char* value = str_new("");
+    Str* value = str_new("");
 
     while (isdigit(lexer->c)) {
-        value = str_cat_c(value, lexer->c);
+        str_cat_c(value, lexer->c);
         lexer_advance(lexer);
     }
 
@@ -52,10 +53,10 @@ static Token* lex_number(Lexer* lexer)
 
 static Token* lex_word(Lexer* lexer)
 {
-    Char* value = str_new("");
+    Str* value = str_new("");
 
     while (isalpha(lexer->c) || isdigit(lexer->c)) {
-        value = str_cat_c(value, lexer->c);
+        str_cat_c(value, lexer->c);
         lexer_advance(lexer);
     }
 
@@ -86,7 +87,7 @@ static Void skip_whitespace(Lexer* lexer)
 
 static Token* lex_end_statement(Lexer* lexer)
 {
-    Char* value = str_new(" ");
+    Str* value = str_new(" ");
 
     Token* token = token_new(value, TOKEN_END_STATEMENT);
     lexer_advance(lexer);

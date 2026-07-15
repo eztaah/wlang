@@ -4,11 +4,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-Token* token_new(const Char* value, I32 type)
+Token* token_new(Str* value, I32 type)
 {
     Token* new_token = malloc(sizeof(Token));
-    new_token->value = strdup(value);
+    new_token->value = strdup(str_to_char(value));
+    str_free(value);
     new_token->type = type;
+
     return new_token;
 }
 

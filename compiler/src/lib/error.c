@@ -14,7 +14,7 @@ Void application_panic(const Char* file_path, I32 line, const Char* format, ...)
     abort();
 }
 
-Void application_assert(const Char* file, I32 line, B32 cond, const Char* message)
+Void application_assert(const Char* file, I32 line, Bool cond, const Char* message)
 {
     if (!cond) {
         application_panic(file, line, message);
