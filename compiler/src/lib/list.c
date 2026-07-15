@@ -1,7 +1,7 @@
 #include "lib.h"
 #include <string.h>
 
-List* init_list(I32 item_size)
+List* list_new(I32 item_size)
 {
     List* list = calloc(1, sizeof(List));
     list->size = 0;
@@ -32,7 +32,7 @@ Void* list_get(const List* list, I32 index)
     return list->items[index];
 }
 
-Void destroy_list(List* list)
+Void list_free(List* list)
 {
     for (I32 i = 0; i < list->size; ++i) {
         free(list_get(list, i)); // free each item

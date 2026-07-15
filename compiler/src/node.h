@@ -1,36 +1,36 @@
 #ifndef NODE_H
 #define NODE_H
 
-#include "global.h"
+#include "lib.h"
 #include "token.h"
 
-typedef struct ExpressionNode ExpressionNode;
+typedef struct ExprNode ExprNode;
 
 typedef struct {
     Char* value;
 } NumberNode;
 
 typedef struct {
-    ExpressionNode* left;
+    ExprNode* left;
     TokenType op;
-    ExpressionNode* right;
-} BinOpNode;
+    ExprNode* right;
+} BinopNode;
 
-struct ExpressionNode {
+struct ExprNode {
     enum {
         NODE_NUMBER = 10,
         NODE_BINOP,
     } type;
     union {
         NumberNode number_node;
-        BinOpNode bin_op_node;
+        BinopNode bin_op_node;
     };
 };
 
 typedef struct {
     Char* type;
     Char* name;
-    ExpressionNode* value;
+    ExprNode* value;
 } VarDeclNode;
 
 typedef struct {
@@ -48,10 +48,10 @@ typedef struct {
         // WhileNode while_node;
         // FunctionCallNode func_call;
     };
-} StatementNode;
+} StmtNode;
 
-ExpressionNode* instanciate_number_node(Char* value);
-ExpressionNode* instanciate_binop_node(ExpressionNode* left, TokenType op, ExpressionNode* right);
-StatementNode* instanciate_var_decl_node(const Char* type, const Char* name, ExpressionNode* value);
+ExprNode* number_node_new(Char* value);
+ExprNode* binop_node_new(ExprNode* left, TokenType op, ExprNode* right);
+StmtNode* var_decl_node_new(const Char* type, const Char* name, ExprNode* value);
 
 #endif

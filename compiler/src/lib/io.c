@@ -1,6 +1,6 @@
 #define _GNU_SOURCE
 
-#include "global.h"
+#include "lib.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

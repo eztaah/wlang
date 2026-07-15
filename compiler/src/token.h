@@ -1,7 +1,7 @@
 #ifndef TOKEN_H
 #define TOKEN_H
 
-#include "lib/lib.h"
+#include "lib.h"
 
 typedef enum {
     TOKEN_PLUS,
@@ -26,8 +26,8 @@ typedef struct {
     TokenType type;
 } Token;
 
-Token* instanciate_token(const Char* value, I32 type);
-Void destroy_token(Token* token);
+Token* token_new(const Char* value, I32 type);
+Void token_free(Token* token);
 
 Char* tokentype_to_string(TokenType tokentype);
 
