@@ -2,7 +2,7 @@
 #define LIST_H
 
 #include "lib.h"
-#include <sys/types.h>   // for ssize_t
+#include <sys/types.h> // for ssize_t
 
 typedef unsigned int U32;
 typedef size_t UX;
@@ -12,9 +12,9 @@ typedef float F32;
 typedef char Char;
 typedef void Void;
 
-// Bool 
+// Bool
 typedef enum {
-    FALSE = 0, 
+    FALSE = 0,
     TRUE = 1
 } Bool;
 
@@ -55,5 +55,12 @@ Void application_assert(const Char* file, I32 line, Bool cond, const Char* messa
 #define PANIC(...) application_panic(__FILE__, __LINE__, __VA_ARGS__)
 #define UNREACHABLE() PANIC("unreachable")
 #define ASSERT(cond, message) application_assert(__FILE__, __LINE__, cond, message)
+
+// math
+#define MAX(a, b) \
+    a > b ? a : b
+
+#define MIN(a, b) \
+    a < b ? a : b
 
 #endif

@@ -19,3 +19,9 @@ https://codebrowser.dev/glibc/glibc/string/strcat.c.html
 TABLEAU : 
 
 Un tableau statique a une taille fixe connue à la compilation et est généralement alloué sur la pile (pour les tableaux locaux) ou dans la section de données (.data ou .bss) du programme (pour les tableaux globaux ou statiques).
+
+
+
+
+COMMENT IMPLEMENTER LES FONCTIONS ? : 
+

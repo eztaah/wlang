@@ -3,7 +3,6 @@
 
 #include "compiler.h"
 #include "lib.h"
-#include "printer.h"
 
 Bool dev_mode = FALSE;
 Bool compile = FALSE;
@@ -67,26 +66,26 @@ static Void compile_file(const Char* filename)
     List* token_list = lex(src);
     free(src);
     Str* token_list_printable = print_tokenlist(token_list);
-    write_file("out/lexer_output.txt", str_to_char(token_list_printable));
+    write_file("test/lexer_out.txt", str_to_char(token_list_printable));
     str_free(token_list_printable);
 
     // Parsing
     List* node_list = parse(token_list);
     list_free(token_list);
     Str* node_list_printable = print_nodelist(node_list);
-    write_file("out/parser_output.txt", str_to_char(node_list_printable));
+    write_file("test/parser_out.txt", str_to_char(node_list_printable));
     str_free(node_list_printable);
 
     // Generator
-    Str* asm_code = generate(node_list); // TOFIX: This function change the content of node_list and this is not normal
-    list_free(node_list);
-    write_file("out/generator_output.s", str_to_char(asm_code));
-    str_free(asm_code);
+    // Str* asm_code = generate(node_list); // TOFIX: This function change the content of node_list and this is not normal
+    // list_free(node_list);
+    // write_file("test/generator_out.s", str_to_char(asm_code));
+    // str_free(asm_code);
 
     // Assemble and link
     if (compile) {
-        sh("as -D out/generator_output.s -o out/prog.o");
-        sh("ld -s -o out/prog out/prog.o");
+        sh("as test/generator_out.s -o test/as_out.o");
+        sh("ld -s -o test/as_out.o test/prog");
     }
 }
 

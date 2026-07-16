@@ -1,9 +1,9 @@
 #include "lib.h"
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 
-Str* str_new(const Char* value) 
+Str* str_new(const Char* value)
 {
     UX length = strlen(value);
     Char* char_array = malloc(length + 1); // +1 pour le caractère nul de fin
@@ -20,7 +20,7 @@ Str* str_new(const Char* value)
     return str;
 }
 
-Str* str_new_c(const Char c) 
+Str* str_new_c(const Char c)
 {
     Char* char_array = malloc(2 * sizeof(Char)); // 2 pour le caractère et le caractère nul de fin
     if (!char_array) {
@@ -51,7 +51,7 @@ Void str_cat_str(Str* dest, const Str* src)
     dest->char_array_location = new_dest;
 }
 
-Void str_cat(Str* dest, const Char* src) 
+Void str_cat(Str* dest, const Char* src)
 {
     UX dest_len = strlen(dest->char_array_location);
     UX src_len = strlen(src);
@@ -65,7 +65,7 @@ Void str_cat(Str* dest, const Char* src)
     dest->char_array_location = new_dest;
 }
 
-Void str_cat_c(Str* dest, const Char c) 
+Void str_cat_c(Str* dest, const Char c)
 {
     UX dest_len = strlen(dest->char_array_location);
     Char* new_dest = realloc(dest->char_array_location, dest_len + 2);
@@ -98,12 +98,12 @@ Bool char_cmp(const Char* s1, const Char* s2)
     }
 }
 
-Char* str_to_char(const Str* str) 
+Char* str_to_char(const Str* str)
 {
     return str->char_array_location;
 }
 
-Void str_free(Str* str) 
+Void str_free(Str* str)
 {
     free(str->char_array_location);
     free(str);

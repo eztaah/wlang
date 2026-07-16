@@ -1,6 +1,6 @@
-SOURCE_FILES = src/*.c src/lib/*.c src/compiler/*.c
+SOURCE_FILES = src/*.c src/lib/*.c src/node/*.c src/token/*.c
 
-INCLUDE_FLAGS = -Isrc -Isrc/lib -Isrc/compiler
+INCLUDE_FLAGS = -Isrc -Isrc/lib -Isrc/node -Isrc/token
 CFLAGS = -Wall -Wextra -std=c2x
 DEBUG_FLAG = -g
 RELEASE_FLAG = -03
@@ -13,4 +13,4 @@ release:
 
 clean:
 	rm -f wcompiler
-	rm -f out/*
+	find ./test -maxdepth 1 ! -name 'test.w' ! -name '.' ! -name '..' -type f -exec rm -f {} +
