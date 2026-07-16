@@ -49,22 +49,62 @@ static Token parser_eat_assumes(Parser* parser, TokenType expected_token_type)
     return parser_eat(parser);
 }
 
-static ExprNode* parse_number(Parser* parser)
+static ExprNode* parse_expr(Parser* parser);
+
+static ExprNode* parse_primary(Parser* parser) 
 {
-    Token token = parser_eat_assumes(parser, TOKEN_INT);
-    return number_node_new(token.value);
+    Token token = parser->current_token;
+    if (token.type == TOKEN_INT) {
+        return number_node_new(parser_eat(parser).value);
+    } 
+    else if (token.type == TOKEN_LPAREN) {
+        parser_eat(parser); // Eat '('
+        ExprNode* expr = parse_expr(parser);
+        parser_eat_assumes(parser, TOKEN_RPAREN); // Eat ')'
+        return expr;
+    }
+
+    printf("Error: expected number or '('\n");
+    exit(EXIT_FAILURE);
+    return NULL;
 }
 
-static ExprNode* parse_expr(Parser* parser)
+static ExprNode* parse_unary(Parser* parser) 
 {
-    ExprNode* left = parse_number(parser);
-    while (parser->index < parser->token_list_size &&
-           (parser->current_token.type == TOKEN_PLUS || parser->current_token.type == TOKEN_MINUS || parser->current_token.type == TOKEN_MUL || parser->current_token.type == TOKEN_DIV)) {
+    Token token = parser->current_token;
+    if (token.type == TOKEN_MINUS) {
+        parser_eat(parser); // Eat '-'
+        ExprNode* operand = parse_unary(parser);
+        return unaryop_node_new(TOKEN_MINUS, operand);
+    }
+    return parse_primary(parser);
+}
+
+static ExprNode* parse_multiplicative(Parser* parser) 
+{
+    ExprNode* left = parse_unary(parser);
+    while (parser->current_token.type == TOKEN_MUL || parser->current_token.type == TOKEN_DIV) {
         Token op = parser_eat(parser);
-        ExprNode* right = parse_number(parser);
+        ExprNode* right = parse_unary(parser);
         left = binop_node_new(left, op.type, right);
     }
     return left;
+}
+
+static ExprNode* parse_additive(Parser* parser) 
+{
+    ExprNode* left = parse_multiplicative(parser);
+    while (parser->current_token.type == TOKEN_PLUS || parser->current_token.type == TOKEN_MINUS) {
+        Token op = parser_eat(parser);
+        ExprNode* right = parse_multiplicative(parser);
+        left = binop_node_new(left, op.type, right);
+    }
+    return left;
+}
+
+static ExprNode* parse_expr(Parser* parser) 
+{
+    return parse_additive(parser);
 }
 
 static StmtNode* parse_var_decl(Parser* parser)

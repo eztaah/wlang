@@ -11,6 +11,11 @@ typedef struct {
 } NumberNode;
 
 typedef struct {
+    TokenType op;   
+    ExprNode* operand; 
+} UnaryOpNode;
+
+typedef struct {
     ExprNode* left;
     TokenType op;
     ExprNode* right;
@@ -19,11 +24,13 @@ typedef struct {
 struct ExprNode {
     enum {
         NODE_NUMBER = 10,
-        NODE_BINOP,
+        NODE_BINOP = 11,
+        NODE_UNARYOP = 12
     } type;
     union {
-        NumberNode number_node;
         BinopNode bin_op_node;
+        UnaryOpNode unary_op_node;
+        NumberNode number_node;
     };
 };
 
@@ -52,6 +59,7 @@ typedef struct {
 
 ExprNode* number_node_new(Char* value);
 ExprNode* binop_node_new(ExprNode* left, TokenType op, ExprNode* right);
+ExprNode* unaryop_node_new(TokenType op, ExprNode* operand);
 StmtNode* var_decl_node_new(const Char* type, const Char* name, ExprNode* value);
 
 #endif

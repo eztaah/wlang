@@ -52,6 +52,12 @@ Char* tokentype_to_string(TokenType tokentype)
         case TOKEN_EQUAL:
             return "TOKEN_EQUAL";
             break;
+         case TOKEN_LPAREN:
+            return "TOKEN_LPAREN";
+            break;           
+        case TOKEN_RPAREN:
+            return "TOKEN_RPAREN";
+            break;
         case TOKEN_END_STATEMENT:
             return "TOKEN_END_STATEMENT";
             break;

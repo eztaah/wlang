@@ -1,0 +1,15 @@
+1. Parenthesis Operations `()` have the highest priority and can be used to change the default order of evaluation
+.
+2. Unary Operations such as binary NOT `~`, sign change `-`, and other unary operators.
+
+3. Multiplication/Division Operations: Multiplication `*`, division `/`, and modulo `%`.
+
+4. Addition and Subtraction Operations: Addition `+` and subtraction `-`.
+
+5. Shift Operations: Left shift `<<` and right shift `>>`.
+
+6. Binary AND Operation `&` comes after shift operations.
+
+7. Binary XOR Operation `^` comes after binary AND.
+
+8. Binary OR Operation `|` comes after binary XOR, giving it a lower priority than binary AND and XOR.
