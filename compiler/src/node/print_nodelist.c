@@ -153,7 +153,6 @@ static Void print_var_modif_node(VarModifNode* node, Str* output, I32 pos_x)
 {
     Char buffer[256];
 
-    print_indent(output, pos_x);
     str_cat(output, "VarModifNode\n");
 
     print_indent(output, pos_x);
@@ -174,6 +173,17 @@ static Void print_return_node(ReturnNode* node, Str* output, I32 pos_x)
     print_expr_node(node->expr_node, output, pos_x + 10);
 }
 
+static Void print_syscallwrite_node(SyscallwriteNode* node, Str* output, I32 pos_x)
+{
+    Char buffer[256];
+
+    str_cat(output, "SyscallwriteNode\n");
+
+    print_indent(output, pos_x);
+    snprintf(buffer, sizeof(buffer), "└─ char_location_ptr_name: \"%s\"\n", node->char_location_ptr_name);
+    str_cat(output, buffer);
+}
+
 static Void print_instr_node(InstrNode* instr_node, Str* output, I32 pos_x)
 {
     switch (instr_node->type) {
@@ -187,6 +197,10 @@ static Void print_instr_node(InstrNode* instr_node, Str* output, I32 pos_x)
 
         case NODE_RETURN:
             print_return_node(&instr_node->return_node, output, pos_x);
+            break;
+
+        case NODE_SYSCALLWRITE:
+            print_syscallwrite_node(&instr_node->syscallwrite_node, output, pos_x);
             break;
 
         case NODE_EXPR:
@@ -220,18 +234,24 @@ static Void print_param_node(ParamNode* node, Str* output, I32 pos_x)
 
 static Void print_param_node_list(List* param_node_list, Str* output, I32 pos_x)
 {
-    str_cat(output, "List<ParamNode>\n");
-    for (int i = 0; i < param_node_list->size - 1; i++) {
+    if (param_node_list->size > 0) {
+        str_cat(output, "List<ParamNode>\n");
+        for (int i = 0; i < param_node_list->size - 1; i++) {
+            print_indent(output, pos_x);
+            str_cat(output, "├─ ");
+            ParamNode* param_node = (ParamNode*)list_get(param_node_list, i);
+            print_param_node(param_node, output, pos_x + 3);
+        }
+
         print_indent(output, pos_x);
-        str_cat(output, "├─ ");
-        ParamNode* param_node = (ParamNode*)list_get(param_node_list, i);
+        str_cat(output, "└─ ");
+        ParamNode* param_node = (ParamNode*)list_get(param_node_list, param_node_list->size - 1);
         print_param_node(param_node, output, pos_x + 3);
     }
-
-    print_indent(output, pos_x);
-    str_cat(output, "└─ ");
-    ParamNode* param_node = (ParamNode*)list_get(param_node_list, param_node_list->size - 1);
-    print_param_node(param_node, output, pos_x + 3);
+    else {
+        print_indent(output, pos_x);
+        str_cat(output, "└─ NULL\n");
+    }
 }
 
 static Void print_stmt_node(StmtNode* stmt_node, Str* output, I32 pos_x);
@@ -286,8 +306,17 @@ static Void print_fundef_node(FunDefNode* fundef_node, Str* output, I32 pos_x)
     print_param_node_list(fundef_node->param_node_list, output, pos_x + 15);
 
     print_indent(output, pos_x);
-    str_cat(output, "├─ code_block: ");
+    str_cat(output, "└─ code_block: ");
     print_codeblock_node(fundef_node->code_block, output, pos_x + 15);
+}
+
+static Void print_start_node(StartNode* start_node, Str* output, I32 pos_x)
+{
+    str_cat(output, "StartNode\n");
+
+    print_indent(output, pos_x);
+    str_cat(output, "└─ code_block: ");
+    print_codeblock_node(start_node->code_block, output, pos_x + 15);
 }
 
 static Void print_stmt_node(StmtNode* stmt_node, Str* output, I32 pos_x)
@@ -299,6 +328,10 @@ static Void print_stmt_node(StmtNode* stmt_node, Str* output, I32 pos_x)
 
         case NODE_FUN_DEF:
             print_fundef_node(&stmt_node->fun_def_node, output, pos_x);
+            break;
+
+        case NODE_START:
+            print_start_node(&stmt_node->start_node, output, pos_x);
             break;
 
         default:

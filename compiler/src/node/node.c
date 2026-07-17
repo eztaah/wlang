@@ -141,6 +141,19 @@ InstrNode* return_node_new(ExprNode* expr_node)
     return instr_node;
 }
 
+InstrNode* syscallwrite_node_new(Char* char_location_ptr_name)
+{
+    InstrNode* instr_node = (InstrNode*)malloc(sizeof(InstrNode));
+    if (!instr_node) {
+        PANIC("failed to allocate memory");
+    }
+
+    instr_node->type = NODE_SYSCALLWRITE;
+    instr_node->syscallwrite_node.char_location_ptr_name = char_location_ptr_name;
+
+    return instr_node;
+}
+
 StmtNode* fun_def_node_new(Char* name, Char* return_type, List* param_node_list, CodeblockNode* code_block)
 {
     StmtNode* stmt_node = (StmtNode*)malloc(sizeof(StmtNode));
@@ -157,6 +170,19 @@ StmtNode* fun_def_node_new(Char* name, Char* return_type, List* param_node_list,
     if (!stmt_node->fun_def_node.name || !stmt_node->fun_def_node.return_type) {
         PANIC("failed to allocate memory");
     }
+
+    return stmt_node;
+}
+
+StmtNode* start_node_new(CodeblockNode* code_block)
+{
+    StmtNode* stmt_node = (StmtNode*)malloc(sizeof(StmtNode));
+    if (!stmt_node) {
+        PANIC("failed to allocate memory");
+    }
+
+    stmt_node->type = NODE_START;
+    stmt_node->start_node.code_block = code_block;
 
     return stmt_node;
 }

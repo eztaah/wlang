@@ -41,8 +41,21 @@ Void str_cat_c(Str* dest, const Char c);
 Bool str_cmp(const Str* s1, const Char* s2);
 Char* str_to_char(const Str* str);
 Void str_free(Str* str);
-
 Bool char_cmp(const Char* s1, const Char* s2);
+
+// Map
+typedef struct {
+    Char* key;
+    I32 value;
+} MapEntry;
+typedef struct {
+    MapEntry** entries; 
+    I32 size; 
+} Map;
+Map* map_new(Void);
+Void map_put(Map* map, const Char* key, I32 value);
+I32 map_get(Map* map, const Char* key);
+Void map_free(Map* map);
 
 // io
 Char* read_file(const Char* filename);

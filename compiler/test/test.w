@@ -1,26 +1,58 @@
-fun print_num(cst num: I32): Void
+# ------------------------ UTILS LIBRARY ------------------------
+fun i32_to_asciicode(cst num: I64): I64
 {
-    # print with printf function
+    cst ascii_code: I64 = num + 48;
+
+    return ascii_code;
 }
 
-fun add(cst a: I32, cst b: I32): I32
+# ------------------------ IO library ------------------------
+# follow this order when passing arguments to syscall
+# @syscall(code, rdi, rsi, rdx, r10, r8, r9)
+fun exit(cst error_code: I64): Void
 {
-    cst sum: I32 = a + b;
+    @syscall(60, error_code, 0, 0, 0, 0, 0);
+
+    # we don't have to add return because we exit the program
+}
+
+fun write(cst fd: I64, cst buf_addr: I64, cst count: I64): Void
+{
+    @syscall(1, fd, buf_addr, count, 0, 0, 0);
+
+    return;
+}
+
+# works only for number between 0 and 9 !
+fun print_num(cst num: I64): Void
+{
+    # print the number
+    cst asciicode: I64 = i32_to_asciicode(num);
+    write(1, &asciicode, 1);
+
+    # print \n
+    cst new_line_ascii_code: I64 = 10; 
+    write(1, &new_line_ascii_code, 1);
+
+    return;
+}
+
+# ------------------------ USER CODE ------------------------
+fun add(cst a: I64, cst b: I64): I64
+{
+    cst sum: I64 = a + b;
 
     return sum;
 }
 
-var num1: I32 = (1 + -2) / 3;
-num1 = 3 * 4 / 3;
+_start
+{
+    cst num1: I64 = 4;
+    cst num2: I64 = 2;
 
-cst num2: I32 = (num1 + 3) * 2 - 4 * (7 * -12);
+    cst sum: I64 = add(num1, num2);
+    
+    print_num(sum);
 
-var num3: I32 = 7;
-num3 = num3 + add(num1, num2);
-
-print_num(num3);
-
-1 + 1;
-
-num3;
-
+    @sysc_exit(0);
+}

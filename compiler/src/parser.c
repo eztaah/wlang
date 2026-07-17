@@ -194,6 +194,27 @@ static InstrNode* parse_return(Parser* parser)
     return return_node_new(expr_node);
 }
 
+static InstrNode* parse_syscallwrite(Parser* parser)
+{
+    // eat @ 
+    parser_eat_assumes(parser, TOKEN_AT);
+
+    // eat name
+    parser_eat_assumes(parser, TOKEN_ID);
+
+    // handle the argument given
+    parser_eat_assumes(parser, TOKEN_LPAREN);
+    parser_eat_assumes(parser, TOKEN_AMPERSAND);
+
+    // handling name
+    Token name_token = parser_eat_assumes(parser, TOKEN_ID);
+    Char* char_location_ptr_name = strdup(name_token.value);
+
+    parser_eat_assumes(parser, TOKEN_RPAREN);
+
+    return syscallwrite_node_new(char_location_ptr_name);
+}
+
 InstrNode* expr_to_instr_node(ExprNode* expr_node)
 {
     InstrNode* instr_node = (InstrNode*)malloc(sizeof(InstrNode));
@@ -225,6 +246,11 @@ static InstrNode* parse_instr(Parser* parser)
         InstrNode* return_node = parse_return(parser);
         parser_eat_assumes(parser, TOKEN_END_INSTR);
         return return_node;
+    }
+    else if ((parser->current_token.type == TOKEN_AT && parser->next_token.type == TOKEN_ID)) {
+        InstrNode* syscallwrite_node = parse_syscallwrite(parser);
+        parser_eat_assumes(parser, TOKEN_END_INSTR);
+        return syscallwrite_node;
     }
     else {
         InstrNode* expr_node = expr_to_instr_node(parse_expr(parser));
@@ -301,6 +327,17 @@ static StmtNode* parse_fun_def(Parser* parser)
     return fun_def_node_new(name, type, param_nodes_list, codeblock);
 }
 
+static StmtNode* parse_start_def(Parser* parser)
+{
+    // eat _start keyword
+    parser_eat_assumes(parser, TOKEN_ID);
+
+    // handling codeblock
+    CodeblockNode* codeblock = parse_code_block(parser);
+
+    return start_node_new(codeblock);
+}
+
 StmtNode* instr_to_stmt_node(InstrNode* instr_node)
 {
     StmtNode* stmt_node = (StmtNode*)malloc(sizeof(StmtNode));
@@ -317,6 +354,10 @@ static StmtNode* parse_stmt(Parser* parser)
 {
     if (parser->current_token.type == TOKEN_FUN) {
         StmtNode* fun_def_node = parse_fun_def(parser);
+        return fun_def_node;
+    }
+    if (parser->current_token.type == TOKEN_ID && strcmp(parser->current_token.value, "_start") == 0) {
+        StmtNode* fun_def_node = parse_start_def(parser);
         return fun_def_node;
     }
     else {

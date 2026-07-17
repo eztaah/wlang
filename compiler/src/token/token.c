@@ -73,6 +73,12 @@ Char* tokentype_to_string(TokenType tokentype)
         case TOKEN_RBRACE:
             return "TOKEN_RBRACE";
             break;
+        case TOKEN_AT:
+            return "TOKEN_AT";
+            break;
+        case TOKEN_AMPERSAND:
+            return "TOKEN_AMPERSAND";
+            break;
         case TOKEN_END_INSTR:
             return "TOKEN_END_INSTR";
             break;

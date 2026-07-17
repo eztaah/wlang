@@ -16,9 +16,9 @@ static Void print_usage(Void)
     printf("    compiler --help                 display this help message and exit.\n");
     printf("\nOptions:\n");
     printf("    -d, --dev-mode                  activate dev mode\n");
-    printf("    -e, --to-executable             assemble and link the generated assembly code into an executable\n");
+    printf("    -e, --to-executable             assemble and link the asmed assembly code into an executable\n");
     printf("                                        - GNU assembler (as) and GNU linker (ld) will be needed during compilation time.\n");
-    printf("                                        - the generated executable will only run on x86_64 architecture and requires a Linux system with the GNU C Library (glibc).\n");
+    printf("                                        - the asmed executable will only run on x86_64 architecture and requires a Linux system with the GNU C Library (glibc).\n");
     printf("\n");
 }
 
@@ -76,16 +76,16 @@ static Void compile_file(const Char* filename)
     write_file("test/parser_out.txt", str_to_char(node_list_printable));
     str_free(node_list_printable);
 
-    // Generator
-    // Str* asm_code = generate(node_list); // TOFIX: This function change the content of node_list and this is not normal
-    // list_free(node_list);
-    // write_file("test/generator_out.s", str_to_char(asm_code));
-    // str_free(asm_code);
+    // AsmG
+    Str* asm_code = asme(node_list); // TOFIX: This function change the content of node_list and this is not normal
+    list_free(node_list);
+    write_file("test/asmg_out.s", str_to_char(asm_code));
+    str_free(asm_code);
 
     // Assemble and link
     if (compile) {
-        sh("as test/generator_out.s -o test/as_out.o");
-        sh("ld -s -o test/as_out.o test/prog");
+        sh("as test/asmg_out.s -o test/as_out.o");
+        sh("ld -s test/as_out.o -o test/prog");
     }
 }
 

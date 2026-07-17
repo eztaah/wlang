@@ -23,6 +23,8 @@ typedef enum {
     TOKEN_RPAREN,
     TOKEN_LBRACE,
     TOKEN_RBRACE,
+    TOKEN_AT,
+    TOKEN_AMPERSAND,
 
     TOKEN_END_INSTR,
     TOKEN_EOF
