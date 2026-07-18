@@ -295,20 +295,19 @@ static ParamNode* parse_fun_param(Parser* parser)
     return param_node_new(mut, name, type);
 }
 
-static StmtNode* parse_stmt(Parser* parser);
 static CodeblockNode* parse_code_block(Parser* parser)
 {
     parser_eat_assumes(parser, TOKEN_LBRACE);
 
-    List* stmt_nodes_list = list_new(sizeof(StmtNode));
+    List* instr_nodes_list = list_new(sizeof(InstrNode));
     while (parser->current_token.type != TOKEN_RBRACE) {
-        StmtNode* stmt = parse_stmt(parser);
-        list_push(stmt_nodes_list, stmt);
+        InstrNode* instr = parse_instr(parser);
+        list_push(instr_nodes_list, instr);
     }
 
     parser_eat_assumes(parser, TOKEN_RBRACE);
 
-    return code_block_new(stmt_nodes_list);
+    return code_block_new(instr_nodes_list);
 }
 
 static StmtNode* parse_fun_def(Parser* parser)
@@ -352,18 +351,6 @@ static StmtNode* parse_start_def(Parser* parser)
     return start_node_new(codeblock);
 }
 
-StmtNode* instr_to_stmt_node(InstrNode* instr_node)
-{
-    StmtNode* stmt_node = (StmtNode*)malloc(sizeof(StmtNode));
-    if (!stmt_node) {
-        PANIC("failed to allocate memory");
-    }
-    stmt_node->type = NODE_INSTR;
-    stmt_node->instr_node = *instr_node;
-    free(instr_node);
-    return stmt_node;
-}
-
 static StmtNode* parse_stmt(Parser* parser)
 {
     if (parser->current_token.type == TOKEN_FUN) {
@@ -375,8 +362,8 @@ static StmtNode* parse_stmt(Parser* parser)
         return fun_def_node;
     }
     else {
-        StmtNode* instr_node = instr_to_stmt_node(parse_instr(parser));
-        return instr_node;
+        UNREACHABLE();
+        return NULL;
     }
 }
 

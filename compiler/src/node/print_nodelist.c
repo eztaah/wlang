@@ -78,17 +78,24 @@ static Void print_unaryop_node(UnaryOpNode* unaryop_node, Str* output, I32 pos_x
 static Void print_expr_node_list(List* expr_nodelist, Str* output, I32 pos_x)
 {
     str_cat(output, "List<ExprNode>\n");
-    for (int i = 0; i < expr_nodelist->size - 1; i++) {
+
+    if (expr_nodelist->size > 0) {
+        for (int i = 0; i < expr_nodelist->size - 1; i++) {
+            print_indent(output, pos_x);
+            str_cat(output, "├─ ");
+            ExprNode* expr_node = (ExprNode*)list_get(expr_nodelist, i);
+            print_expr_node(expr_node, output, pos_x + 3);
+        }
+
         print_indent(output, pos_x);
-        str_cat(output, "├─ ");
-        ExprNode* expr_node = (ExprNode*)list_get(expr_nodelist, i);
+        str_cat(output, "└─ ");
+        ExprNode* expr_node = (ExprNode*)list_get(expr_nodelist, expr_nodelist->size - 1);
         print_expr_node(expr_node, output, pos_x + 3);
     }
-
-    print_indent(output, pos_x);
-    str_cat(output, "└─ ");
-    ExprNode* expr_node = (ExprNode*)list_get(expr_nodelist, expr_nodelist->size - 1);
-    print_expr_node(expr_node, output, pos_x + 3);
+    else {
+        print_indent(output, pos_x);
+        str_cat(output, "└─ EMPTY\n");
+    }
 }
 
 static Void print_funcall_node(FunCallNode* funcall_node, Str* output, I32 pos_x)
@@ -256,8 +263,9 @@ static Void print_param_node(ParamNode* node, Str* output, I32 pos_x)
 
 static Void print_param_node_list(List* param_node_list, Str* output, I32 pos_x)
 {
+    str_cat(output, "List<ParamNode>\n");
+
     if (param_node_list->size > 0) {
-        str_cat(output, "List<ParamNode>\n");
         for (int i = 0; i < param_node_list->size - 1; i++) {
             print_indent(output, pos_x);
             str_cat(output, "├─ ");
@@ -272,31 +280,30 @@ static Void print_param_node_list(List* param_node_list, Str* output, I32 pos_x)
     }
     else {
         print_indent(output, pos_x);
-        str_cat(output, "└─ NULL\n");
+        str_cat(output, "└─ EMPTY\n");
     }
 }
 
-static Void print_stmt_node(StmtNode* stmt_node, Str* output, I32 pos_x);
-
-static Void print_stmt_node_list(List* stmt_node_list, Str* output, I32 pos_x)
+static Void print_instr_node_list(List* instr_node_list, Str* output, I32 pos_x)
 {
-    str_cat(output, "List<StmtNode>\n");
-    if (stmt_node_list->size > 0) {
-        for (int i = 0; i < stmt_node_list->size - 1; i++) {
+    str_cat(output, "List<InstrNode>\n");
+
+    if (instr_node_list->size > 0) {
+        for (int i = 0; i < instr_node_list->size - 1; i++) {
             print_indent(output, pos_x);
             str_cat(output, "├─ ");
-            StmtNode* stmt_node = (StmtNode*)list_get(stmt_node_list, i);
-            print_stmt_node(stmt_node, output, pos_x + 3);
+            InstrNode* instr_node = (InstrNode*)list_get(instr_node_list, i);
+            print_instr_node(instr_node, output, pos_x + 3);
         }
 
         print_indent(output, pos_x);
         str_cat(output, "└─ ");
-        StmtNode* stmt_node = (StmtNode*)list_get(stmt_node_list, stmt_node_list->size - 1);
-        print_stmt_node(stmt_node, output, pos_x + 3);
+        InstrNode* instr_node = (InstrNode*)list_get(instr_node_list, instr_node_list->size - 1);
+        print_instr_node(instr_node, output, pos_x + 3);
     }
     else {
         print_indent(output, pos_x);
-        str_cat(output, "└─ NULL\n");
+        str_cat(output, "└─ EMPTY\n");
     }
 }
 
@@ -306,7 +313,7 @@ static Void print_codeblock_node(CodeblockNode* codeblock_node, Str* output, I32
 
     print_indent(output, pos_x);
     str_cat(output, "└─ content: ");
-    print_stmt_node_list(codeblock_node->stmt_node_list, output, pos_x + 12);
+    print_instr_node_list(codeblock_node->instr_node_list, output, pos_x + 12);
 }
 
 static Void print_fundef_node(FunDefNode* fundef_node, Str* output, I32 pos_x)
@@ -344,10 +351,6 @@ static Void print_start_node(StartNode* start_node, Str* output, I32 pos_x)
 static Void print_stmt_node(StmtNode* stmt_node, Str* output, I32 pos_x)
 {
     switch (stmt_node->type) {
-        case NODE_INSTR:
-            print_instr_node(&stmt_node->instr_node, output, pos_x);
-            break;
-
         case NODE_FUN_DEF:
             print_fundef_node(&stmt_node->fun_def_node, output, pos_x);
             break;

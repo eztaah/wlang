@@ -8,7 +8,7 @@
                       ├─ type: "I64"
                       └─ name: "num"
     └─ code_block: CodeblockNode
-                   └─ content: List<StmtNode>
+                   └─ content: List<InstrNode>
                                ├─ VarDefNode
                                   ├─ mut: "cst"
                                   ├─ type: "I64"
@@ -33,7 +33,7 @@
                       ├─ type: "I64"
                       └─ name: "error_code"
     └─ code_block: CodeblockNode
-                   └─ content: List<StmtNode>
+                   └─ content: List<InstrNode>
                                └─ SyscallNode
                                   └─ args: List<ExprNode>
                                            ├─ NumberNode
@@ -68,7 +68,7 @@
                       ├─ type: "I64"
                       └─ name: "count"
     └─ code_block: CodeblockNode
-                   └─ content: List<StmtNode>
+                   └─ content: List<InstrNode>
                                ├─ SyscallNode
                                   └─ args: List<ExprNode>
                                            ├─ NumberNode
@@ -98,7 +98,7 @@
                       ├─ type: "I64"
                       └─ name: "num"
     └─ code_block: CodeblockNode
-                   └─ content: List<StmtNode>
+                   └─ content: List<InstrNode>
                                ├─ VarDefNode
                                   ├─ mut: "cst"
                                   ├─ type: "I64"
@@ -137,29 +137,18 @@
                                   └─ value: NULL
     ,
     FunDefNode
-    ├─ name: "add"
+    ├─ name: "test"
     ├─ return_type: "I64"
     ├─ parameters: List<ParamNode>
-                   ├─ ParamNode
-                      ├─ mut: "cst"
-                      ├─ type: "I64"
-                      └─ name: "a"
-                   └─ ParamNode
-                      ├─ mut: "cst"
-                      ├─ type: "I64"
-                      └─ name: "b"
+                   └─ EMPTY
     └─ code_block: CodeblockNode
-                   └─ content: List<StmtNode>
+                   └─ content: List<InstrNode>
                                ├─ VarDefNode
                                   ├─ mut: "cst"
                                   ├─ type: "I64"
                                   ├─ name: "sum"
-                                  └─ value: BinopNode
-                                            ├─ op: TOKEN_PLUS
-                                            ├─ left:  VarRefNode
-                                                      └─ name: a
-                                            └─ right: VarRefNode
-                                                      └─ name: b
+                                  └─ value: NumberNode
+                                            └─ value: 1
                                └─ ReturnNode
                                   ├─ is_empty: "0"
                                   └─ value: VarRefNode
@@ -167,30 +156,21 @@
     ,
     StartNode
     └─ code_block: CodeblockNode
-                   └─ content: List<StmtNode>
+                   └─ content: List<InstrNode>
                                ├─ VarDefNode
                                   ├─ mut: "cst"
                                   ├─ type: "I64"
-                                  ├─ name: "num1"
-                                  └─ value: NumberNode
-                                            └─ value: 4
-                               ├─ VarDefNode
-                                  ├─ mut: "cst"
-                                  ├─ type: "I64"
-                                  ├─ name: "num2"
-                                  └─ value: NumberNode
-                                            └─ value: 4
+                                  ├─ name: "res"
+                                  └─ value: FunCallNode
+                                            ├─ name: "test"
+                                            └─ args: List<ExprNode>
+                                                     └─ EMPTY
                                ├─ VarDefNode
                                   ├─ mut: "cst"
                                   ├─ type: "I64"
                                   ├─ name: "sum"
-                                  └─ value: FunCallNode
-                                            ├─ name: "add"
-                                            └─ args: List<ExprNode>
-                                                     ├─ VarRefNode
-                                                        └─ name: num1
-                                                     └─ VarRefNode
-                                                        └─ name: num2
+                                  └─ value: NumberNode
+                                            └─ value: 7
                                ├─ FunCallNode
                                   ├─ name: "print_num"
                                   └─ args: List<ExprNode>
