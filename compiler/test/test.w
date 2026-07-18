@@ -8,7 +8,7 @@ fun i32_to_asciicode(cst num: I64): I64
 
 # ------------------------ IO library ------------------------
 # follow this order when passing arguments to syscall
-# @syscall(code, rdi, rsi, rdx, r10, r8, r9)
+# @syscall(rax, rdi, rsi, rdx, r10, r8, r9)
 fun exit(cst error_code: I64): Void
 {
     @syscall(60, error_code, 0, 0, 0, 0, 0);
@@ -23,7 +23,7 @@ fun write(cst fd: I64, cst buf_addr: I64, cst count: I64): Void
     return;
 }
 
-# works only for number between 0 and 9 !
+# works only for number between 0 and 9 
 fun print_num(cst num: I64): Void
 {
     # print the number
@@ -48,11 +48,11 @@ fun add(cst a: I64, cst b: I64): I64
 _start
 {
     cst num1: I64 = 4;
-    cst num2: I64 = 2;
+    cst num2: I64 = 4;
 
     cst sum: I64 = add(num1, num2);
     
     print_num(sum);
 
-    @sysc_exit(0);
+    exit(0);
 }

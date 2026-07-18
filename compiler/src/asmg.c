@@ -60,6 +60,22 @@ static Void asme_varref(AsmG* asmg, const VarRefNode* varref_node)
     str_cat(asmg->text, ", %rax\n");
 }
 
+static Void asme_varaddr(AsmG* asmg, const VarAddrNode* varaddr_node)
+{
+    I32 var_pos = map_get(asmg->variables, varaddr_node->name);
+    if (var_pos == -100) {
+        printf("you want to get the address of %s, but this variable is not defined", varaddr_node->name);
+        exit(EXIT_FAILURE);
+    }
+
+    Char var_pos_c[20];
+    sprintf(var_pos_c, "%d(%%rbp)", var_pos);
+
+    str_cat(asmg->text, "    leaq   ");
+    str_cat(asmg->text, var_pos_c);
+    str_cat(asmg->text, ", %rax\n");
+}
+
 static void asme_binop(AsmG* asmg, const BinopNode* binop_node)
 {
     if (dev_mode) {
@@ -109,12 +125,6 @@ static Void asme_unarop(AsmG* asmg, const UnaryOpNode* unarop_node)
 
 static Void asme_funcall(AsmG* asmg, const FunCallNode* funcall_node)
 {
-    if (dev_mode) {
-        str_cat(asmg->text, "    # Function call: ");
-        str_cat(asmg->text, funcall_node->name);
-        str_cat(asmg->text, "\n");
-    }
-
     // handle arguments
     I32 num_args = funcall_node->expr_node_list->size;
 
@@ -182,37 +192,36 @@ static Void asme_return(AsmG* asmg, const ReturnNode* return_node)
         str_cat(asmg->text, "\n    # return statement\n");
     }
 
-    asme_expr(asmg, return_node->expr_node);    // this will put the value into rax
+    if (!return_node->is_empty) {
+        asme_expr(asmg, return_node->expr_node);    // this will put the value into rax
+    }
 
     str_cat(asmg->text, "    movq    %rbp, %rsp\n");
     str_cat(asmg->text, "    pop     %rbp\n");
     str_cat(asmg->text, "    ret\n");          // we can use rax after to use the return value
 }
 
-static Void asme_syscallwrite(AsmG* asmg, const SyscallwriteNode* syscallwrite_node)
+static Void asme_syscall(AsmG* asmg, const SyscallNode* syscall_node)
 {
-    if (dev_mode) {
-        str_cat(asmg->text, "\n    # syscall write\n");
+    // handle arguments
+    I32 num_args = syscall_node->expr_node_list->size;
+
+    // process the first 6 arguments, mapping them to registers
+    const char* reg_names[6] = {"%rdi", "%rsi", "%rdx", "%rcx", "%r8", "%r9"};
+    for (I32 i = 0; i < num_args && i < 0; i++) {
+        ExprNode* arg_expr = (ExprNode*)syscall_node->expr_node_list->items[i+1];
+        asme_expr(asmg, arg_expr);  // the result of the expression should be in %rax
+        str_cat(asmg->text, "    movq    %rax, ");
+        str_cat(asmg->text, reg_names[i]);
+        str_cat(asmg->text, "\n");
     }
 
-    // il faut que l'on stocke dans rsi 
-    I32 var_pos = map_get(asmg->variables, syscallwrite_node->char_location_ptr_name);
-    if (var_pos == -100) {
-        printf("you reference %s, but this variable is not defined", syscallwrite_node->char_location_ptr_name);
-        exit(EXIT_FAILURE);
-    }
+    // process rax argument 
+    ExprNode* arg_expr = (ExprNode*)syscall_node->expr_node_list->items[0];
+    asme_expr(asmg, arg_expr);  // the result of the expression should be in %rax
 
-    // On stocke l'adresse de cette variable dans rsi
-    Char var_pos_c[20];
-    sprintf(var_pos_c, "%d(%%rbp)", var_pos);
-    str_cat(asmg->text, "    lea    ");
-    str_cat(asmg->text, var_pos_c);
-    str_cat(asmg->text, ", %rsi\n");
-    // syscall
-    str_cat(asmg->text, "    movq    $1, %rax\n");      // for syscall write
-    str_cat(asmg->text, "    movq    $1, %rdi\n");      // stdout
-    str_cat(asmg->text, "    movq    $1, %rdx\n");      // nombre d'octets à ecrire, ici 1 seul
-    str_cat(asmg->text, "    syscall\n");
+    // call the function
+    str_cat(asmg->text, "    syscall    ");
 }
 
 static Void asme_fundef(AsmG* asmg, const FunDefNode* fundef_node)
@@ -290,18 +299,11 @@ static Void asme_start(AsmG* asmg, const StartNode* start_node)
         asme_stmt(asmg, stmt_node, &rbp_offset);
     }
 
-    if (dev_mode) {
-        str_cat(asmg->text, "\n    # function prologue\n");
-    }
-    str_cat(asmg->text, "    movq    %rbp, %rsp\n");
-    str_cat(asmg->text, "    pop     %rbp\n");
-
-    if (dev_mode) {
-        str_cat(asmg->text, "\n    # exit syscall\n");
-    }
-    str_cat(asmg->text, "    movq    $60, %rax\n");      // for syscall exit
-    str_cat(asmg->text, "    movq    $0, %rdi\n");      // exit code
-    str_cat(asmg->text, "    syscall\n");
+    // if (dev_mode) {
+    //     str_cat(asmg->text, "\n    # function prologue\n");
+    // }
+    // str_cat(asmg->text, "    movq    %rbp, %rsp\n");
+    // str_cat(asmg->text, "    pop     %rbp\n");
 }
 
 static Void asme_expr(AsmG* asmg, ExprNode* expr_node)
@@ -313,6 +315,10 @@ static Void asme_expr(AsmG* asmg, ExprNode* expr_node)
 
         case NODE_VAR_REF:
             asme_varref(asmg, &expr_node->var_ref_node);
+            break;
+
+        case NODE_VAR_ADDR:
+            asme_varaddr(asmg, &expr_node->var_addr_node);
             break;
 
         case NODE_BINOP:
@@ -347,8 +353,8 @@ static Void asme_instr(AsmG* asmg, InstrNode* instr_node, I32* rbp_offset)
             asme_return(asmg, &instr_node->return_node);
             break;
 
-        case NODE_SYSCALLWRITE:
-            asme_syscallwrite(asmg, &instr_node->syscallwrite_node);
+        case NODE_SYSCALL:
+            asme_syscall(asmg, &instr_node->syscall_node);
             break;
 
          case NODE_EXPR:

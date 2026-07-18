@@ -23,6 +23,10 @@ typedef struct {
 } VarRefNode;
 
 typedef struct {
+    Char* name;
+} VarAddrNode;
+
+typedef struct {
     TokenType op;
     ExprNode* operand;
 } UnaryOpNode;
@@ -42,14 +46,16 @@ struct ExprNode {
     enum {
         NODE_NUMBER = 10,
         NODE_VAR_REF = 11,
-        NODE_BINOP = 12,
-        NODE_UNARYOP = 13,
-        NODE_FUN_CALL = 14,
+        NODE_VAR_ADDR = 12,
+        NODE_BINOP = 13,
+        NODE_UNARYOP = 14,
+        NODE_FUN_CALL = 15,
     } type;
     union {
         BinopNode bin_op_node;
         UnaryOpNode unary_op_node;
         VarRefNode var_ref_node;
+        VarAddrNode var_addr_node;
         NumberNode number_node;
         FunCallNode fun_call_node;
     };
@@ -71,26 +77,27 @@ typedef struct {
 } VarModifNode;
 
 typedef struct {
+    Bool is_empty;     // not the right way of doing it but ok for now
     ExprNode* expr_node;
 } ReturnNode;
 
 typedef struct {
-    Char* char_location_ptr_name;
-} SyscallwriteNode;
+    List* expr_node_list;
+} SyscallNode;
 
 typedef struct {
     enum {
         NODE_VAR_DEF,
         NODE_VAR_MODIF,
         NODE_RETURN,
-        NODE_SYSCALLWRITE,
+        NODE_SYSCALL,
         NODE_EXPR
     } type;
     union {
         VarDefNode var_def;
         VarModifNode var_modif;
         ReturnNode return_node;
-        SyscallwriteNode syscallwrite_node;
+        SyscallNode syscall_node;
         ExprNode expr_node;
     };
 } InstrNode;
@@ -133,14 +140,15 @@ ParamNode* param_node_new(Char* mut, Char* name, Char* type);
 
 ExprNode* number_node_new(Char* value);
 ExprNode* var_ref_node_new(Char* name);
+ExprNode* var_addr_node_new(Char* name);
 ExprNode* binop_node_new(ExprNode* left, TokenType op, ExprNode* right);
 ExprNode* unaryop_node_new(TokenType op, ExprNode* operand);
 ExprNode* fun_call_node_new(const Char* name, List* expr_node_list);
 
 InstrNode* var_def_node_new(Char* mut, const Char* type, const Char* name, ExprNode* value);
 InstrNode* var_modif_node_new(const Char* name, ExprNode* value);
-InstrNode* return_node_new(ExprNode* expr_node);
-InstrNode* syscallwrite_node_new(Char* char_location_ptr_name);
+InstrNode* return_node_new(Bool is_empty, ExprNode* expr_node);
+InstrNode* syscall_node_new(List* expr_node_list);
 
 StmtNode* fun_def_node_new(Char* name, Char* return_type, List* param_node_list, CodeblockNode* code_block);
 StmtNode* start_node_new(CodeblockNode* code_block);

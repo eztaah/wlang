@@ -32,6 +32,16 @@ static Void print_var_ref_node(VarRefNode* var_ref_node, Str* output, I32 pos_x)
     str_cat(output, buffer);
 }
 
+static Void print_var_addr_node(VarAddrNode* var_addr_node, Str* output, I32 pos_x)
+{
+    Char buffer[256];
+
+    str_cat(output, "VarAddrNode\n");
+    print_indent(output, pos_x);
+    snprintf(buffer, sizeof(buffer), "└─ name: %s\n", var_addr_node->name);
+    str_cat(output, buffer);
+}
+
 static Void print_expr_node(ExprNode* node, Str* output, I32 pos_x);
 
 static Void print_binop_node(BinopNode* binop_node, Str* output, I32 pos_x)
@@ -92,13 +102,12 @@ static Void print_funcall_node(FunCallNode* funcall_node, Str* output, I32 pos_x
     str_cat(output, buffer);
 
     print_indent(output, pos_x);
-    str_cat(output, "├─ args: ");
+    str_cat(output, "└─ args: ");
     print_expr_node_list(funcall_node->expr_node_list, output, pos_x + 9);
 }
 
 static Void print_expr_node(ExprNode* node, Str* output, I32 pos_x)
 {
-
     switch (node->type) {
         case NODE_NUMBER:
             print_number_node(&node->number_node, output, pos_x);
@@ -106,6 +115,10 @@ static Void print_expr_node(ExprNode* node, Str* output, I32 pos_x)
 
         case NODE_VAR_REF:
             print_var_ref_node(&node->var_ref_node, output, pos_x);
+            break;
+
+        case NODE_VAR_ADDR:
+            print_var_addr_node(&node->var_addr_node, output, pos_x);
             break;
 
         case NODE_BINOP:
@@ -166,22 +179,31 @@ static Void print_var_modif_node(VarModifNode* node, Str* output, I32 pos_x)
 
 static Void print_return_node(ReturnNode* node, Str* output, I32 pos_x)
 {
+    Char buffer[256];
+
     str_cat(output, "ReturnNode\n");
 
     print_indent(output, pos_x);
-    str_cat(output, "└─ value: ");
-    print_expr_node(node->expr_node, output, pos_x + 10);
-}
-
-static Void print_syscallwrite_node(SyscallwriteNode* node, Str* output, I32 pos_x)
-{
-    Char buffer[256];
-
-    str_cat(output, "SyscallwriteNode\n");
+    snprintf(buffer, sizeof(buffer), "├─ is_empty: \"%d\"\n", node->is_empty);
+    str_cat(output, buffer);
 
     print_indent(output, pos_x);
-    snprintf(buffer, sizeof(buffer), "└─ char_location_ptr_name: \"%s\"\n", node->char_location_ptr_name);
-    str_cat(output, buffer);
+    str_cat(output, "└─ value: ");
+    if (node->is_empty) {
+        str_cat(output, "NULL\n");
+    }
+    else {
+        print_expr_node(node->expr_node, output, pos_x + 10);
+    }
+}
+
+static Void print_syscall_node(SyscallNode* syscall_node, Str* output, I32 pos_x)
+{
+    str_cat(output, "SyscallNode\n");
+
+    print_indent(output, pos_x);
+    str_cat(output, "└─ args: ");
+    print_expr_node_list(syscall_node->expr_node_list, output, pos_x + 9);
 }
 
 static Void print_instr_node(InstrNode* instr_node, Str* output, I32 pos_x)
@@ -199,8 +221,8 @@ static Void print_instr_node(InstrNode* instr_node, Str* output, I32 pos_x)
             print_return_node(&instr_node->return_node, output, pos_x);
             break;
 
-        case NODE_SYSCALLWRITE:
-            print_syscallwrite_node(&instr_node->syscallwrite_node, output, pos_x);
+        case NODE_SYSCALL:
+            print_syscall_node(&instr_node->syscall_node, output, pos_x);
             break;
 
         case NODE_EXPR:
