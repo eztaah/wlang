@@ -23,11 +23,10 @@ fun write(cst fd: I64, cst buf_addr: I64, cst count: I64): Void
     return;
 }
 
-# works only for number between 0 and 9
-fun print_num(cst num: I64): Void
+fun print_digit(cst digit: I64): Void
 {
-    # print the number
-    cst asciicode: I64 = i32_to_asciicode(num);
+    # print the digit
+    cst asciicode: I64 = i32_to_asciicode(digit);
     write(1, &asciicode, 1);
 
     # print \n
@@ -49,7 +48,7 @@ _start
     cst num2: I64 = 5;
 
     cst sum: I64 = add(num1, num2);
-    print_num(sum);
+    print_digit(sum);
 
     exit(0);
 }

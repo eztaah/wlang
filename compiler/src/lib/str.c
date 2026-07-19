@@ -1,12 +1,11 @@
 #include "lib.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <stdlib.h> // malloc
+#include <string.h> // strcpy()
 
 Str* str_new(const Char* value)
 {
     UX length = strlen(value);
-    Char* char_array = malloc(length + 1); // +1 pour le caractère nul de fin
+    Char* char_array = malloc(length + 1); // +1 for the null-terminating character
     if (!char_array) {
         PANIC("malloc failed");
     }
@@ -22,7 +21,8 @@ Str* str_new(const Char* value)
 
 Str* str_new_c(const Char c)
 {
-    Char* char_array = malloc(2 * sizeof(Char)); // 2 pour le caractère et le caractère nul de fin
+    Char* char_array = malloc(2 * sizeof(Char)); // 2 for the character and the null-terminating character
+
     if (!char_array) {
         PANIC("malloc failed");
     }

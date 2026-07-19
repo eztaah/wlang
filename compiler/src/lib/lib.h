@@ -2,9 +2,8 @@
 #define LIST_H
 
 #include "lib.h"
-#include <sys/types.h> // for ssize_t
-#include <stdarg.h>    // for va_start(), va_end(), va_list type
-
+#include <stdarg.h>    // va_list
+#include <sys/types.h> // ssize_t
 
 typedef unsigned int U32;
 typedef size_t UX;
@@ -22,7 +21,7 @@ typedef enum {
 
 // List
 typedef struct {
-    Void** items; // pointeur vers un array de pointeurs, pour acceder à un item
+    Void** items; // pointer to an array of pointers, to access an item
     I32 size;
     I32 item_size;
 } List;
@@ -56,7 +55,7 @@ typedef struct {
 } Dict;
 Dict* dict_new(Void);
 Void dict_put(Dict* dict, const Char* key, I32 value);
-I32 dict_get(Dict* dict, const Char* key);
+I32 dict_get(const Dict* dict, const Char* key);
 Void dict_free(Dict* dict);
 
 // io
@@ -70,8 +69,8 @@ Char* read_file(const Char* filename);
 Void write_file(const Char* filename, Char* outbuffer);
 Char* sh(const Char* cmd);
 Void create_dir(const Char* dir);
-void print_v(MsgType msg_type, const char *text, va_list args);
-void print(MsgType msg_type, const char *text, ...);
+void print_v(MsgType msg_type, const char* text, va_list args);
+void print(MsgType msg_type, const char* text, ...);
 
 // error handling
 Void application_panic(const Char* file_path, I32 line, const Char* format, ...);

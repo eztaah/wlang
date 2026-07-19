@@ -1,7 +1,5 @@
 #include "lib.h"
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <stdlib.h> // abort()
 
 Void application_panic(const Char* file_path, I32 line, const Char* format, ...)
 {
@@ -16,7 +14,7 @@ Void application_panic(const Char* file_path, I32 line, const Char* format, ...)
     print(MSG_ERROR, "\n\n");
 
     va_end(args);
-    abort(); 
+    abort();
 }
 
 Void application_assert(const Char* file, I32 line, Bool cond, const Char* message)

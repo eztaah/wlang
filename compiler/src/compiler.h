@@ -8,8 +8,8 @@
 extern Bool verbose;
 extern Bool dev_mode;
 
-List* lex(Char* src);
+List* lex(const Char* src);
 List* parse(const List* token_list);
-Str* asme(List* node_list);
+Str* asme(const List* node_list);
 
 #endif // COMPILER_H

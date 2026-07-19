@@ -1,13 +1,11 @@
 #define _GNU_SOURCE
 
+#include "compiler.h" // dev_mode, verbose
 #include "lib.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <sys/stat.h>  // for stat struct
-#include "compiler.h"  // for dev_mode and verbose variable
-
+#include <stdio.h>    // printf()
+#include <stdlib.h>   // malloc(), free()
+#include <string.h>   // strcat()
+#include <sys/stat.h> // stat
 
 Char* read_file(const Char* filename)
 {
@@ -92,11 +90,11 @@ Void create_dir(const Char* dir)
 }
 
 #define MAX_LOG_LENGTH 1024
-void print_v(MsgType msg_type, const char *text, va_list args) 
+void print_v(MsgType msg_type, const char* text, va_list args)
 {
     char buffer[MAX_LOG_LENGTH];
 
-    // Utilisation de vsnprintf pour formatter le texte
+    // using vsnprintf to format the text
     vsnprintf(buffer, MAX_LOG_LENGTH, text, args);
 
     switch (msg_type) {
@@ -127,7 +125,7 @@ void print_v(MsgType msg_type, const char *text, va_list args)
     }
 }
 
-void print(MsgType msg_type, const char *text, ...) 
+void print(MsgType msg_type, const char* text, ...)
 {
     va_list args;
     va_start(args, text);

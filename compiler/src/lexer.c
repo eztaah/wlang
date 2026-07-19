@@ -1,14 +1,10 @@
-// #include <stdlib.h>
 #include "compiler.h"
-#include "lib.h"
-#include "token.h"
-#include <ctype.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <ctype.h>  // isalpha(), isdigit()
+#include <stdlib.h> // exit()
+#include <string.h> // strlen()
 
 typedef struct {
-    Char* src;
+    const Char* src;
     UX src_size;
     Char c;
     U32 i;
@@ -112,7 +108,7 @@ static void lexer_skip_comment(Lexer* lexer)
     skip_whitespace(lexer);
 }
 
-static Token* lex_end_instruction(Lexer* lexer)
+static Token* lex_end_stmtuction(Lexer* lexer)
 {
     Str* value = str_new(";");
 
@@ -144,7 +140,7 @@ static Token* lex_next_token(Lexer* lexer)
 
     // handle end of statement
     if (lexer->c == ';') {
-        return lex_end_instruction(lexer);
+        return lex_end_stmtuction(lexer);
     }
 
     switch (lexer->c) {
@@ -177,7 +173,7 @@ static Token* lex_next_token(Lexer* lexer)
         case '\0':
             return lex_next_token_assumes(lexer, TOKEN_EOF);
         default:
-            print(MSG_ERROR,"[Lexer]: Unexpected character `%c` (%d)\n", lexer->c, (I32)lexer->c);
+            print(MSG_ERROR, "[Lexer]: Unexpected character `%c` (%d)\n", lexer->c, (I32)lexer->c);
             exit(EXIT_FAILURE);
             break;
     }
@@ -186,7 +182,7 @@ static Token* lex_next_token(Lexer* lexer)
 /**
  * This function create a lexer (you can see a lexer as a tool that contain data)
  */
-static Lexer* lexer_new(Char* src)
+static Lexer* lexer_new(const Char* src)
 {
     Lexer* lexer = calloc(1, sizeof(Lexer));
     lexer->src = src;
@@ -202,7 +198,7 @@ static Void lexer_free(Lexer* lexer)
     free(lexer);
 }
 
-List* lex(Char* src)
+List* lex(const Char* src)
 {
     print(MSG_STEP, "lexing...\n");
 
@@ -217,6 +213,7 @@ List* lex(Char* src)
     // Add the EOF token to the array
     Token* token = lex_next_token_assumes(lexer, TOKEN_EOF);
     list_push(token_list, token);
+
 
     lexer_free(lexer);
     return token_list;
