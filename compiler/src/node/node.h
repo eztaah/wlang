@@ -63,7 +63,6 @@ struct ExprNode {
 
 // EXPRESSION NODE
 
-
 typedef struct {
     Char* mut;
     Char* name;
@@ -77,7 +76,7 @@ typedef struct {
 } VarModifNode;
 
 typedef struct {
-    Bool is_empty;     // not the right way of doing it but ok for now
+    Bool is_empty; // not the right way of doing it but ok for now
     ExprNode* expr_node;
 } ReturnNode;
 
@@ -103,7 +102,6 @@ typedef struct {
 } InstrNode;
 
 // INSTRUCTIONS NODE
-
 
 typedef struct {
     List* instr_node_list;
@@ -132,7 +130,6 @@ typedef struct {
 } StmtNode;
 
 // STATEMENT NODE
-
 
 ParamNode* param_node_new(Char* mut, Char* name, Char* type);
 

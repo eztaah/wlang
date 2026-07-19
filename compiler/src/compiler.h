@@ -5,6 +5,7 @@
 #include "node.h"
 #include "token.h"
 
+extern Bool verbose;
 extern Bool dev_mode;
 
 List* lex(Char* src);

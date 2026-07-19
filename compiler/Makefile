@@ -6,11 +6,11 @@ DEBUG_FLAG = -g
 RELEASE_FLAG = -03
 
 debug:
-	gcc $(SOURCE_FILES) $(INCLUDE_FLAGS) $(CFLAGS) $(DEBUG_FLAG) -o wcompiler
+	gcc $(SOURCE_FILES) $(INCLUDE_FLAGS) $(CFLAGS) $(DEBUG_FLAG) -o wlangc
 
 release:
-	gcc $(SOURCE_FILES) $(INCLUDE_FLAGS) $(CFLAGS) $(RELEASE_FLAG) -o wcompiler
+	gcc $(SOURCE_FILES) $(INCLUDE_FLAGS) $(CFLAGS) $(RELEASE_FLAG) -o wlangc
 
 clean:
-	rm -f wcompiler
-	find ./test -maxdepth 1 ! -name 'test.w' ! -name '.' ! -name '..' -type f -exec rm -f {} +
+	rm -f wlangc
+	rm -f out/*

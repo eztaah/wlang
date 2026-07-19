@@ -49,8 +49,8 @@ typedef struct {
     I32 value;
 } MapEntry;
 typedef struct {
-    MapEntry** entries; 
-    I32 size; 
+    MapEntry** entries;
+    I32 size;
 } Map;
 Map* map_new(Void);
 Void map_put(Map* map, const Char* key, I32 value);
