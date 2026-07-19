@@ -52,7 +52,7 @@ static Token parser_eat_assumes(Parser* parser, TokenType expected_token_type)
     Token token = parser->current_token;
     if (token.type != expected_token_type) {
         PANIC("Error: expected token type %d but got %d\n", expected_token_type, token.type);
-        // printf("Error: expected token type %d but got %d\n", expected_token_type, token.type); // we don't want to handle it the the PANIC macro as it is an error that can be triggered by the user
+        // print(MSG_ERROR,"Error: expected token type %d but got %d\n", expected_token_type, token.type); // we don't want to handle it the the PANIC macro as it is an error that can be triggered by the user
         // exit(EXIT_FAILURE);
     }
     return parser_eat(parser);
@@ -110,7 +110,7 @@ static ExprNode* parse_primary(Parser* parser)
     }
 
     PANIC("Error: expected number or '('\n");
-    // printf("Error: expected number or '('\n");
+    // print(MSG_ERROR,"Error: expected number or '('\n");
     // exit(EXIT_FAILURE);
     return NULL;
 }
@@ -369,9 +369,7 @@ static StmtNode* parse_stmt(Parser* parser)
 
 List* parse(const List* token_list)
 {
-    if (verbose) {
-        printf("parsing...\n");
-    }
+    print(MSG_STEP, "parsing...\n");
 
     Parser* parser = parser_new(token_list);
 

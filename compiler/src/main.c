@@ -59,7 +59,7 @@ static Void handle_arguments(const I32 argc, Char* argv[])
                         to_executable = TRUE;
                         break;
                     default:
-                        printf("-%c is not a valid argument\n", argv[i][j]);
+                        print(MSG_ERROR,"-%c is not a valid argument\n", argv[i][j]);
                         print_usage();
                         exit(EXIT_FAILURE);
                 }
@@ -78,7 +78,7 @@ static Void handle_arguments(const I32 argc, Char* argv[])
             }
             // if a wrong argument is given
             else {
-                printf("%s is not a valid argument\n", argv[i]);
+                print(MSG_ERROR,"%s is not a valid argument\n", argv[i]);
                 print_usage();
                 exit(EXIT_FAILURE);
             }
@@ -86,10 +86,11 @@ static Void handle_arguments(const I32 argc, Char* argv[])
     }
 }
 
-
 static Void compile_file(const Char* filename)
 {
     Char* src = read_file(filename);
+
+    create_dir("out");
 
     // Lexing
     List* token_list = lex(src);
@@ -113,14 +114,10 @@ static Void compile_file(const Char* filename)
 
     // Assemble and link
     if (to_executable) {
-        if (verbose) {
-            printf("assembling...\n");
-        }
+        print(MSG_STEP, "assembling...\n");
         sh("as out/asmg_out.s -o out/as_out.o");
 
-        if (verbose) {
-            printf("linking...\n");
-        }
+        print(MSG_STEP, "linking...\n");
         sh("ld -s out/as_out.o -o out/prog");
     }
 }

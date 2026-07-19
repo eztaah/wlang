@@ -5,6 +5,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/stat.h>  // for stat struct
+#include "compiler.h"  // for dev_mode and verbose variable
+
 
 Char* read_file(const Char* filename)
 {
@@ -15,7 +18,7 @@ Char* read_file(const Char* filename)
 
     fp = fopen(filename, "rb");
     if (fp == NULL) {
-        printf("Could not read file `%s`\n", filename);
+        print(MSG_ERROR, "Could not read file `%s`\n", filename);
         exit(EXIT_FAILURE);
     }
 
@@ -41,7 +44,7 @@ Void write_file(const Char* filename, Char* outbuffer)
 
     fp = fopen(filename, "wb");
     if (fp == NULL) {
-        printf("Could not open file for writing `%s`\n", filename);
+        print(MSG_ERROR, "Could not open file for writing `%s`\n", filename);
         exit(EXIT_FAILURE);
     }
 
@@ -61,7 +64,7 @@ Char* sh(const Char* cmd)
     fp = popen(cmd, "r");
 
     if (fp == NULL) {
-        printf("Failed to run command\n");
+        print(MSG_ERROR, "Failed to run command\n");
         exit(EXIT_FAILURE);
     }
 
@@ -73,4 +76,61 @@ Char* sh(const Char* cmd)
     pclose(fp);
 
     return output;
+}
+
+Void create_dir(const Char* dir)
+{
+    struct stat st = {0};
+
+    // check if folder already exist
+    if (stat(dir, &st) == -1) {
+        // create folder with 0755 permissions (read, write et execute for the owner, read and execute for other)
+        if (mkdir(dir, 0755) != 0) {
+            PANIC("failed to create output directory");
+        }
+    }
+}
+
+#define MAX_LOG_LENGTH 1024
+void print_v(MsgType msg_type, const char *text, va_list args) 
+{
+    char buffer[MAX_LOG_LENGTH];
+
+    // Utilisation de vsnprintf pour formatter le texte
+    vsnprintf(buffer, MAX_LOG_LENGTH, text, args);
+
+    switch (msg_type) {
+        case MSG_STEP:
+            if (verbose) {
+                fprintf(stdout, "%s", buffer);
+            }
+            break;
+
+        case MSG_INFO:
+            if (verbose) {
+                fprintf(stdout, "   %s", buffer);
+            }
+            break;
+
+        case MSG_ERROR:
+            if (verbose) {
+                fprintf(stderr, "   %s", buffer);
+            }
+            else {
+                fprintf(stderr, "%s", buffer);
+            }
+            break;
+
+        default:
+            PANIC("unknown message type");
+            break;
+    }
+}
+
+void print(MsgType msg_type, const char *text, ...) 
+{
+    va_list args;
+    va_start(args, text);
+    print_v(msg_type, text, args);
+    va_end(args);
 }

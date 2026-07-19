@@ -38,18 +38,17 @@ fun print_num(cst num: I64): Void
 }
 
 # ------------------------ USER CODE ------------------------
-fun test(): I64
+fun add(cst a: I64, cst b: I64): I64
 {
-    cst sum: I64 = 1;
-    return sum;
+    return a + b;
 }
 
 _start
 {
-    cst res: I64 = test();
+    cst num1: I64 = 3;
+    cst num2: I64 = 5;
 
-    cst sum: I64 = 7;
-
+    cst sum: I64 = add(num1, num2);
     print_num(sum);
 
     exit(0);
