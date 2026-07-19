@@ -1,0 +1,109 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "w",
+    "patterns": [
+        {
+            "include": "#comment"
+        },
+        {
+            "include": "#keyword"
+        },
+        {
+            "include": "#symbol"
+        },
+        {
+            "include": "#type"
+        },
+        {
+            "include": "#function_name"
+        },
+        {
+            "include": "#number"
+        },
+        {
+            "include": "#string"
+        }
+    ],    
+    "repository": {
+        "comment": {
+            "patterns": [
+                {
+                    "name": "comment.line.w",
+                    "match": "#.+"
+                },
+                {
+                    "name": "comment.line.w",
+                    "begin": "\"\"\"",
+                    "end": "\"\"\"",
+                    "patterns": [
+                        {
+                            "name": "comment.line.w",
+                            "match": ".|\n"
+                        }
+                    ]
+                }
+            ]
+        },
+        "keyword": {
+            "patterns": [
+                {
+                    "name": "keyword.control.w",
+                    "match": "\\b(if|elif|else|while|for|cst|var|fun|return|from|import|export|replace|by)\\b"
+                }
+            ]
+        },
+        "symbol": {
+            "patterns": [
+                {
+                    "name": "keyword.control.w",
+                    "match": "\\&\\&|\\|\\||[\\+\\-\\*/%|^=!<>]"
+                },
+                {
+                    "name": "keyword.control.w",
+                    "match": "(?<!&)\\&(?![a-zA-Z0-9_])"
+                }
+            ]
+        },  
+        "type": {
+            "patterns": [
+                {
+                    "name": "entity.name.type",
+                    "match": "\\b(I32|B32|C8|Void)\\b"
+                },
+                {
+                    "name": "entity.name.type",
+                    "match": "&(?:I32|B32|C8|Void)"
+                }
+            ]
+        },    
+        "function_name": {
+            "patterns": [
+                {
+                    "name": "entity.name.function.w",
+                    "match": "\\b([a-zA-Z_][a-zA-Z0-9_]*)\\s*(?=\\()"
+                },
+                {
+                    "name": "entity.name.function.w",
+                    "match": "\\b[a-zA-Z_][a-zA-Z0-9_]*\\b(?=\\s*from\\b|\\s*\\b%import)"
+                }
+            ]
+        },
+        "number": {
+            "patterns": [
+                {
+                    "name": "constant.numeric.w",
+                    "match": "\\b(0b[01]+|\\d+\\.?\\d*)\\b"
+                }
+            ]
+        },
+        "string": {
+            "patterns": [
+                {
+                    "name": "string.w",
+                    "match": "\".*?\""
+                }
+            ]
+        }
+    },
+	"scopeName": "source.w"
+}
