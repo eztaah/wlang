@@ -1,6 +1,7 @@
+#include <stdio.h> // snprintf(), NULL
+
 #include "lib.h"
 #include "token.h"
-#include <stdio.h> // snprintf(), NULL
 
 Str* print_tokenlist(const List* token_list)
 {

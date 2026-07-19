@@ -1,9 +1,10 @@
 #ifndef LIST_H
 #define LIST_H
 
-#include "lib.h"
 #include <stdarg.h>    // va_list
 #include <sys/types.h> // ssize_t
+
+#include "lib.h"
 
 typedef unsigned int U32;
 typedef size_t UX;

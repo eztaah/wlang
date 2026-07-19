@@ -1,6 +1,7 @@
-#include "node.h"
 #include <stdlib.h> // malloc()
 #include <string.h> // strdup()
+
+#include "node.h"
 
 ParamNode* param_node_new(Char* mut, Char* name, Char* type)
 {

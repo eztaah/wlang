@@ -1,39 +1,31 @@
 # wlang
 
-L'objectif ici est de créer un language de programmation haut niveau, le plus simple possible
-Le compilateur est codé en C et transform your high level code to x86_64 GNU assembly.
+The goal is to create a simple high-level programming language.  
+The compiler is written in C and translates your high-level code into x86_64 GNU assembly.
 
-Vision : 
-    - Le compilateur ne fera aucune optimisation, il fait ce que qu'on lui demande et c'est tout.
-    - 
+<br>
 
+## Language Syntax
 
-A Visual Studio Code extension is available for syntax highlighting :    
+> A Visual Studio Code extension for syntax highlighting is available:  
 [https://marketplace.visualstudio.com/items?itemName=eztaah.w](https://marketplace.visualstudio.com/items?itemName=eztaah.w)
 
 <br>
 
-## Language syntax 
+Below is a program that adds two numbers and prints the sum to the terminal:  
+<img src="./docs/language-preview.png" alt="image" width="575">
 
-Voici à quoi ressemble la syntaxe du language : 
-
-Ici nous avons un programme qui additionne 2 nombres et qui affiche la somme sur le terminal : 
-<img src="./docs/language-preview.png" alt="image" width="475">
-
-Quels sont les points clés : 
-- le mot clé return est obligatoire meme si la fonction ne retourne rien
-- les "fonction" précedé par un @ sont directement convertis en assembleur lors de la compilation, il n'y a donc pas de definition de ces fonctions dans la librarie standard. 
-- Le seul type existant est le I64 (entier signé sur 64 bits), il faut garder en tete que l'on peut y stocker un code ascii et meme une adresse mémoire. Il est donc possible de manipuler des caracteres et meme des adresse memoire.
-- Il n'est pas possible d'ecrire des instructions en dehors des fonctions
-- Ne pas oublier d'appeler la fonction exit à la fin de la "fonction" _start
+Key Points:
+- The `return` keyword is mandatory, even if the function returns nothing.
+- Functions prefixed with `@` are directly translated to assembly during compilation and do not have "definitions".
+- The only existing type is `I64` (a signed 64-bit integer). Keep in mind that you can store ASCII codes and even memory addresses in it. Therefore, it's possible to manipulate characters and addresses.
+- Instructions cannot be written outside of functions.
 
 <br>
 
 ## How to use the compiler
 
-Pour compiler votre code, vous devez utiliser le programme wlangc (voir ci dessous pour build le compilateur)
-
-Voici comment l'utiliser : 
+To compile your code, use the `wlangc` program (see below for building the compiler).
 
 ```
 $ wlangc --help                                    
@@ -48,14 +40,13 @@ Options:
     -e, --to-executable             assemble and link the asmed assembly code into an executable
                                         - GNU assembler (as) and GNU linker (ld) will be needed during compilation time.
                                         - the generated executable will only run on x86_64 architecture and requires a Linux system.
-
 ``` 
 
 <br>
 
 ## Building the compiler from source
 
-Navigate to the projet directory and execute this command :
+Navigate to the project directory and execute this command:
 ```shell
 cd compiler
 make release

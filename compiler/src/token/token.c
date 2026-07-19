@@ -1,7 +1,8 @@
-#include "token.h"
-#include "lib.h"
 #include <stdlib.h> // malloc()
 #include <string.h> // strdup()
+
+#include "lib.h"
+#include "token.h"
 
 Token* token_new(Str* value, I32 type)
 {

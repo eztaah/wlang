@@ -1,5 +1,6 @@
-#include "lib.h"
 #include <stdlib.h> // malloc()
+
+#include "lib.h"
 
 List* list_new(I32 item_size)
 {
@@ -39,4 +40,6 @@ Void list_free(List* list)
     }
     free(list->items); // free the items array
     free(list);        // free the list structure itself
+
+    // TOFIX: If the list contains an object that contains a list, these lists will not be freed
 }
