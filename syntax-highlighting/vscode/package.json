@@ -4,13 +4,13 @@
   "description": "Language support for the W programming language.",
   "publisher": "eztaah",
   "license": "MIT",
-  "version": "1.1.0",
+  "version": "1.0.2",
   "bugs": {
     "url": "https://github.com/eztaah/wlang/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/eztaah/wlang"
+    "url": "https://github.com/eztaah/dev-wlang/tree/master/syntax-highlighting/vscode"
   },
   "engines": {
     "vscode": "^1.50.0"
