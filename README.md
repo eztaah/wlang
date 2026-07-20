@@ -3,6 +3,36 @@
 The goal is to create a simple high-level programming language.  
 The compiler is written in C and translates your high-level code into x86_64 GNU assembly.
 
+```
+A ajouter : 
+
+Vision : 
+    - le compilateur à pour but d'etre le plus simple possible
+    - le compilateur ne fournit aucune optimisation
+    - aucune volonté de supporter d'autres architecutre (cela compile pour du x86_64 pour linux system)
+    - ce language a uniquement un set minimal de feature, (pas de switch, pas de +=, pas de ++, pas de elif), tout ce qui est un wrapper autout d'une fonctionnalité existant n'est pas implementé (pas de [] pour les tableaux).
+
+Infos : 
+    - pas de skip avec les operateur || et &&, toutes les expressions sont evaluées (pas de Short-Circuiting Operators)
+
+
+
+The generated assembly code follow the linux ABI System V, you can link it with c.
+
+
+
+Le compilateur ne sait pas ce qu'il y a dans chaque boites, 
+    - Il n'y a donc pas de type checking
+
+    - il n'y a pas de type float, car ajouter le type float dans mon language me forcerais à ajouter un type à chaque boite, car le compilateur aurait besoin de savoir si il doit utiliser le add ou addss lorsqu'il additionne le contenu de la boite. 
+
+
+Rappel language C : 
+Les "type" mis en place sont la uniqument pour empecher au developpeur de faire des erreurs, 
+Caster un entier signé dans un entier non signé ne modifie en aucun cas le contentu de la variable, cela modifie juste l'etiquette sur la variable pour dire : "je veux que cette valeur soit interpreté comme un entier non signé", si cette valeur est passé à une fonction qui attend un type signé, il y aura une erreur. MAIS CELA NE CHANGE PAS LE CODE EN ASSEMBLEUR
+
+```
+
 <br>
 
 ## Language Syntax
@@ -45,6 +75,8 @@ Options:
 <br>
 
 ## Building the compiler from source
+
+Le compilateur est codé en C, vous avec besoin du compilateur gcc ainsi que de la libc.
 
 Navigate to the project directory and execute this command:
 ```shell
