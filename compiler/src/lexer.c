@@ -11,6 +11,22 @@ typedef struct {
     U32 i;
 } Lexer;
 
+static Lexer* lexer_new(const Char* src)
+{
+    Lexer* lexer = calloc(1, sizeof(Lexer));
+    lexer->src = src;
+    lexer->src_size = strlen(src);
+    lexer->i = 0;
+    lexer->c = src[lexer->i];
+
+    return lexer;
+}
+
+static Void lexer_free(Lexer* lexer)
+{
+    free(lexer);
+}
+
 static Void lexer_advance(Lexer* lexer)
 {
     ASSERT(lexer->i < lexer->src_size, "lexer position should be < lexer->src_size");
@@ -19,9 +35,9 @@ static Void lexer_advance(Lexer* lexer)
     lexer->c = lexer->src[lexer->i];
 }
 
-static Token* lex_next_token_assumes(Lexer* lexer, I32 type)
+static Token* lex_eof(I32 type)
 {
-    Str* value = str_new_c(lexer->c);
+    Str* value = str_new_c(' ');
     Token* token = token_new(value, type);
 
     return token;
@@ -46,7 +62,7 @@ static Token* lex_number(Lexer* lexer)
         lexer_advance(lexer);
     }
 
-    return token_new(value, TOKEN_INT);
+    return token_new(value, TOKEN_NUM);
 }
 
 static Token* lex_word(Lexer* lexer)
@@ -60,27 +76,9 @@ static Token* lex_word(Lexer* lexer)
 
     I32 token_type;
     // handle keywords
-    if (str_cmp(value, "cst")) {
-        token_type = TOKEN_MUT;
+    if (str_cmp(value, "ret")) {
+        token_type = TOKEN_RET;
     }
-    else if (str_cmp(value, "var")) {
-        token_type = TOKEN_MUT;
-    }
-    else if (str_cmp(value, "fun")) {
-        token_type = TOKEN_FUN;
-    }
-    else if (str_cmp(value, "return")) {
-        token_type = TOKEN_RETURN;
-    }
-
-    // handle types
-    else if (str_cmp(value, "I64")) {
-        token_type = TOKEN_TYPE;
-    }
-    else if (str_cmp(value, "Void")) {
-        token_type = TOKEN_TYPE;
-    }
-    // handle variable variables names
     else {
         token_type = TOKEN_ID;
     }
@@ -97,7 +95,7 @@ static Void skip_whitespace(Lexer* lexer)
 
 static void lexer_skip_comment(Lexer* lexer)
 {
-    while (lexer->c == '#') {
+    while (lexer->c == ':') {
         while (lexer->c != '\n' && lexer->c != '\0') {
             lexer_advance(lexer);
         }
@@ -109,19 +107,28 @@ static void lexer_skip_comment(Lexer* lexer)
     skip_whitespace(lexer);
 }
 
-static Token* lex_end_stmtuction(Lexer* lexer)
+static Void skip_annotations(Lexer* lexer)
 {
-    Str* value = str_new(";");
+    while (lexer->c == '!') {
+        lexer_advance(lexer); // skip the '!' character
 
-    Token* token = token_new(value, TOKEN_END_INSTR);
-    lexer_advance(lexer);
+        while (isalnum(lexer->c) || lexer->c == '_') {
+            lexer_advance(lexer);
+        }
 
-    // handle other \n or carriage return
-    while (lexer->c == 10 || lexer->c == 13) {
-        lexer_advance(lexer);
+        // skip any whitespace after the annotation
+        skip_whitespace(lexer);
+
+        // handles case where annotations are followed by function signatures or chained annotations.
+        if (lexer->c == '(') {
+            while (lexer->c != ')') {
+                lexer_advance(lexer);
+            }
+            lexer_advance(lexer); // skip the closing ')'
+        }
+
+        skip_whitespace(lexer);
     }
-
-    return token;
 }
 
 static Token* lex_next_token(Lexer* lexer)
@@ -130,6 +137,7 @@ static Token* lex_next_token(Lexer* lexer)
 
     skip_whitespace(lexer);
     lexer_skip_comment(lexer);
+    skip_annotations(lexer);
 
     if (isalpha(lexer->c) || lexer->c == '_') {
         return lex_word(lexer);
@@ -137,11 +145,6 @@ static Token* lex_next_token(Lexer* lexer)
 
     if (isdigit(lexer->c)) {
         return lex_number(lexer);
-    }
-
-    // handle end of statement
-    if (lexer->c == ';') {
-        return lex_end_stmtuction(lexer);
     }
 
     switch (lexer->c) {
@@ -153,8 +156,6 @@ static Token* lex_next_token(Lexer* lexer)
             return lex_symbol(lexer, TOKEN_DIV);
         case '*':
             return lex_symbol(lexer, TOKEN_MUL);
-        case ':':
-            return lex_symbol(lexer, TOKEN_COLON);
         case ',':
             return lex_symbol(lexer, TOKEN_COMMA);
         case '=':
@@ -171,32 +172,14 @@ static Token* lex_next_token(Lexer* lexer)
             return lex_symbol(lexer, TOKEN_AT);
         case '&':
             return lex_symbol(lexer, TOKEN_AMPERSAND);
+        case ';':
+            return lex_symbol(lexer, TOKEN_SEMI);
         case '\0':
-            return lex_next_token_assumes(lexer, TOKEN_EOF);
+            return lex_eof(TOKEN_EOF);
         default:
-            print(MSG_ERROR, "[Lexer]: Unexpected character `%c` (%d)\n", lexer->c, (I32)lexer->c);
-            exit(EXIT_FAILURE);
-            break;
+            USER_PANIC("Unexpected character `%c` (ascii: %d)", lexer->c, (I32)lexer->c);
+            return NULL;
     }
-}
-
-/**
- * This function create a lexer (you can see a lexer as a tool that contain data)
- */
-static Lexer* lexer_new(const Char* src)
-{
-    Lexer* lexer = calloc(1, sizeof(Lexer));
-    lexer->src = src;
-    lexer->src_size = strlen(src);
-    lexer->i = 0;
-    lexer->c = src[lexer->i];
-
-    return lexer;
-}
-
-static Void lexer_free(Lexer* lexer)
-{
-    free(lexer);
 }
 
 List* lex(const Char* src)
@@ -210,10 +193,6 @@ List* lex(const Char* src)
         Token* token = lex_next_token(lexer);
         list_push(token_list, token);
     }
-
-    // Add the EOF token to the array
-    Token* token = lex_next_token_assumes(lexer, TOKEN_EOF);
-    list_push(token_list, token);
 
     lexer_free(lexer);
     return token_list;

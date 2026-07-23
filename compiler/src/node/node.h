@@ -5,9 +5,7 @@
 #include "token.h"
 
 typedef struct {
-    Char* mut;
     Char* name;
-    Char* type;
 } ParamNode;
 
 // OTHER NODE
@@ -64,39 +62,30 @@ struct ExprNode {
 // EXPRESSION NODES
 
 typedef struct {
-    Char* mut;
-    Char* name;
-    Char* type;
-    ExprNode* value;
-} VarDefNode;
-
-typedef struct {
     Char* name;
     ExprNode* value;
-} VarModifNode;
+} VarAssNode;
 
 typedef struct {
     Bool is_empty; // not the right way of doing it but ok for now
     ExprNode* expr_node;
-} ReturnNode;
+} RetNode;
 
 typedef struct {
     List* expr_node_list;
-} SyscallNode;
+} SyscNode;
 
 typedef struct {
     enum {
-        NODE_VARDEF,
-        NODE_VARMOD,
-        NODE_RETURN,
-        NODE_SYSCALL,
+        NODE_VARASS,
+        NODE_RET,
+        NODE_SYSC,
         NODE_EXPR
     } type;
     union {
-        VarDefNode vardef_node;
-        VarModifNode varmod_node;
-        ReturnNode return_node;
-        SyscallNode syscall_node;
+        VarAssNode varass_node;
+        RetNode ret_node;
+        SyscNode sysc_node;
         ExprNode expr_node;
     };
 } StmtNode;
@@ -109,29 +98,13 @@ typedef struct {
 
 typedef struct {
     Char* name;
-    Char* return_type;
     List* param_node_list;
     CodeblockNode* codeblock_node;
 } FundefNode;
 
-typedef struct {
-    CodeblockNode* codeblock_node;
-} StartdefNode;
-
-typedef struct {
-    enum {
-        NODE_FUNDEF,
-        NODE_STARTDEF
-    } type;
-    union {
-        FundefNode fundef_node;
-        StartdefNode startdef_node;
-    };
-} DefNode;
-
 // DEFINITION NODES
 
-ParamNode* param_node_new(Char* mut, Char* name, Char* type);
+ParamNode* param_node_new(Char* name);
 
 ExprNode* num_node_new(Char* value);
 ExprNode* varref_node_new(Char* name);
@@ -140,13 +113,11 @@ ExprNode* binop_node_new(ExprNode* left, TokenType op, ExprNode* right);
 ExprNode* unarop_node_new(TokenType op, ExprNode* operand);
 ExprNode* funcall_node_new(const Char* name, List* expr_node_list);
 
-StmtNode* vardef_node_new(Char* mut, const Char* type, const Char* name, ExprNode* value);
-StmtNode* varmod_node_new(const Char* name, ExprNode* value);
-StmtNode* return_node_new(Bool is_empty, ExprNode* expr_node);
-StmtNode* syscall_node_new(List* expr_node_list);
+StmtNode* varass_node_new(const Char* name, ExprNode* value);
+StmtNode* ret_node_new(Bool is_empty, ExprNode* expr_node);
+StmtNode* sysc_node_new(List* expr_node_list);
 
-DefNode* fundef_node_new(Char* name, Char* return_type, List* param_node_list, CodeblockNode* codeblock_node);
-DefNode* startdef_node_new(CodeblockNode* codeblock_node);
+FundefNode* fundef_node_new(Char* name, List* param_node_list, CodeblockNode* codeblock_node);
 
 CodeblockNode* codeblock_node_new(List* def_node_list);
 

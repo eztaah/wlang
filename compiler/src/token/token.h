@@ -4,19 +4,16 @@
 #include "lib.h"
 
 typedef enum {
-    TOKEN_INT,
-    TOKEN_MUT,
-    TOKEN_FUN,
-    TOKEN_RETURN,
-
-    TOKEN_TYPE,
     TOKEN_ID,
+    TOKEN_NUM,
+
+    TOKEN_RET,
 
     TOKEN_PLUS,
     TOKEN_MINUS,
     TOKEN_DIV,
     TOKEN_MUL,
-    TOKEN_COLON,
+
     TOKEN_COMMA,
     TOKEN_EQUAL,
     TOKEN_LPAREN,
@@ -26,7 +23,7 @@ typedef enum {
     TOKEN_AT,
     TOKEN_AMPERSAND,
 
-    TOKEN_END_INSTR,
+    TOKEN_SEMI,
     TOKEN_EOF
 } TokenType;
 

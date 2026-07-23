@@ -10,6 +10,6 @@ extern Bool dev_mode;
 
 List* lex(const Char* src);
 List* parse(const List* token_list);
-Str* asme(const List* node_list);
+Str* asme(const List* fundef_node_list);
 
 #endif // COMPILER_H

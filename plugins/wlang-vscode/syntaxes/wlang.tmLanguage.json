@@ -6,10 +6,10 @@
             "include": "#comment"
         },
         {
-            "include": "#keyword"
+            "include": "#annotations"
         },
         {
-            "include": "#type"
+            "include": "#keyword"
         },
         {
             "include": "#function"
@@ -23,46 +23,31 @@
             "patterns": [
                 {
                     "name": "comment.line.w",
-                    "match": "#.+"
-                },
-                {
-                    "name": "comment.line.w",
-                    "begin": "\"\"\"",
-                    "end": "\"\"\"",
-                    "patterns": [
-                        {
-                            "name": "comment.line.w",
-                            "match": ".|\n"
-                        }
-                    ]
+                    "match": ":[^\n]*"
                 }
             ]
         },
+        "annotations": {
+            "patterns": [
+                {
+                    "name": "entity.name.type.w",
+                    "match": "!\\w+(\\([^)]*\\))?"
+                }
+            ]
+        }, 
         "keyword": {
             "patterns": [
                 {
                     "name": "keyword.control.w",
-                    "match": "\\b(cst|var|fun|return)\\b"
+                    "match": "\\b(ret)\\b"
                 }
             ]
         },
-        "type": {
-            "patterns": [
-                {
-                    "name": "entity.name.type.w",
-                    "match": "\\b(I64|Void)\\b"
-                }
-            ]
-        },    
         "function": {
             "patterns": [
                 {
                     "name": "entity.name.function.w",
                     "match": "\\b([a-zA-Z_][a-zA-Z0-9_]*)\\s*(?=\\()"
-                },
-                {
-                    "name": "entity.name.function.w",
-                    "match": "_start"
                 }
             ]
         },

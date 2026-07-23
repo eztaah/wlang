@@ -8,10 +8,11 @@
 
 typedef unsigned int U32;
 typedef size_t UX;
-typedef int I32;
+typedef signed int I32;
 typedef ssize_t IX;
-typedef float F32;
+
 typedef char Char;
+typedef float F32;
 typedef void Void;
 
 // Bool
@@ -70,12 +71,15 @@ Char* read_file(const Char* filename);
 Void write_file(const Char* filename, Char* outbuffer);
 Char* sh(const Char* cmd);
 Void create_dir(const Char* dir);
-void print_v(MsgType msg_type, const char* text, va_list args);
-void print(MsgType msg_type, const char* text, ...);
+void print_v(MsgType msg_type, const Char* text, va_list args);
+void print(MsgType msg_type, const Char* text, ...);
 
 // error handling
 Void application_panic(const Char* file_path, I32 line, const Char* format, ...);
 Void application_assert(const Char* file, I32 line, Bool cond, const Char* message);
+Void user_panic(const Char* format, ...);
+
+#define USER_PANIC(...) user_panic(__VA_ARGS__)
 #define PANIC(...) application_panic(__FILE__, __LINE__, __VA_ARGS__)
 #define UNREACHABLE() PANIC("unreachable")
 #define ASSERT(cond, message) application_assert(__FILE__, __LINE__, cond, message)

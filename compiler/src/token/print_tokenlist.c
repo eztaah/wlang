@@ -16,7 +16,7 @@ Str* print_tokenlist(const List* token_list)
             snprintf(temp, sizeof(temp), "    {%s, \"%s\"},\n", token_type_name, token->value);
             str_cat(output, temp);
 
-            if (token->type == TOKEN_END_INSTR) {
+            if (token->type == TOKEN_SEMI) {
                 str_cat(output, "\n");
             }
         }
