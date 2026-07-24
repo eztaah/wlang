@@ -30,6 +30,17 @@ static Void print_varref_node(const VarrefNode* varref_node, Str* output, I32 po
     str_cat(output, buffer);
 }
 
+static Void print_expr_node(const ExprNode* node, Str* output, I32 pos_x);
+
+static Void print_addrderef_node(const AddrderefNode* addrderef_node, Str* output, I32 pos_x)
+{
+    str_cat(output, "AddrderefNode\n");
+
+    print_indent(output, pos_x);
+    str_cat(output, "└─ expr: ");
+    print_expr_node(addrderef_node->expr, output, pos_x + 10);
+}
+
 static Void print_varaddr_node(const VaraddrNode* varaddr_node, Str* output, I32 pos_x)
 {
     Char buffer[256];
@@ -39,8 +50,6 @@ static Void print_varaddr_node(const VaraddrNode* varaddr_node, Str* output, I32
     snprintf(buffer, sizeof(buffer), "└─ name: %s\n", varaddr_node->name);
     str_cat(output, buffer);
 }
-
-static Void print_expr_node(const ExprNode* node, Str* output, I32 pos_x);
 
 static Void print_binop_node(const BinopNode* binop_node, Str* output, I32 pos_x)
 {
@@ -114,15 +123,19 @@ static Void print_funcall_node(const FuncallNode* funcall_node, Str* output, I32
 static Void print_expr_node(const ExprNode* node, Str* output, I32 pos_x)
 {
     switch (node->type) {
-        case NODE_NUMBER:
+        case NODE_NUM:
             print_num_node(&node->num_node, output, pos_x);
             break;
 
-        case NODE_VAR_REF:
+        case NODE_VARREF:
             print_varref_node(&node->varref_node, output, pos_x);
             break;
 
-        case NODE_VAR_ADDR:
+        case NODE_ADDRDEREF:
+            print_addrderef_node(&node->addrderef_node, output, pos_x);
+            break;
+
+        case NODE_VARADDR:
             print_varaddr_node(&node->varaddr_node, output, pos_x);
             break;
 
@@ -134,7 +147,7 @@ static Void print_expr_node(const ExprNode* node, Str* output, I32 pos_x)
             print_unarop_node(&node->unarop_node, output, pos_x);
             break;
 
-        case NODE_FUN_CALL:
+        case NODE_FUNCALL:
             print_funcall_node(&node->funcall_node, output, pos_x);
             break;
 
@@ -146,13 +159,11 @@ static Void print_expr_node(const ExprNode* node, Str* output, I32 pos_x)
 
 static Void print_varass_node(const VarAssNode* node, Str* output, I32 pos_x)
 {
-    Char buffer[256];
-
     str_cat(output, "VarAssNode\n");
 
     print_indent(output, pos_x);
-    snprintf(buffer, sizeof(buffer), "├─ name: \"%s\"\n", node->name);
-    str_cat(output, buffer);
+    str_cat(output, "├─ lvalue: ");
+    print_expr_node(node->lvalue, output, pos_x + 11);
 
     print_indent(output, pos_x);
     str_cat(output, "└─ value: ");
@@ -161,22 +172,12 @@ static Void print_varass_node(const VarAssNode* node, Str* output, I32 pos_x)
 
 static Void print_ret_node(const RetNode* node, Str* output, I32 pos_x)
 {
-    Char buffer[256];
-
     str_cat(output, "RetNode\n");
 
     print_indent(output, pos_x);
-    snprintf(buffer, sizeof(buffer), "├─ is_empty: \"%d\"\n", node->is_empty);
-    str_cat(output, buffer);
-
-    print_indent(output, pos_x);
     str_cat(output, "└─ value: ");
-    if (node->is_empty) {
-        str_cat(output, "NULL\n");
-    }
-    else {
-        print_expr_node(node->expr_node, output, pos_x + 10);
-    }
+    
+    print_expr_node(node->expr_node, output, pos_x + 10);
 }
 
 static Void print_sysc_node(const SyscNode* sysc_node, Str* output, I32 pos_x)

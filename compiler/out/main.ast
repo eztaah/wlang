@@ -1,0 +1,106 @@
+[
+    FundefNode
+    ├─ name: "w__print_digit"
+    ├─ scope: "global"
+    ├─ parameters: List<ParamNode>
+                   └─ ParamNode
+                      └─ name: "num"
+    └─ codeblock_node: CodeblockNode
+                   └─ content: List<StmtNode>
+                               ├─ VarAssNode
+                                  ├─ lvalue: VarrefNode
+                                             └─ name: asciicode
+                                  └─ value: BinopNode
+                                            ├─ op: TOKEN_PLUS
+                                            ├─ left:  VarrefNode
+                                                      └─ name: num
+                                            └─ right: NumNode
+                                                      └─ value: 48
+                               ├─ SyscNode
+                                  └─ args: List<ExprNode>
+                                           ├─ NumNode
+                                              └─ value: 1
+                                           ├─ NumNode
+                                              └─ value: 1
+                                           ├─ VaraddrNode
+                                              └─ name: asciicode
+                                           ├─ NumNode
+                                              └─ value: 1
+                                           ├─ NumNode
+                                              └─ value: 0
+                                           ├─ NumNode
+                                              └─ value: 0
+                                           └─ NumNode
+                                              └─ value: 0
+                               ├─ VarAssNode
+                                  ├─ lvalue: VarrefNode
+                                             └─ name: new_line
+                                  └─ value: NumNode
+                                            └─ value: 10
+                               └─ SyscNode
+                                  └─ args: List<ExprNode>
+                                           ├─ NumNode
+                                              └─ value: 1
+                                           ├─ NumNode
+                                              └─ value: 1
+                                           ├─ VaraddrNode
+                                              └─ name: new_line
+                                           ├─ NumNode
+                                              └─ value: 1
+                                           ├─ NumNode
+                                              └─ value: 0
+                                           ├─ NumNode
+                                              └─ value: 0
+                                           └─ NumNode
+                                              └─ value: 0
+    ,
+    FundefNode
+    ├─ name: "w__main"
+    ├─ scope: "local"
+    ├─ parameters: List<ParamNode>
+                   └─ EMPTY
+    └─ codeblock_node: CodeblockNode
+                   └─ content: List<StmtNode>
+                               ├─ VarAssNode
+                                  ├─ lvalue: VarrefNode
+                                             └─ name: a
+                                  └─ value: NumNode
+                                            └─ value: 3
+                               ├─ FuncallNode
+                                  ├─ name: "w__print_digit"
+                                  └─ args: List<ExprNode>
+                                           └─ VarrefNode
+                                              └─ name: a
+                               ├─ VarAssNode
+                                  ├─ lvalue: VarrefNode
+                                             └─ name: ptr
+                                  └─ value: VaraddrNode
+                                            └─ name: a
+                               ├─ VarAssNode
+                                  ├─ lvalue: VarrefNode
+                                             └─ name: b
+                                  └─ value: BinopNode
+                                            ├─ op: TOKEN_PLUS
+                                            ├─ left:  NumNode
+                                                      └─ value: 2
+                                            └─ right: AddrderefNode
+                                                      └─ expr: VarrefNode
+                                                                └─ name: ptr
+                               ├─ FuncallNode
+                                  ├─ name: "w__print_digit"
+                                  └─ args: List<ExprNode>
+                                           └─ VarrefNode
+                                              └─ name: b
+                               ├─ VarAssNode
+                                  ├─ lvalue: AddrderefNode
+                                             └─ expr: VarrefNode
+                                                       └─ name: ptr
+                                  └─ value: NumNode
+                                            └─ value: 4
+                               └─ FuncallNode
+                                  ├─ name: "w__print_digit"
+                                  └─ args: List<ExprNode>
+                                           └─ VarrefNode
+                                              └─ name: a
+
+]

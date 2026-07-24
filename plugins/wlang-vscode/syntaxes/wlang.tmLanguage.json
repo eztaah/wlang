@@ -31,11 +31,7 @@
             "patterns": [
                 {
                     "name": "entity.name.type.w",
-                    "match": "!\\w+(\\([^)]*\\))?"
-                },
-                {
-                    "name": "entity.name.type.w",
-                    "match": "!\\s.*$"
+                    "match": "!\\S+|!\\s.*"
                 }
             ]
         }, 

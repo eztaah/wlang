@@ -22,7 +22,7 @@ ExprNode* num_node_new(Char* value)
     if (!num_node) {
         PANIC("failed to allocate memory");
     }
-    num_node->type = NODE_NUMBER;
+    num_node->type = NODE_NUM;
     num_node->num_node.value = strdup(value);
     return num_node;
 }
@@ -33,12 +33,24 @@ ExprNode* varref_node_new(Char* name)
     if (!varref_node) {
         PANIC("failed to allocate memory");
     }
-    varref_node->type = NODE_VAR_REF;
+    varref_node->type = NODE_VARREF;
     varref_node->varref_node.name = strdup(name);
     if (!varref_node->varref_node.name) {
         PANIC("failed to allocate memory");
     }
     return varref_node;
+}
+
+ExprNode* addrderef_node_new(ExprNode* expr)
+{
+    ExprNode* addrderef_node = (ExprNode*)malloc(sizeof(ExprNode));
+    if (!addrderef_node) {
+        PANIC("failed to allocate memory");
+    }
+    addrderef_node->type = NODE_ADDRDEREF;
+    addrderef_node->addrderef_node.expr = expr;
+
+    return addrderef_node;
 }
 
 ExprNode* varaddr_node_new(Char* name)
@@ -47,7 +59,7 @@ ExprNode* varaddr_node_new(Char* name)
     if (!varaddr_node) {
         PANIC("failed to allocate memory");
     }
-    varaddr_node->type = NODE_VAR_ADDR;
+    varaddr_node->type = NODE_VARADDR;
     varaddr_node->varaddr_node.name = strdup(name);
     if (!varaddr_node->varaddr_node.name) {
         PANIC("failed to allocate memory");
@@ -87,7 +99,7 @@ ExprNode* funcall_node_new(const Char* name, List* expr_node_list)
         PANIC("failed to allocate memory");
     }
 
-    expr_node->type = NODE_FUN_CALL;
+    expr_node->type = NODE_FUNCALL;
     expr_node->funcall_node.name = strdup(name);
     expr_node->funcall_node.expr_node_list = expr_node_list;
 
@@ -98,7 +110,7 @@ ExprNode* funcall_node_new(const Char* name, List* expr_node_list)
     return expr_node;
 }
 
-StmtNode* varass_node_new(const Char* name, ExprNode* value)
+StmtNode* varass_node_new(ExprNode* lvalue, ExprNode* value)
 {
     StmtNode* varass_node = (StmtNode*)malloc(sizeof(StmtNode));
     if (!varass_node) {
@@ -106,17 +118,13 @@ StmtNode* varass_node_new(const Char* name, ExprNode* value)
     }
 
     varass_node->type = NODE_VARASS;
-    varass_node->varass_node.name = strdup(name);
+    varass_node->varass_node.lvalue = lvalue;
     varass_node->varass_node.value = value;
-
-    if (!varass_node->varass_node.name) {
-        PANIC("failed to allocate memory");
-    }
 
     return varass_node;
 }
 
-StmtNode* ret_node_new(Bool is_empty, ExprNode* expr_node)
+StmtNode* ret_node_new(ExprNode* expr_node)
 {
     StmtNode* ret_node = (StmtNode*)malloc(sizeof(StmtNode));
     if (!ret_node) {
@@ -124,13 +132,11 @@ StmtNode* ret_node_new(Bool is_empty, ExprNode* expr_node)
     }
 
     ret_node->type = NODE_RET;
-    ret_node->ret_node.is_empty = is_empty;
     ret_node->ret_node.expr_node = expr_node;
 
-    // if (!ret_node->ret_node.expr_node) {
-    //     PANIC("failed to allocate memory");
-    // }
-    // The above line was removed because of the fact that an expression can be NULL for the return statement
+    if (!ret_node->ret_node.expr_node) {
+        PANIC("failed to allocate memory");
+    }
 
     return ret_node;
 }

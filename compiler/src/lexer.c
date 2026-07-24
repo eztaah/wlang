@@ -113,7 +113,7 @@ static void lexer_skip_comment(Lexer* lexer)
 static Void skip_annotations(Lexer* lexer)
 {
     while (lexer->c == '!') {
-        lexer_advance(lexer); // skip the '!' character
+        lexer_advance(lexer); // Skip the '!' character
 
         // Check what follows the '!'
         if (isspace(lexer->c)) {
@@ -122,8 +122,8 @@ static Void skip_annotations(Lexer* lexer)
                 lexer_advance(lexer);
             }
         } else {
-            // Skip the word following '!' if '!' is immediately followed by a word
-            while (isalnum(lexer->c) || lexer->c == '_') {
+            // Skip the word following '!' if '!' is immediately followed by non-whitespace characters
+            while (!isspace(lexer->c) && lexer->c != '\0') {
                 lexer_advance(lexer);
             }
 
@@ -143,6 +143,7 @@ static Void skip_annotations(Lexer* lexer)
                     }
                     lexer_advance(lexer);
                 }
+                // Ensure we skip the closing ')' if it's the character that brought parentheses_count to 0
                 if (lexer->c == ')') {
                     lexer_advance(lexer); // Skip the closing ')'
                 }
@@ -153,6 +154,9 @@ static Void skip_annotations(Lexer* lexer)
         skip_whitespace(lexer);
     }
 }
+
+
+
 
 
 static Token* lex_next_token(Lexer* lexer)
@@ -198,6 +202,8 @@ static Token* lex_next_token(Lexer* lexer)
             return lex_symbol(lexer, TOKEN_PERCENT);
         case '&':
             return lex_symbol(lexer, TOKEN_AMPERSAND);
+        case '^':
+            return lex_symbol(lexer, TOKEN_ASTERIX);
         case ';':
             return lex_symbol(lexer, TOKEN_SEMI);
         case '\0':

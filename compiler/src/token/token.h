@@ -24,6 +24,7 @@ typedef enum {
     TOKEN_AT,
     TOKEN_PERCENT,
     TOKEN_AMPERSAND,
+    TOKEN_ASTERIX,
 
     TOKEN_SEMI,
     TOKEN_EOF
