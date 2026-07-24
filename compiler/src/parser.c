@@ -106,6 +106,28 @@ static ExprNode* parse_fun_call(Parser* parser)
     return funcall_node_new(str_to_char(final_name), expr_node_list);
 }
 
+static ExprNode* parse_sysc(Parser* parser)
+{
+    // eat %
+    eat_next_token(parser, TOKEN_PERCENT);
+
+    // eat name
+    eat_next_token(parser, TOKEN_ID);
+
+    // handling arguments
+    eat_next_token(parser, TOKEN_LPAREN);
+    List* expr_node_list = list_new(sizeof(ExprNode));
+    while (parser->current_token.type != TOKEN_RPAREN) {
+        list_push(expr_node_list, parse_expr(parser));
+        if (parser->current_token.type == TOKEN_COMMA) { // for handling case where this is the last parameters (and there is no comma after)
+            eat_next_token(parser, TOKEN_COMMA);
+        }
+    }
+    eat_next_token(parser, TOKEN_RPAREN);
+
+    return sysc_node_new(expr_node_list);
+}
+
 static ExprNode* parse_primary(Parser* parser)
 {
     if (parser->current_token.type == TOKEN_NUM) {
@@ -115,6 +137,11 @@ static ExprNode* parse_primary(Parser* parser)
     else if ((parser->current_token.type == TOKEN_AT) || (parser->current_token.type == TOKEN_ID && parser->next_token.type == TOKEN_LPAREN)) {
         ExprNode* funcall_node = parse_fun_call(parser);
         return funcall_node;
+    }
+    // parse syscall
+    else if ((parser->current_token.type == TOKEN_PERCENT && parser->next_token.type == TOKEN_ID && strcmp(parser->next_token.value, "sysc") == 0)) {
+        ExprNode* sysc_node = parse_sysc(parser);
+        return sysc_node;
     }
     else if (parser->current_token.type == TOKEN_ID) {
         Token token_id = eat_next_token(parser, TOKEN_ID);
@@ -187,28 +214,6 @@ static StmtNode* parse_ret(Parser* parser)
     return ret_node_new(expr_node);
 }
 
-static StmtNode* parse_sysc(Parser* parser)
-{
-    // eat %
-    eat_next_token(parser, TOKEN_PERCENT);
-
-    // eat name
-    eat_next_token(parser, TOKEN_ID);
-
-    // handling arguments
-    eat_next_token(parser, TOKEN_LPAREN);
-    List* expr_node_list = list_new(sizeof(ExprNode));
-    while (parser->current_token.type != TOKEN_RPAREN) {
-        list_push(expr_node_list, parse_expr(parser));
-        if (parser->current_token.type == TOKEN_COMMA) { // for handling case where this is the last parameters (and there is no comma after)
-            eat_next_token(parser, TOKEN_COMMA);
-        }
-    }
-    eat_next_token(parser, TOKEN_RPAREN);
-
-    return sysc_node_new(expr_node_list);
-}
-
 static StmtNode* expr_to_stmt_node(ExprNode* expr_node)
 {
     StmtNode* stmt_node = (StmtNode*)malloc(sizeof(StmtNode));
@@ -228,13 +233,6 @@ static StmtNode* parse_stmt(Parser* parser)
         StmtNode* ret_node = parse_ret(parser);
         eat_next_token(parser, TOKEN_SEMI);
         return ret_node;
-    }
-
-    // parse syscall
-    else if ((parser->current_token.type == TOKEN_PERCENT && parser->next_token.type == TOKEN_ID && strcmp(parser->next_token.value, "sysc") == 0)) {
-        StmtNode* sysc_node = parse_sysc(parser);
-        eat_next_token(parser, TOKEN_SEMI);
-        return sysc_node;
     }
 
     // parse expression
