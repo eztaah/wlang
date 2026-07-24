@@ -5,4 +5,4 @@ set -xe
 clear
 make clean 
 make debug
-./wlangc ./test.w -vde
+./wlangc ./test/test.w -vde

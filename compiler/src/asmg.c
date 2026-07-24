@@ -12,6 +12,8 @@ typedef struct AsmG {
     Str* data;
     Str* bss;
     Str* text;
+    Str* global;
+    Str* start;
 } AsmG;
 
 // Function prototypes
@@ -28,6 +30,8 @@ static AsmG* asmg_new(const List* node_list)
     asmg->data = str_new("");
     asmg->bss = str_new("");
     asmg->text = str_new("");
+    asmg->global = str_new("");
+    asmg->start = str_new("");
 
     return asmg;
 }
@@ -38,6 +42,8 @@ static Void asmg_free(AsmG* asmg)
     str_free(asmg->data);
     str_free(asmg->bss);
     str_free(asmg->text);
+    str_free(asmg->global);
+    str_free(asmg->start);
     free(asmg);
 }
 
@@ -244,6 +250,23 @@ static Void asme_syscall(AsmG* asmg, const SyscNode* sysc_node)
 
 static Void asme_fundef(AsmG* asmg, const FundefNode* fundef_node)
 {
+    if (strcmp(fundef_node->name, "w__main") == 0) {
+        // start code
+        str_cat(asmg->global, "    .global _start\n");
+        str_cat(asmg->start, "\n_start:\n");
+        str_cat(asmg->start, "    call w__main\n");
+        str_cat(asmg->start, "    movq %rax, %rdi\n");
+        str_cat(asmg->start, "    movq $60, %rax\n");
+        str_cat(asmg->start, "    syscall\n");
+    }
+
+    // check if function is global
+    if (strcmp(fundef_node->scope, "global") == 0) {
+        str_cat(asmg->global, "    .global ");
+        str_cat(asmg->global, fundef_node->name);
+        str_cat(asmg->global, "\n");
+    }
+
     // function label
     str_cat(asmg->text, "\n");
     str_cat(asmg->text, fundef_node->name);
@@ -388,17 +411,11 @@ static void init_asm_file(AsmG* asmg)
     str_cat(asmg->bss, "    .section .bss\n");
 
     if (dev_mode) {
-        str_cat(asmg->text, "\n\n    # --- SECTION TEXT ---\n");
+        str_cat(asmg->bss, "\n\n    # --- SECTION TEXT ---\n"); // TODO: put it in the section text, here we can't use bss
     }
-    str_cat(asmg->text, "    .section .text\n");
-    str_cat(asmg->text, "    .global _start\n");
+    str_cat(asmg->bss, "    .section .text\n");
 
-    // _start code
-    str_cat(asmg->text, "\n_start:\n");
-    str_cat(asmg->text, "    call main\n");
-    str_cat(asmg->text, "    movq %rax, %rdi\n");
-    str_cat(asmg->text, "    movq $60, %rax\n");
-    str_cat(asmg->text, "    syscall\n");
+
 }
 
 Str* asme(const List* fundef_node_list)
@@ -419,6 +436,8 @@ Str* asme(const List* fundef_node_list)
     Str* asm_code = str_new("");
     str_cat_str(asm_code, asmg->data);
     str_cat_str(asm_code, asmg->bss);
+    str_cat_str(asm_code, asmg->start);
+    str_cat_str(asm_code, asmg->global);
     str_cat_str(asm_code, asmg->text);
     str_cat(asm_code, "\n");
 

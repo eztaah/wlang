@@ -8,6 +8,7 @@ typedef enum {
     TOKEN_NUM,
 
     TOKEN_RET,
+    TOKEN_GLB,
 
     TOKEN_PLUS,
     TOKEN_MINUS,
@@ -21,6 +22,7 @@ typedef enum {
     TOKEN_LBRACE,
     TOKEN_RBRACE,
     TOKEN_AT,
+    TOKEN_PERCENT,
     TOKEN_AMPERSAND,
 
     TOKEN_SEMI,

@@ -1,5 +1,6 @@
 #include <stdlib.h> // calloc(), free()
 #include <string.h> // strdup()
+#include <stdio.h>  // sprintf()
 
 #include "compiler.h"
 
@@ -69,9 +70,25 @@ static ExprNode* parse_expr(Parser* parser);
 
 static ExprNode* parse_fun_call(Parser* parser)
 {
-    // handling name
-    Token name_token = eat_next_token(parser, TOKEN_ID);
-    Char* name = strdup(name_token.value);
+    Str* final_name = str_new("");
+    // handling @ 
+    if (parser->current_token.type == TOKEN_AT) {
+        eat_next_token(parser, TOKEN_AT);
+
+        // handling name
+        Token name_token = eat_next_token(parser, TOKEN_ID);
+        Char* name = strdup(name_token.value);
+
+        str_cat(final_name, name);
+    }
+    else {
+        // handling name
+        Token name_token = eat_next_token(parser, TOKEN_ID);
+        Char* name = strdup(name_token.value);
+
+        str_cat(final_name, "w__");
+        str_cat(final_name, name);
+    }
 
     eat_next_token(parser, TOKEN_LPAREN);
 
@@ -86,7 +103,7 @@ static ExprNode* parse_fun_call(Parser* parser)
 
     eat_next_token(parser, TOKEN_RPAREN);
 
-    return funcall_node_new(name, expr_node_list);
+    return funcall_node_new(str_to_char(final_name), expr_node_list);
 }
 
 static ExprNode* parse_primary(Parser* parser)
@@ -95,7 +112,7 @@ static ExprNode* parse_primary(Parser* parser)
         Token token_number = eat_next_token(parser, TOKEN_NUM);
         return num_node_new(token_number.value);
     }
-    else if ((parser->current_token.type == TOKEN_ID && parser->next_token.type == TOKEN_LPAREN)) {
+    else if ((parser->current_token.type == TOKEN_AT) || (parser->current_token.type == TOKEN_ID && parser->next_token.type == TOKEN_LPAREN)) {
         ExprNode* funcall_node = parse_fun_call(parser);
         return funcall_node;
     }
@@ -188,8 +205,8 @@ static StmtNode* parse_ret(Parser* parser)
 
 static StmtNode* parse_sysc(Parser* parser)
 {
-    // eat @
-    eat_next_token(parser, TOKEN_AT);
+    // eat %
+    eat_next_token(parser, TOKEN_PERCENT);
 
     // eat name
     eat_next_token(parser, TOKEN_ID);
@@ -237,7 +254,7 @@ static StmtNode* parse_stmt(Parser* parser)
     }
 
     // parse syscall
-    else if ((parser->current_token.type == TOKEN_AT && parser->next_token.type == TOKEN_ID && strcmp(parser->next_token.value, "sysc") == 0)) {
+    else if ((parser->current_token.type == TOKEN_PERCENT && parser->next_token.type == TOKEN_ID && strcmp(parser->next_token.value, "sysc") == 0)) {
         StmtNode* sysc_node = parse_sysc(parser);
         eat_next_token(parser, TOKEN_SEMI);
         return sysc_node;
@@ -277,8 +294,20 @@ static CodeblockNode* parse_codeblock_node(Parser* parser)
 
 static FundefNode* parse_fundef(Parser* parser)
 {
+    // Handle function scope
+    Char scope[255];
+    if (parser->current_token.type == TOKEN_GLB) {
+        eat_next_token(parser, TOKEN_GLB);
+        sprintf(scope, "global");
+    }
+    else {
+        sprintf(scope, "local");
+    }
+
     Token name_token = eat_next_token(parser, TOKEN_ID);
     Char* name = strdup(name_token.value);
+    Str* full_name = str_new("w__");
+    str_cat(full_name, name);
 
     eat_next_token(parser, TOKEN_LPAREN);
 
@@ -295,7 +324,7 @@ static FundefNode* parse_fundef(Parser* parser)
     // handling codeblock
     CodeblockNode* codeblock_node = parse_codeblock_node(parser);
 
-    return fundef_node_new(name, param_node_list, codeblock_node);
+    return fundef_node_new(str_to_char(full_name), scope, param_node_list, codeblock_node);
 }
 
 List* parse(const List* token_list)

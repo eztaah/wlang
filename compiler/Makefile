@@ -13,4 +13,3 @@ release:
 
 clean:
 	rm -f wlangc
-	rm -f out/*
