@@ -6,7 +6,6 @@
 #include "token.h"
 
 extern Bool verbose;
-extern Bool dev_mode;
 
 List* lex(const Char* src);
 List* parse(const List* token_list);

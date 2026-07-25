@@ -6,7 +6,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/wlangc",
-            "args": ["../demos/test/main.w", "--dev-mode", "--to-executable", "--verbose"],
+            "args": ["../demos/helloworld_arrays/main.w", "--dev-mode", "--to-executable", "--verbose"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],

@@ -6,7 +6,6 @@
 #include "lib.h"
 
 Bool verbose = FALSE;
-Bool dev_mode = FALSE;
 Bool to_executable = FALSE;
 static List* source_files;
 
@@ -18,7 +17,6 @@ static Void print_usage(Void)
     printf("    wlangc --help                 display this help message and exit.\n");
     printf("\nOptions:\n");
     printf("    -v, --verbose                   output additional information\n");
-    printf("    -d, --dev-mode                  activate dev mode (add comments in the asm code, ...)\n");
     printf("    -e, --to-executable             assemble and link the asmed assembly code into an executable\n");
     printf("                                        - GNU assembler (as) and GNU linker (ld) will be needed during compilation time.\n");
     printf("                                        - the generated executable will only run on x86_64 architecture and requires a Linux system.\n");
@@ -39,7 +37,7 @@ static Void handle_arguments(I32 argc, const Char* argv[])
         exit(EXIT_SUCCESS);
     }
     else if (char_cmp(argv[1], "--version")) {
-        printf("wlangc 0.1\n");
+        printf("wlangc 0.3\n");
         exit(EXIT_SUCCESS);
     }
 
@@ -51,9 +49,6 @@ static Void handle_arguments(I32 argc, const Char* argv[])
             if (char_cmp(argv[i], "-v") || char_cmp(argv[i], "--verbose")) {
                 verbose = TRUE;
             }
-            else if (char_cmp(argv[i], "-d") || char_cmp(argv[i], "--dev-mode")) {
-                dev_mode = TRUE;
-            }
             else if (char_cmp(argv[i], "-e") || char_cmp(argv[i], "--to-executable")) {
                 to_executable = TRUE;
             }
@@ -63,9 +58,6 @@ static Void handle_arguments(I32 argc, const Char* argv[])
                     switch (argv[i][j]) {
                         case 'v':
                             verbose = TRUE;
-                            break;
-                        case 'd':
-                            dev_mode = TRUE;
                             break;
                         case 'e':
                             to_executable = TRUE;

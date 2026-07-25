@@ -17,13 +17,12 @@ Void application_panic(const Char* file_path, I32 line, const Char* format, ...)
 
     va_end(args);
 
-    if (dev_mode) {
-        print(MSG_ERROR, "\n");
-        abort();
-    }
-    else {
-        exit(EXIT_FAILURE);
-    }
+#ifdef THROW_RUNTIME_ERROR
+    print(MSG_ERROR, "\n");
+    abort();
+#else
+    exit(EXIT_FAILURE);
+#endif
 }
 
 Void application_assert(const Char* file, I32 line, Bool cond, const Char* message)
@@ -45,11 +44,10 @@ Void user_panic(const Char* format, ...)
 
     va_end(args);
 
-    if (dev_mode) {
-        print(MSG_ERROR, "\n");
-        abort();
-    }
-    else {
-        exit(EXIT_FAILURE);
-    }
+#ifdef THROW_RUNTIME_ERROR
+    print(MSG_ERROR, "\n");
+    abort();
+#else
+    exit(EXIT_FAILURE);
+#endif
 }
