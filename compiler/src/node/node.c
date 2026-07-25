@@ -3,16 +3,15 @@
 
 #include "node.h"
 
-ParamNode* param_node_new(Char* name)
+ParamNode* param_node_new(Char* name, Char* size)
 {
     ParamNode* param_node = (ParamNode*)malloc(sizeof(ParamNode));
     if (!param_node) {
         PANIC("failed to allocate memory");
     }
     param_node->name = strdup(name);
-    if (!param_node->name) {
-        PANIC("failed to allocate memory");
-    }
+    param_node->size = strdup(size);
+
     return param_node;
 }
 
@@ -110,18 +109,49 @@ ExprNode* funcall_node_new(const Char* name, List* expr_node_list)
     return expr_node;
 }
 
-StmtNode* varass_node_new(ExprNode* lvalue, ExprNode* value)
+StmtNode* arraydec_node_new(Char* item_size, Char* name, Char* size, List* expr_node_list)
 {
-    StmtNode* varass_node = (StmtNode*)malloc(sizeof(StmtNode));
-    if (!varass_node) {
+    StmtNode* stmt_node = (StmtNode*)malloc(sizeof(StmtNode));
+    if (!stmt_node) {
         PANIC("failed to allocate memory");
     }
 
-    varass_node->type = NODE_VARASS;
-    varass_node->varass_node.lvalue = lvalue;
-    varass_node->varass_node.value = value;
+    stmt_node->type = NODE_ARRAYDEC;
+    stmt_node->arraydec_node.item_size = strdup(item_size);
+    stmt_node->arraydec_node.name = strdup(name);
+    stmt_node->arraydec_node.size = strdup(size);
+    stmt_node->arraydec_node.expr_node_list = expr_node_list;
 
-    return varass_node;
+    return stmt_node;
+}
+
+StmtNode* vardec_node_new(Char* size, Char* name, ExprNode* value)
+{
+    StmtNode* stmt_node = (StmtNode*)malloc(sizeof(StmtNode));
+    if (!stmt_node) {
+        PANIC("failed to allocate memory");
+    }
+
+    stmt_node->type = NODE_VARDEC;
+    stmt_node->vardec_node.size = strdup(size);
+    stmt_node->vardec_node.name = strdup(name);
+    stmt_node->vardec_node.value = value;
+
+    return stmt_node;
+}
+
+StmtNode* ass_node_new(ExprNode* lvalue, ExprNode* value)
+{
+    StmtNode* ass_node = (StmtNode*)malloc(sizeof(StmtNode));
+    if (!ass_node) {
+        PANIC("failed to allocate memory");
+    }
+
+    ass_node->type = NODE_ASS;
+    ass_node->ass_node.lvalue = lvalue;
+    ass_node->ass_node.value = value;
+   
+    return ass_node;
 }
 
 StmtNode* ret_node_new(ExprNode* expr_node)
@@ -154,7 +184,7 @@ ExprNode* sysc_node_new(List* expr_node_list)
     return sysc_node;
 }
 
-FundefNode* fundef_node_new(Char* name, Char* scope, List* param_node_list, CodeblockNode* codeblock_node)
+FundefNode* fundef_node_new(Char* name, Char* return_size, Char* scope, List* param_node_list, CodeblockNode* codeblock_node)
 {
     FundefNode* fundef_node = (FundefNode*)malloc(sizeof(FundefNode));
     if (!fundef_node) {
@@ -162,6 +192,14 @@ FundefNode* fundef_node_new(Char* name, Char* scope, List* param_node_list, Code
     }
 
     fundef_node->name = strdup(name);
+
+    if (return_size == NULL) {
+        fundef_node->return_size = strdup("NULL");
+    }
+    else {
+        fundef_node->return_size = strdup(return_size);
+    }
+
     fundef_node->scope = strdup(scope);
     fundef_node->param_node_list = param_node_list;
     fundef_node->codeblock_node = codeblock_node;

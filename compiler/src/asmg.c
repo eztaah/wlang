@@ -65,13 +65,7 @@ static Void asme_varref(AsmG* asmg, const VarrefNode* varref_node)
     // check if the variable is in the dict
     I32 var_pos = dict_get(asmg->variables, str_to_char(full_var_name));
     if (var_pos == -1) {
-        // is the variable is not in the dict, add it in the dict
-
-        dict_put(asmg->variables, str_to_char(full_var_name), asmg->rbp_offset);
-
-        print(MSG_INFO, "add in the dict: \"%s\" at location %d\n", str_to_char(full_var_name), asmg->rbp_offset);
-        var_pos = asmg->rbp_offset; // update var_pos as it is -1 currently 
-        asmg->rbp_offset -= 8;
+        USER_PANIC("Reference to %s, but this variable is not defined", str_to_char(full_var_name));
     }
 
     Char var_pos_c[256];
@@ -92,13 +86,7 @@ static Void asme_varaddr(AsmG* asmg, const VaraddrNode* varaddr_node)
     // check if the variable is in the dict
     I32 var_pos = dict_get(asmg->variables, str_to_char(full_var_name));
     if (var_pos == -1) {
-        // is the variable is not in the dict, add it in the dict
-
-        dict_put(asmg->variables, str_to_char(full_var_name), asmg->rbp_offset);
-
-        print(MSG_INFO, "add in the dict: \"%s\" at location %d\n", str_to_char(full_var_name), asmg->rbp_offset);
-        var_pos = asmg->rbp_offset; // update var_pos as it is -1 currently 
-        asmg->rbp_offset -= 8;
+        USER_PANIC("Reference to %s, but this variable is not defined", str_to_char(full_var_name));
     }
 
     Char var_pos_c[256];
@@ -231,21 +219,107 @@ static Void asme_syscall(AsmG* asmg, const SyscNode* sysc_node)
 
 static Void asme_lexpr(AsmG* asmg, const ExprNode* expr_node);
 
-static Void asme_varass(AsmG* asmg, const VarAssNode* varass_node)
+static Void asme_ass(AsmG* asmg, const AssNode* ass_node)
 {
     if (dev_mode) {
         str_cat(asmg->text, "\n    # variables assignement\n");
     }
 
     // get the lvalue and put it into rbx       (rbx will contain a location)
-    asme_lexpr(asmg, varass_node->lvalue);
+    asme_lexpr(asmg, ass_node->lvalue);
     str_cat(asmg->text, "    movq    %rax, %r15\n");
 
     // get the value of the variable and put it into rax
-    asme_expr(asmg, varass_node->value); // the value of the variable will be in rax
+    asme_expr(asmg, ass_node->value); // the value of the variable will be in rax
 
     // instruction
     str_cat(asmg->text, "    movq    %rax, (%r15)\n");
+}
+
+static Void asme_vardec(AsmG* asmg, const VardecNode* vardec_node)
+{
+    if (dev_mode) {
+        str_cat(asmg->text, "\n    # variables declaration\n");
+    }
+
+    // get full variable name
+    Str* full_var_name = str_new(str_to_char(asmg->var_prefix));
+    str_cat(full_var_name, "_");
+    str_cat(full_var_name, vardec_node->name);
+
+    I32 var_pos = dict_get(asmg->variables, str_to_char(full_var_name));
+    if (var_pos == -1) {
+        // is the variable is not in the dict, add it in the dict
+
+        dict_put(asmg->variables, str_to_char(full_var_name), asmg->rbp_offset);
+
+        print(MSG_INFO, "add in the dict: \"%s\" at location %d\n", str_to_char(full_var_name), asmg->rbp_offset);
+    }
+    else {
+        USER_PANIC("redefinition of already defined variable");
+    }
+
+    // process expression only if it exists
+    if (vardec_node->value != NULL) {
+        asme_expr(asmg, vardec_node->value); // the value of the variable will be in rax
+
+        Char var_location[256];
+        sprintf(var_location, "%d(%%rbp)", asmg->rbp_offset);
+
+        str_cat(asmg->text, "    movq    %rax, ");
+        str_cat(asmg->text, var_location);
+        str_cat(asmg->text, "\n");
+    }
+
+
+    asmg->rbp_offset -= 8;
+}
+
+static Void asme_arraydec(AsmG* asmg, const ArraydecNode* arraydec_node)
+{
+    if (dev_mode) {
+        str_cat(asmg->text, "\n    # array declaration\n");
+    }
+
+    // get full array name
+    Str* full_array_name = str_new(str_to_char(asmg->var_prefix));
+    str_cat(full_array_name, "_");
+    str_cat(full_array_name, arraydec_node->name);
+
+    I32 var_pos = dict_get(asmg->variables, str_to_char(full_array_name));
+    if (var_pos == -1) {
+        // is the array is not in the dict, add it in the dict
+
+        dict_put(asmg->variables, str_to_char(full_array_name), asmg->rbp_offset);
+        // reserve space on the stack for the whole array
+
+        print(MSG_INFO, "add array 1st elmt in the dict: \"%s\" at location %d\n", str_to_char(full_array_name), asmg->rbp_offset);
+    }
+    else {
+        USER_PANIC("redefinition of already defined variable");
+    }
+
+    // convert array size to int
+    I32 array_size = atoi(arraydec_node->size);
+
+    // process expression only if it exists
+    if (arraydec_node->expr_node_list != NULL) {
+        for (int i = 0; i < array_size; i++) {
+            // get the expression
+            const ExprNode* arg_expr = (ExprNode*)arraydec_node->expr_node_list->items[i];
+            asme_expr(asmg, arg_expr); // the result of the expression should be in %rax
+
+
+            Char var_location[256];
+            sprintf(var_location, "%d(%%rbp)", asmg->rbp_offset * (i+1));
+
+            str_cat(asmg->text, "    movq    %rax, ");
+            str_cat(asmg->text, var_location);
+            str_cat(asmg->text, "\n");
+        }
+    }
+
+    asmg->rbp_offset -= 8 * array_size;
 }
 
 static Void asme_ret(AsmG* asmg, const RetNode* ret_node)
@@ -264,8 +338,6 @@ static Void asme_ret(AsmG* asmg, const RetNode* ret_node)
     str_cat(asmg->text, "    pop     %rbp\n");
     str_cat(asmg->text, "    ret\n"); // we can use rax after to use the return value
 }
-
-
 
 static Void asme_fundef(AsmG* asmg, const FundefNode* fundef_node)
 {
@@ -427,8 +499,16 @@ static Void asme_expr(AsmG* asmg, const ExprNode* expr_node)
 static Void asme_stmt(AsmG* asmg, const StmtNode* stmt_node)
 {
     switch (stmt_node->type) {
-        case NODE_VARASS:
-            asme_varass(asmg, &stmt_node->varass_node);
+        case NODE_VARDEC:
+            asme_vardec(asmg, &stmt_node->vardec_node);
+            break;
+
+        case NODE_ARRAYDEC:
+            asme_arraydec(asmg, &stmt_node->arraydec_node);
+            break;
+
+        case NODE_ASS:
+            asme_ass(asmg, &stmt_node->ass_node);
             break;
 
         case NODE_RET:
@@ -483,8 +563,8 @@ Str* asme(const List* fundef_node_list)
     Str* asm_code = str_new("");
     str_cat_str(asm_code, asmg->data);
     str_cat_str(asm_code, asmg->bss);
-    str_cat_str(asm_code, asmg->start);
     str_cat_str(asm_code, asmg->global);
+    str_cat_str(asm_code, asmg->start);
     str_cat_str(asm_code, asmg->text);
     str_cat(asm_code, "\n");
 

@@ -6,6 +6,7 @@
 
 typedef struct {
     Char* name;
+    Char* size;
 } ParamNode;
 
 // OTHER NODE
@@ -74,9 +75,22 @@ struct ExprNode {
 // EXPRESSION NODES
 
 typedef struct {
+    Char* item_size;
+    Char* name;
+    Char* size;
+    List* expr_node_list;
+} ArraydecNode;
+
+typedef struct {
+    Char* size;
+    Char* name;
+    ExprNode* value;
+} VardecNode;
+
+typedef struct {
     ExprNode* lvalue;
     ExprNode* value;
-} VarAssNode;
+} AssNode;
 
 typedef struct {
     ExprNode* expr_node;
@@ -84,12 +98,16 @@ typedef struct {
 
 typedef struct {
     enum {
-        NODE_VARASS,
+        NODE_ARRAYDEC,
+        NODE_VARDEC,
+        NODE_ASS,
         NODE_RET,
         NODE_EXPR
     } type;
     union {
-        VarAssNode varass_node;
+        ArraydecNode arraydec_node;
+        VardecNode vardec_node;
+        AssNode ass_node;
         RetNode ret_node;
         ExprNode expr_node;
     };
@@ -103,6 +121,7 @@ typedef struct {
 
 typedef struct {
     Char* name;
+    Char* return_size;
     Char* scope;
     List* param_node_list;
     CodeblockNode* codeblock_node;
@@ -110,7 +129,7 @@ typedef struct {
 
 // DEFINITION NODES
 
-ParamNode* param_node_new(Char* name);
+ParamNode* param_node_new(Char* name, Char* size);
 
 ExprNode* num_node_new(Char* value);
 ExprNode* varref_node_new(Char* name);
@@ -121,10 +140,12 @@ ExprNode* unarop_node_new(TokenType op, ExprNode* operand);
 ExprNode* funcall_node_new(const Char* name, List* expr_node_list);
 ExprNode* sysc_node_new(List* expr_node_list);
 
-StmtNode* varass_node_new(ExprNode* lvalue, ExprNode* value);
+StmtNode* arraydec_node_new(Char* item_size, Char* name, Char* size, List* expr_node_list);
+StmtNode* vardec_node_new(Char* size, Char* name, ExprNode* value);
+StmtNode* ass_node_new(ExprNode* lvalue, ExprNode* value);
 StmtNode* ret_node_new(ExprNode* expr_node);
 
-FundefNode* fundef_node_new(Char* name, Char* scope, List* param_node_list, CodeblockNode* codeblock_node);
+FundefNode* fundef_node_new(Char* name, Char* return_size, Char* scope, List* param_node_list, CodeblockNode* codeblock_node);
 
 CodeblockNode* codeblock_node_new(List* def_node_list);
 

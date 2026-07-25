@@ -86,7 +86,11 @@ static Void print_expr_node_list(const List* expr_nodelist, Str* output, I32 pos
 {
     str_cat(output, "List<ExprNode>\n");
 
-    if (expr_nodelist->size > 0) {
+    if (expr_nodelist == NULL) {        // bad code but ok because it will be rewrite entiery
+        print_indent(output, pos_x);        
+        str_cat(output, "└─ EMPTY\n");
+    }
+    else if (expr_nodelist->size > 0) {
         for (I32 i = 0; i < expr_nodelist->size - 1; i++) {
             print_indent(output, pos_x);
             str_cat(output, "├─ ");
@@ -131,48 +135,96 @@ static Void print_sysc_node(const SyscNode* sysc_node, Str* output, I32 pos_x)
 
 static Void print_expr_node(const ExprNode* node, Str* output, I32 pos_x)
 {
-    switch (node->type) {
-        case NODE_NUM:
-            print_num_node(&node->num_node, output, pos_x);
-            break;
+    if (node == NULL) {
+        str_cat(output, "NULL\n");
+    } 
+    else {
+        switch (node->type) {
+            case NODE_NUM:
+                print_num_node(&node->num_node, output, pos_x);
+                break;
 
-        case NODE_VARREF:
-            print_varref_node(&node->varref_node, output, pos_x);
-            break;
+            case NODE_VARREF:
+                print_varref_node(&node->varref_node, output, pos_x);
+                break;
 
-        case NODE_ADDRDEREF:
-            print_addrderef_node(&node->addrderef_node, output, pos_x);
-            break;
+            case NODE_ADDRDEREF:
+                print_addrderef_node(&node->addrderef_node, output, pos_x);
+                break;
 
-        case NODE_VARADDR:
-            print_varaddr_node(&node->varaddr_node, output, pos_x);
-            break;
+            case NODE_VARADDR:
+                print_varaddr_node(&node->varaddr_node, output, pos_x);
+                break;
 
-        case NODE_BINOP:
-            print_binop_node(&node->binop_node, output, pos_x);
-            break;
+            case NODE_BINOP:
+                print_binop_node(&node->binop_node, output, pos_x);
+                break;
 
-        case NODE_UNARYOP:
-            print_unarop_node(&node->unarop_node, output, pos_x);
-            break;
+            case NODE_UNARYOP:
+                print_unarop_node(&node->unarop_node, output, pos_x);
+                break;
 
-        case NODE_FUNCALL:
-            print_funcall_node(&node->funcall_node, output, pos_x);
-            break;
+            case NODE_FUNCALL:
+                print_funcall_node(&node->funcall_node, output, pos_x);
+                break;
 
-        case NODE_SYSC:
-            print_sysc_node(&node->sysc_node, output, pos_x);
-            break;
+            case NODE_SYSC:
+                print_sysc_node(&node->sysc_node, output, pos_x);
+                break;
 
-        default:
-            UNREACHABLE();
-            break;
+            default:
+                UNREACHABLE();
+                break;
+        }
     }
+
 }
 
-static Void print_varass_node(const VarAssNode* node, Str* output, I32 pos_x)
+static Void print_arraydec_node(const ArraydecNode* node, Str* output, I32 pos_x)
 {
-    str_cat(output, "VarAssNode\n");
+    Char buffer[256];
+
+    str_cat(output, "ArraydecNode\n");
+
+    print_indent(output, pos_x);
+    snprintf(buffer, sizeof(buffer), "├─ item_size: %s\n", node->item_size);
+    str_cat(output, buffer);
+
+    print_indent(output, pos_x);
+    snprintf(buffer, sizeof(buffer), "├─ name: %s\n", node->name);
+    str_cat(output, buffer);
+
+    print_indent(output, pos_x);
+    snprintf(buffer, sizeof(buffer), "├─ size: %s\n", node->size);
+    str_cat(output, buffer);
+
+    print_indent(output, pos_x);
+    str_cat(output, "└─ expr_node_list: ");
+    print_expr_node_list(node->expr_node_list, output, pos_x + 17);
+}
+
+static Void print_vardec_node(const VardecNode* node, Str* output, I32 pos_x)
+{
+    Char buffer[256];
+
+    str_cat(output, "VardecNode\n");
+
+    print_indent(output, pos_x);
+    snprintf(buffer, sizeof(buffer), "├─ size: %s\n", node->size);
+    str_cat(output, buffer);
+
+    print_indent(output, pos_x);
+    snprintf(buffer, sizeof(buffer), "├─ name: %s\n", node->name);
+    str_cat(output, buffer);
+
+    print_indent(output, pos_x);
+    str_cat(output, "└─ value: ");
+    print_expr_node(node->value, output, pos_x + 10);
+}
+
+static Void print_ass_node(const AssNode* node, Str* output, I32 pos_x)
+{
+    str_cat(output, "AssNode\n");
 
     print_indent(output, pos_x);
     str_cat(output, "├─ lvalue: ");
@@ -196,8 +248,16 @@ static Void print_ret_node(const RetNode* node, Str* output, I32 pos_x)
 static Void print_stmt_node(const StmtNode* stmt_node, Str* output, I32 pos_x)
 {
     switch (stmt_node->type) {
-        case NODE_VARASS:
-            print_varass_node(&stmt_node->varass_node, output, pos_x);
+        case NODE_VARDEC:
+            print_vardec_node(&stmt_node->vardec_node, output, pos_x);
+            break;
+
+        case NODE_ARRAYDEC:
+            print_arraydec_node(&stmt_node->arraydec_node, output, pos_x);
+            break;
+
+        case NODE_ASS:
+            print_ass_node(&stmt_node->ass_node, output, pos_x);
             break;
 
         case NODE_RET:
@@ -221,8 +281,14 @@ static Void print_param_node(const ParamNode* node, Str* output, I32 pos_x)
     str_cat(output, "ParamNode\n");
 
     print_indent(output, pos_x);
-    snprintf(buffer, sizeof(buffer), "└─ name: \"%s\"\n", node->name);
+    snprintf(buffer, sizeof(buffer), "├─ name: \"%s\"\n", node->name);
     str_cat(output, buffer);
+
+    print_indent(output, pos_x);
+    snprintf(buffer, sizeof(buffer), "└─ size: \"%s\"\n", node->size);
+    str_cat(output, buffer);
+
+
 }
 
 static Void print_param_node_list(const List* param_node_list, Str* output, I32 pos_x)
@@ -289,6 +355,18 @@ static Void print_fundef_node(const FundefNode* fundef_node, Str* output, I32 po
     print_indent(output, pos_x);
     snprintf(buffer, sizeof(buffer), "├─ name: \"%s\"\n", fundef_node->name);
     str_cat(output, buffer);
+
+    if (fundef_node->return_size != NULL) {
+        print_indent(output, pos_x);
+        snprintf(buffer, sizeof(buffer), "├─ return_size: \"%s\"\n", fundef_node->return_size);
+        str_cat(output, buffer);
+    }
+    else {
+        print_indent(output, pos_x);
+        snprintf(buffer, sizeof(buffer), "├─ return_size: NULL\n");
+        str_cat(output, buffer);
+    }
+
 
     print_indent(output, pos_x);
     snprintf(buffer, sizeof(buffer), "├─ scope: \"%s\"\n", fundef_node->scope);

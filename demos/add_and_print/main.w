@@ -1,15 +1,27 @@
-! def int  add(int a, int b)       from ./add.w
-! def void print_digit(digit num)  from ./io.w
+! def int <64> add(int <64> a, int <64> b)       from ./add.w
+! def void print_digit(digit <64> num)  from ./io.w
 
-glb !int main()
+glb !int <64> main()
 {
     :define two !cst integers
-    !int num1 = 3;
-    !int num2 = 2;
+    !int <64> num1;
+    num1 = 3;
+    !int <64> num2 = 2;
 
     :calculate the sum of num1 and num2, then print the result
-    !int sum = add(num1, num2);
+    !int <64> sum = add(num1, num2);
     print_digit(sum);
+
+    : ---------------------------------
+    !int <64> test_array[2];
+
+    !int <64> array[4] = [1, 2, 3, 4];
+    ^(array + 2*64) = 7;
+
+    print_digit(^(array + 0*64));
+    print_digit(^(array + 1*64));
+    print_digit(^(array + 2*64));
+    print_digit(^(array + 3*64));
 
     ret 0;
 }
