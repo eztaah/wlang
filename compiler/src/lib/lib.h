@@ -35,17 +35,32 @@ Void list_free(List* list);
 
 // Str
 typedef struct {
-    Char* char_array_location;
+    Char* char_array_location; // Pointer to the string data
+    UX length;                 // Length of the string (excluding null-terminator)
+    UX capacity;               // Allocated capacity (including space for null-terminator)
 } Str;
-Str* str_new(const Char* value);
-Str* str_new_c(const Char c);
-Void str_cat_str(Str* dest, const Str* src);
-Void str_cat(Str* dest, const Char* src);
-Void str_cat_c(Str* dest, const Char c);
-Bool str_cmp(const Str* s1, const Char* s2);
-Char* str_to_char(const Str* str);
-Void str_free(Str* str);
+
+// Creation and Destruction
+Str* str_new(const Char* value); // Create a new Str from a C-string
+Str* str_new_c(const Char c);    // Create a new Str with a single character
+Void str_free(Str* str);         // Free the memory associated with the Str
+
+// String Manipulation
+Void str_cat_str(Str* dest, const Str* src);                             // Concatenate another Str to this one
+Void str_cat(Str* dest, const Char* src);                                // Concatenate a C-string to this one
+Void str_cat_c(Str* dest, const Char c);                                 // Concatenate a single character to this one
+Void str_insert(Str* dest, UX index, const Char* src);                   // Insert a C-string at a specific position
+Void str_remove_range(Str* str, UX start, UX end);                       // Remove a range of characters from the string
+Void str_replace(Str* str, const Char* target, const Char* replacement); // Replace all instances of target with replacement
+
+// String Operations
 Bool char_cmp(const Char* s1, const Char* s2);
+Bool str_cmp(const Str* s1, const Char* s2);              // Compare a Str with a C-string
+Bool str_cmp_str(const Str* s1, const Str* s2);           // Compare two Str objects
+Char* str_to_char(const Str* str);                        // Convert the Str to a C-string
+UX str_find(const Str* str, const Char* target);          // Find the first occurrence of target in the string
+Bool str_starts_with(const Str* str, const Char* prefix); // Check if the string starts with a prefix
+Bool str_ends_with(const Str* str, const Char* suffix);   // Check if the string ends with a suffix
 
 // Dict
 typedef struct {
@@ -60,6 +75,23 @@ Dict* dict_new(Void);
 Void dict_put(Dict* dict, const Char* key, I32 value);
 I32 dict_get(const Dict* dict, const Char* key);
 Void dict_free(Dict* dict);
+
+// DictStr
+typedef struct {
+    Char* key;
+    Char* value;
+} DictStrEntry;
+
+typedef struct {
+    DictStrEntry** entries;
+    I32 size;
+} DictStr;
+DictStr* dictstr_new(Void);
+Void dictstr_put(DictStr* dict, const Char* key, const Char* value);
+Char* dictstr_get(const DictStr* dict, const Char* key);
+Char* dictstr_get(const DictStr* dict, const Char* key);
+Void dictstr_print(const DictStr* dict);
+Void dictstr_free(DictStr* dict);
 
 // io
 typedef enum {

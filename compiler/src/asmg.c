@@ -4,20 +4,19 @@
 
 #include "compiler.h"
 
-
-
-
 typedef struct {
     List* loop_end_labels;
 } LoopLabelStack;
 
-static LoopLabelStack* loop_label_stack_new() {
+static LoopLabelStack* loop_label_stack_new()
+{
     LoopLabelStack* stack = calloc(1, sizeof(LoopLabelStack));
     stack->loop_end_labels = list_new(sizeof(Char*));
     return stack;
 }
 
-static Void loop_label_stack_free(LoopLabelStack* stack) {
+static Void loop_label_stack_free(LoopLabelStack* stack)
+{
     for (I32 i = 0; i < stack->loop_end_labels->size; i++) {
         free(stack->loop_end_labels->items[i]);
     }
@@ -25,27 +24,20 @@ static Void loop_label_stack_free(LoopLabelStack* stack) {
     free(stack);
 }
 
-static Void loop_label_stack_push(LoopLabelStack* stack, const Char* label) {
+static Void loop_label_stack_push(LoopLabelStack* stack, const Char* label)
+{
     list_push(stack->loop_end_labels, strdup(label));
 }
 
-static Char* loop_label_stack_pop(LoopLabelStack* stack) {
+static Char* loop_label_stack_pop(LoopLabelStack* stack)
+{
     return list_pop(stack->loop_end_labels);
 }
 
-static Char* loop_label_stack_top(LoopLabelStack* stack) {
+static Char* loop_label_stack_top(LoopLabelStack* stack)
+{
     return (Char*)stack->loop_end_labels->items[stack->loop_end_labels->size - 1];
 }
-
-
-
-
-
-
-
-
-
-
 
 typedef struct AsmG {
     const List* node_list;
@@ -145,14 +137,14 @@ static Void asme_varaddr(AsmG* asmg, const VaraddrNode* varaddr_node)
 
 static Void asme_addrderef(AsmG* asmg, const AddrderefNode* addrderef_node)
 {
-    asme_expr(asmg, addrderef_node->expr);  // the result will be in rax (should be an adress)
-    str_cat(asmg->text, "    movq    (%rax), %rbx\n");  // dereference the content of rax and put it into rbx
+    asme_expr(asmg, addrderef_node->expr);             // the result will be in rax (should be an adress)
+    str_cat(asmg->text, "    movq    (%rax), %rbx\n"); // dereference the content of rax and put it into rbx
     str_cat(asmg->text, "    movq    %rbx, %rax\n");   // put the result back into rax
 }
 
 static Void asme_l_addrderef(AsmG* asmg, const AddrderefNode* addrderef_node)
 {
-    asme_expr(asmg, addrderef_node->expr);  // the result will be in rax (should be an adress)
+    asme_expr(asmg, addrderef_node->expr); // the result will be in rax (should be an adress)
 }
 
 static void asme_binop(AsmG* asmg, const BinopNode* binop_node)
@@ -163,11 +155,11 @@ static void asme_binop(AsmG* asmg, const BinopNode* binop_node)
 
     // evaluate the right operand and place it in %rax
     asme_expr(asmg, binop_node->right);
-    str_cat(asmg->text, "    pushq   %rax\n");  // push the result onto the stack (%rax is pushed)
-    
+    str_cat(asmg->text, "    pushq   %rax\n"); // push the result onto the stack (%rax is pushed)
+
     // evaluate the left operand and place it in %rax
     asme_expr(asmg, binop_node->left);
-    str_cat(asmg->text, "    pop     %rbx\n");  // pop the right operand into %rbx (pop from stack to %rbx)
+    str_cat(asmg->text, "    pop     %rbx\n"); // pop the right operand into %rbx (pop from stack to %rbx)
 
     // generate code based on the operation type
     switch (binop_node->op) {
@@ -191,15 +183,15 @@ static void asme_binop(AsmG* asmg, const BinopNode* binop_node)
         case TOKEN_PERCENT:
             str_cat(asmg->text, "    cqo\n");
             str_cat(asmg->text, "    idiv    %rbx\n");
-            str_cat(asmg->text, "    movq    %rdx, %rax\n");  // the remainder of the division is in %rdx
+            str_cat(asmg->text, "    movq    %rdx, %rax\n"); // the remainder of the division is in %rdx
             break;
 
         case TOKEN_LEFTSHIFT:
-            str_cat(asmg->text, "    shl     %cl, %rax\n");  // %cl contains the number of bits to shift
+            str_cat(asmg->text, "    shl     %cl, %rax\n"); // %cl contains the number of bits to shift
             break;
 
         case TOKEN_RIGHTSHIFT:
-            str_cat(asmg->text, "    shr     %cl, %rax\n");  // %cl contains the number of bits to shift
+            str_cat(asmg->text, "    shr     %cl, %rax\n"); // %cl contains the number of bits to shift
             break;
 
         case TOKEN_AMPERSAND:
@@ -217,10 +209,10 @@ static void asme_binop(AsmG* asmg, const BinopNode* binop_node)
         case TOKEN_AND:
             // generate code for && (logical AND)
             str_cat(asmg->text, "    cmpq    $0, %rax\n");
-            str_cat(asmg->text, "    setne   %al\n");  // if %rax is not zero, %al = 1
-            str_cat(asmg->text, "    movzbq  %al, %rax\n");  // zero-extend %al to 64 bits
+            str_cat(asmg->text, "    setne   %al\n");       // if %rax is not zero, %al = 1
+            str_cat(asmg->text, "    movzbq  %al, %rax\n"); // zero-extend %al to 64 bits
             str_cat(asmg->text, "    cmpq    $0, %rbx\n");
-            str_cat(asmg->text, "    setne   %bl\n");  // if %rbx is not zero, %bl = 1
+            str_cat(asmg->text, "    setne   %bl\n"); // if %rbx is not zero, %bl = 1
             str_cat(asmg->text, "    movzbq  %bl, %rbx\n");
             str_cat(asmg->text, "    and     %rbx, %rax\n");
             break;
@@ -228,10 +220,10 @@ static void asme_binop(AsmG* asmg, const BinopNode* binop_node)
         case TOKEN_OR:
             // generate code for || (logical OR)
             str_cat(asmg->text, "    cmpq    $0, %rax\n");
-            str_cat(asmg->text, "    setne   %al\n");  // if %rax is not zero, %al = 1
-            str_cat(asmg->text, "    movzbq  %al, %rax\n");  // zero-extend %al to 64 bits
+            str_cat(asmg->text, "    setne   %al\n");       // if %rax is not zero, %al = 1
+            str_cat(asmg->text, "    movzbq  %al, %rax\n"); // zero-extend %al to 64 bits
             str_cat(asmg->text, "    cmpq    $0, %rbx\n");
-            str_cat(asmg->text, "    setne   %bl\n");  // if %rbx is not zero, %bl = 1
+            str_cat(asmg->text, "    setne   %bl\n"); // if %rbx is not zero, %bl = 1
             str_cat(asmg->text, "    movzbq  %bl, %rbx\n");
             str_cat(asmg->text, "    or      %rbx, %rax\n");
             break;
@@ -239,37 +231,37 @@ static void asme_binop(AsmG* asmg, const BinopNode* binop_node)
         case TOKEN_EQUAL_EQUAL:
             str_cat(asmg->text, "    cmpq    %rbx, %rax\n");
             str_cat(asmg->text, "    sete    %al\n");
-            str_cat(asmg->text, "    movzbq  %al, %rax\n");  // zero-extend %al to 64 bits
+            str_cat(asmg->text, "    movzbq  %al, %rax\n"); // zero-extend %al to 64 bits
             break;
 
         case TOKEN_NOT_EQUAL:
             str_cat(asmg->text, "    cmpq    %rbx, %rax\n");
             str_cat(asmg->text, "    setne   %al\n");
-            str_cat(asmg->text, "    movzbq  %al, %rax\n");  // zero-extend %al to 64 bits
+            str_cat(asmg->text, "    movzbq  %al, %rax\n"); // zero-extend %al to 64 bits
             break;
 
         case TOKEN_LESSTHAN:
             str_cat(asmg->text, "    cmpq    %rbx, %rax\n");
             str_cat(asmg->text, "    setl    %al\n");
-            str_cat(asmg->text, "    movzbq  %al, %rax\n");  // zero-extend %al to 64 bits
+            str_cat(asmg->text, "    movzbq  %al, %rax\n"); // zero-extend %al to 64 bits
             break;
 
         case TOKEN_GREATERTHAN:
             str_cat(asmg->text, "    cmpq    %rbx, %rax\n");
             str_cat(asmg->text, "    setg    %al\n");
-            str_cat(asmg->text, "    movzbq  %al, %rax\n");  // zero-extend %al to 64 bits
+            str_cat(asmg->text, "    movzbq  %al, %rax\n"); // zero-extend %al to 64 bits
             break;
 
         case TOKEN_LESSTHAN_EQ:
             str_cat(asmg->text, "    cmpq    %rbx, %rax\n");
             str_cat(asmg->text, "    setle   %al\n");
-            str_cat(asmg->text, "    movzbq  %al, %rax\n");  // zero-extend %al to 64 bits
+            str_cat(asmg->text, "    movzbq  %al, %rax\n"); // zero-extend %al to 64 bits
             break;
 
         case TOKEN_GREATERTHAN_EQ:
             str_cat(asmg->text, "    cmpq    %rbx, %rax\n");
             str_cat(asmg->text, "    setge   %al\n");
-            str_cat(asmg->text, "    movzbq  %al, %rax\n");  // zero-extend %al to 64 bits
+            str_cat(asmg->text, "    movzbq  %al, %rax\n"); // zero-extend %al to 64 bits
             break;
 
         default:
@@ -280,8 +272,6 @@ static void asme_binop(AsmG* asmg, const BinopNode* binop_node)
     str_cat(asmg->text, "    # binop >\n");
 #endif
 }
-
-
 
 static Void asme_unarop(AsmG* asmg, const UnaropNode* unarop_node)
 {
@@ -387,7 +377,7 @@ static Void asme_if(AsmG* asmg, const IfNode* if_node)
 
     // evaluate the condition
     asme_expr(asmg, if_node->cond_node);
-    str_cat(asmg->text, "    cmpq    $0, %rax\n");  // Compare the result with 0
+    str_cat(asmg->text, "    cmpq    $0, %rax\n"); // Compare the result with 0
 
     // jump to the false block if condition is false
     Char label_false[64];
@@ -469,7 +459,6 @@ static Void asme_break(AsmG* asmg)
     str_cat(asmg->text, "\n");
 }
 
-
 static Void asme_vardec(AsmG* asmg, const VardecNode* vardec_node)
 {
 
@@ -505,7 +494,6 @@ static Void asme_vardec(AsmG* asmg, const VardecNode* vardec_node)
         str_cat(asmg->text, var_location);
         str_cat(asmg->text, "\n");
     }
-
 
     asmg->rbp_offset -= 8;
 }
@@ -555,7 +543,6 @@ static Void asme_arraydec(AsmG* asmg, const ArraydecNode* arraydec_node)
             asmg->rbp_offset -= 8;
         }
     }
-
 }
 
 static Void asme_ret(AsmG* asmg, const RetNode* ret_node)
@@ -774,7 +761,6 @@ static Void asme_stmt(AsmG* asmg, const StmtNode* stmt_node)
     }
 }
 
-
 static void init_asm_file(AsmG* asmg)
 {
     // Setup initial instructions
@@ -793,7 +779,6 @@ static void init_asm_file(AsmG* asmg)
 #endif
     str_cat(asmg->text, "    .section .text\n");
 }
-
 
 Str* asme(const List* fundef_node_list)
 {

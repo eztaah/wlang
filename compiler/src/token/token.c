@@ -19,7 +19,8 @@ Void token_free(Token* token)
     free(token);
 }
 
-Char* tokentype_to_string(TokenType tokentype) {
+Char* tokentype_to_string(TokenType tokentype)
+{
     switch (tokentype) {
         case TOKEN_PLUS:
             return "TOKEN_PLUS";
