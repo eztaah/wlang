@@ -17,18 +17,13 @@
 
     !int <64> i = 0;
     loop {
-        print_digit(^(&array - i*8));
+        print_digit(^(array - i*8));
 
         i = i +1;
         if (i == 4) {
             break;
         }
     }
-
-    : print_digit(^(&array - 0*8));
-    : print_digit(^(&array - 1*8));
-    : print_digit(^(&array - 2*8));
-    : print_digit(^(&array - 3*8));
 
     ret 0;
 }
