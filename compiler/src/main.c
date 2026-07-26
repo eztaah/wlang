@@ -225,7 +225,7 @@ I32 main(I32 argc, const Char* argv[])
         sh(str_to_char(link_cmd));
 
 
-        dictstr_free(macro_dict);
+        // dictstr_free(macro_dict);
         str_free(link_cmd);
         str_free(object_files);
     }
