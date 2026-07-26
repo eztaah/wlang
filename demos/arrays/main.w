@@ -13,14 +13,22 @@
 
 !int <64> main()
 {
-    : !int <64> test_array[2];
+    !int <64> array[4] = [3, 7, 1, 9];
 
-    !int <64> array[3] = [3, 7, 1];
-    : array + 2*64 = 7;
+    !int <64> i = 0;
+    loop {
+        print_digit(^(&array - i*8));
 
-    print_digit(^(&array + 0));
-    print_digit(^(&array - 1*8));
-    print_digit(^(&array - 2*8));
+        i = i +1;
+        if (i == 4) {
+            break;
+        }
+    }
+
+    : print_digit(^(&array - 0*8));
+    : print_digit(^(&array - 1*8));
+    : print_digit(^(&array - 2*8));
+    : print_digit(^(&array - 3*8));
 
     ret 0;
 }

@@ -29,6 +29,7 @@ typedef struct {
 } List;
 List* list_new(I32 item_size);
 Void list_push(List* list, Void* item);
+Void* list_pop(List* list);
 Void* list_get(const List* list, I32 index);
 Void list_free(List* list);
 

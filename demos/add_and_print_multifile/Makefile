@@ -1,5 +1,5 @@
 SOURCE_FILES = ./main.w ./add.w ./io.w
-FLAGS = --dev-mode --to-executable --verbose
+FLAGS = --to-executable --verbose
 
 default:
 	../../compiler/wlangc $(SOURCE_FILES) $(FLAGS)

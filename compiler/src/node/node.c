@@ -140,6 +140,47 @@ StmtNode* vardec_node_new(Char* size, Char* name, ExprNode* value)
     return stmt_node;
 }
 
+StmtNode* if_node_new(ExprNode* cond_node, BlockNode* true_block, BlockNode* false_block)
+{
+    StmtNode* stmt_node = (StmtNode*)malloc(sizeof(StmtNode));
+    if (!stmt_node) {
+        PANIC("failed to allocate memory");
+    }
+
+    stmt_node->type = NODE_IF;
+    stmt_node->if_node.cond_node = cond_node;
+    stmt_node->if_node.true_block = true_block;
+    stmt_node->if_node.false_block = false_block;
+
+    return stmt_node;
+}
+
+StmtNode* loop_node_new(BlockNode* block)
+{
+    StmtNode* stmt_node = (StmtNode*)malloc(sizeof(StmtNode));
+    if (!stmt_node) {
+        PANIC("failed to allocate memory");
+    }
+
+    stmt_node->type = NODE_LOOP;
+    stmt_node->loop_node.block = block;
+
+    return stmt_node;
+}
+
+StmtNode* break_node_new(Void)
+{
+    StmtNode* stmt_node = (StmtNode*)malloc(sizeof(StmtNode));
+    if (!stmt_node) {
+        PANIC("failed to allocate memory");
+    }
+
+    stmt_node->type = NODE_BREAK;
+    stmt_node->break_node.nothing = NULL;
+
+    return stmt_node;
+}
+
 StmtNode* ass_node_new(ExprNode* lvalue, ExprNode* value)
 {
     StmtNode* ass_node = (StmtNode*)malloc(sizeof(StmtNode));
@@ -184,7 +225,7 @@ ExprNode* sysc_node_new(List* expr_node_list)
     return sysc_node;
 }
 
-FundefNode* fundef_node_new(Char* name, Char* return_size, Char* scope, List* param_node_list, CodeblockNode* codeblock_node)
+FundefNode* fundef_node_new(Char* name, Char* return_size, Char* scope, List* param_node_list, BlockNode* block_node)
 {
     FundefNode* fundef_node = (FundefNode*)malloc(sizeof(FundefNode));
     if (!fundef_node) {
@@ -202,17 +243,17 @@ FundefNode* fundef_node_new(Char* name, Char* return_size, Char* scope, List* pa
 
     fundef_node->scope = strdup(scope);
     fundef_node->param_node_list = param_node_list;
-    fundef_node->codeblock_node = codeblock_node;
+    fundef_node->block_node = block_node;
 
     return fundef_node;
 }
 
-CodeblockNode* codeblock_node_new(List* stmt_node_list)
+BlockNode* block_node_new(List* stmt_node_list)
 {
-    CodeblockNode* codeblock_node = (CodeblockNode*)malloc(sizeof(CodeblockNode));
-    if (!codeblock_node) {
+    BlockNode* block_node = (BlockNode*)malloc(sizeof(BlockNode));
+    if (!block_node) {
         PANIC("failed to allocate memory");
     }
-    codeblock_node->stmt_node_list = stmt_node_list;
-    return codeblock_node;
+    block_node->stmt_node_list = stmt_node_list;
+    return block_node;
 }

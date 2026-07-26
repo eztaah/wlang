@@ -35,6 +35,16 @@ static Void lexer_advance(Lexer* lexer)
     lexer->c = lexer->src[lexer->i];
 }
 
+static Void lexer_retreat(Lexer* lexer)
+{
+    if (lexer->i > 0) {
+        lexer->i -= 1;
+        lexer->c = lexer->src[lexer->i];
+    } else {
+        PANIC("Cannot retreat lexer; already at the start of input");
+    }
+}
+
 static Token* lex_eof(I32 type)
 {
     Str* value = str_new_c(' ');
@@ -57,13 +67,44 @@ static Token* lex_number(Lexer* lexer)
 {
     Str* value = str_new("");
 
-    while (isdigit(lexer->c)) {
+    // check for the 0x or 0b prefixes
+    if (lexer->c == '0') {
         str_cat_c(value, lexer->c);
         lexer_advance(lexer);
+
+        if (lexer->c == 'x' || lexer->c == 'X') { // hexadecimal
+            str_cat_c(value, lexer->c);
+            lexer_advance(lexer);
+
+            while (isxdigit(lexer->c)) { // support 0-9, A-F, a-f
+                str_cat_c(value, lexer->c);
+                lexer_advance(lexer);
+            }
+        } else if (lexer->c == 'b' || lexer->c == 'B') { // binary
+            str_cat_c(value, lexer->c);
+            lexer_advance(lexer);
+
+            while (lexer->c == '0' || lexer->c == '1') { // support only 0 and 1
+                str_cat_c(value, lexer->c);
+                lexer_advance(lexer);
+            }
+        } else { // decimal
+            while (isdigit(lexer->c)) {
+                str_cat_c(value, lexer->c);
+                lexer_advance(lexer);
+            }
+        }
+    } else { // if it's not a prefix, it's a normal decimal number
+        while (isdigit(lexer->c)) {
+            str_cat_c(value, lexer->c);
+            lexer_advance(lexer);
+        }
     }
 
     return token_new(value, TOKEN_NUM);
 }
+
+
 
 static Token* lex_word(Lexer* lexer)
 {
@@ -82,12 +123,25 @@ static Token* lex_word(Lexer* lexer)
     else if (str_cmp(value, "glb")) {
         token_type = TOKEN_GLB;
     }
+    else if (str_cmp(value, "if")) {
+        token_type = TOKEN_IF;
+    }
+    else if (str_cmp(value, "else")) {
+        token_type = TOKEN_ELSE;
+    }
+    else if (str_cmp(value, "loop")) {
+        token_type = TOKEN_LOOP;
+    }
+    else if (str_cmp(value, "break")) {
+        token_type = TOKEN_BREAK;
+    }
     else {
         token_type = TOKEN_ID;
     }
 
     return token_new(value, token_type);
 }
+
 
 static Void skip_whitespace(Lexer* lexer)
 {
@@ -113,27 +167,27 @@ static void lexer_skip_comment(Lexer* lexer)
 static Void skip_annotations(Lexer* lexer)
 {
     while (lexer->c == '!') {
-        lexer_advance(lexer); // Skip the '!' character
+        lexer_advance(lexer); // skip the '!' character
 
-        // Check what follows the '!'
+        // check what follows the '!'
         if (isspace(lexer->c)) {
-            // Skip the entire line if '!' is followed by whitespace
+            // skip the entire line if '!' is followed by whitespace
             while (lexer->c != '\n' && lexer->c != '\0') {
                 lexer_advance(lexer);
             }
         } else {
-            // Skip the word following '!' if '!' is immediately followed by non-whitespace characters
+            // skip the word following '!' if '!' is immediately followed by non-whitespace characters
             while (!isspace(lexer->c) && lexer->c != '\0') {
                 lexer_advance(lexer);
             }
 
-            // Skip any whitespace after the annotation
+            // skip any whitespace after the annotation
             skip_whitespace(lexer);
 
-            // Handle cases where annotations are followed by function signatures or chained annotations
+            // handle cases where annotations are followed by function signatures or chained annotations
             if (lexer->c == '(') {
                 int parentheses_count = 1;
-                lexer_advance(lexer); // Skip the '('
+                lexer_advance(lexer); // skip the '('
 
                 while (parentheses_count > 0 && lexer->c != '\0') {
                     if (lexer->c == '(') {
@@ -143,14 +197,14 @@ static Void skip_annotations(Lexer* lexer)
                     }
                     lexer_advance(lexer);
                 }
-                // Ensure we skip the closing ')' if it's the character that brought parentheses_count to 0
+                // ensure we skip the closing ')' if it's the character that brought parentheses_count to 0
                 if (lexer->c == ')') {
                     lexer_advance(lexer); // Skip the closing ')'
                 }
             }
         }
 
-        // Skip any additional whitespace before the next possible annotation
+        // skip any additional whitespace before the next possible annotation
         skip_whitespace(lexer);
     }
 }
@@ -181,13 +235,40 @@ static Token* lex_next_token(Lexer* lexer)
         case '*':
             return lex_symbol(lexer, TOKEN_MUL);
         case '<':
+            lexer_advance(lexer);
+            if (lexer->c == '=') {
+                return lex_symbol(lexer, TOKEN_LESSTHAN_EQ);
+            } else if (lexer->c == '<') {
+                return lex_symbol(lexer, TOKEN_LEFTSHIFT);
+            }
+            lexer_retreat(lexer);
             return lex_symbol(lexer, TOKEN_LESSTHAN);
         case '>':
+            lexer_advance(lexer);
+            if (lexer->c == '=') {
+                return lex_symbol(lexer, TOKEN_GREATERTHAN_EQ);
+            } else if (lexer->c == '>') {
+                return lex_symbol(lexer, TOKEN_RIGHTSHIFT);
+            }
+            lexer_retreat(lexer);
             return lex_symbol(lexer, TOKEN_GREATERTHAN);
         case ',':
             return lex_symbol(lexer, TOKEN_COMMA);
         case '=':
+            lexer_advance(lexer);
+            if (lexer->c == '=') {
+                return lex_symbol(lexer, TOKEN_EQUAL_EQUAL);
+            }
+            lexer_retreat(lexer);
             return lex_symbol(lexer, TOKEN_EQUAL);
+        case '!':
+            lexer_advance(lexer);
+            if (lexer->c == '=') {
+                return lex_symbol(lexer, TOKEN_NOT_EQUAL);
+            }
+            lexer_retreat(lexer);
+            USER_PANIC("Unexpected character after `!`: `%c` (ascii: %d)", lexer->c, (I32)lexer->c);
+            return NULL;
         case '(':
             return lex_symbol(lexer, TOKEN_LPAREN);
         case ')':
@@ -205,9 +286,21 @@ static Token* lex_next_token(Lexer* lexer)
         case '%':
             return lex_symbol(lexer, TOKEN_PERCENT);
         case '&':
+            lexer_advance(lexer);
+            if (lexer->c == '&') {
+                return lex_symbol(lexer, TOKEN_AND);
+            }
+            lexer_retreat(lexer);
             return lex_symbol(lexer, TOKEN_AMPERSAND);
+        case '|':
+            lexer_advance(lexer);
+            if (lexer->c == '|') {
+                return lex_symbol(lexer, TOKEN_OR);
+            }
+            lexer_retreat(lexer);
+            return lex_symbol(lexer, TOKEN_PIPE);
         case '^':
-            return lex_symbol(lexer, TOKEN_ASTERIX);
+            return lex_symbol(lexer, TOKEN_CARET);
         case ';':
             return lex_symbol(lexer, TOKEN_SEMI);
         case '\0':

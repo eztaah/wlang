@@ -90,17 +90,17 @@ static Void compile_file(const Char* filename)
 
     create_dir("out");
 
-    // Create the output file name
-    // Extract just the filename without the path
+    // create the output file name
+    // extract just the filename without the path
     Char* out_filename = strdup(filename);
     Char* slash = strrchr(out_filename, '/');
     if (slash) {
-        out_filename = strdup(slash + 1);  // Duplicate the string starting after the last '/'
+        out_filename = strdup(slash + 1);  // duplicate the string starting after the last '/'
     }
-    // Remove the extension from the base filename
+    // remove the extension from the base filename
     Char* dot = strrchr(out_filename, '.');
-    if (dot) *dot = '\0';  // Remove the extension
-    // Create the final output path starting with "./out/"
+    if (dot) *dot = '\0';  // remove the extension
+    // create the final output path starting with "./out/"
     Str* final_output_path = str_new("out/");
     str_cat(final_output_path, out_filename);
 
@@ -149,24 +149,24 @@ I32 main(I32 argc, const Char* argv[]) {
         compile_file(filename);
     }
 
-    // Assemble and link
+    // assemble and link
     if (to_executable) {
         Str* object_files = str_new("");
 
         for (I32 i = 0; i < source_files->size; i++) {
             Char* filename = *(Char**)list_get(source_files, i);
 
-            // Extract just the filename without the path
+            // extract just the filename without the path
             Char* out_filename = strdup(filename);
             Char* slash = strrchr(out_filename, '/');
             if (slash) {
-                out_filename = strdup(slash + 1);  // Duplicate the string starting after the last '/'
+                out_filename = strdup(slash + 1);  // duplicate the string starting after the last '/'
             }
-            // Remove the extension from the base filename
+            // remove the extension from the base filename
             Char* dot = strrchr(out_filename, '.');
             if (dot) *dot = '\0';  // Remove the extension
 
-            // Assemble each file
+            // assemble each file
             Str* asm_out_file = str_new("out/");
             str_cat(asm_out_file, out_filename);
             str_cat(asm_out_file, ".s");
@@ -191,7 +191,7 @@ I32 main(I32 argc, const Char* argv[]) {
             free(out_filename);
         }
 
-        // Linking all object files into a single executable
+        // linking all object files into a single executable
         Str* link_cmd = str_new("ld -o out/prog ");
         str_cat(link_cmd, str_to_char(object_files));
         str_cat(link_cmd, "-lc -dynamic-linker /lib64/ld-linux-x86-64.so.2");
@@ -203,7 +203,7 @@ I32 main(I32 argc, const Char* argv[]) {
         str_free(object_files);
     }
 
-    // Clean up
+    // clean up
     // list_free(source_files);
     return 0;
 }
