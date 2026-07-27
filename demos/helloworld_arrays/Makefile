@@ -1,4 +1,4 @@
-SOURCE_FILES = ./main.w 
+SOURCE_FILES = *.w
 FLAGS = --to-executable --verbose
 
 default:

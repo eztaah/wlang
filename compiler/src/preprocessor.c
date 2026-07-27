@@ -109,7 +109,7 @@ static Void convert_string_literals_to_ascii_array(Str* source)
 }
 
 // Collect and store all macros in the dictionary
-static Void collect_macros(Str* source, DictStr* macro_dict)
+static Void collect_macros(Str* source, Dict* macro_dict)
 {
     Char* src = str_to_char(source);
     Char* pos = src;
@@ -139,7 +139,7 @@ static Void collect_macros(Str* source, DictStr* macro_dict)
         Char* macro_name = strndup(macro_start, macro_end - macro_start);
 
         // Store the macro in the dictionary
-        dictstr_put(macro_dict, macro_name, str_to_char(str_new(macro_value)));
+        dict_put(macro_dict, macro_name, str_to_char(str_new(macro_value)));
 
         free(macro_name);
         free(macro_value);
@@ -153,16 +153,16 @@ static Void collect_macros(Str* source, DictStr* macro_dict)
 }
 
 // Replace macros in the source string with their values
-static Void replace_macros(Str* source, DictStr* macro_dict)
+static Void replace_macros(Str* source, Dict* macro_dict)
 {
     // Replace macros in the source string
     for (I32 i = 0; i < macro_dict->size; ++i) {
-        DictStrEntry* entry = macro_dict->entries[i];
+        DictEntry* entry = macro_dict->entries[i];
         str_replace(source, entry->key, entry->value);
     }
 }
 
-static Void process_conditionals(Str* source, DictStr* macro_dict)
+static Void process_conditionals(Str* source, Dict* macro_dict)
 {
     Char* src = str_to_char(source);
     Char* pos = src;
@@ -177,7 +177,7 @@ static Void process_conditionals(Str* source, DictStr* macro_dict)
         Char* macro_start = pos + 7; // Start after "#ifdef "
         Char* macro_end = end_line;
         Char* macro_name = strndup(macro_start, macro_end - macro_start);
-        Bool macro_defined = dictstr_get(macro_dict, macro_name) != NULL;
+        Bool macro_defined = dict_get(macro_dict, macro_name) != NULL;
         free(macro_name);
 
         // Find positions of #else and #endif
@@ -344,7 +344,7 @@ static Void process_annotations(Str* source)
 }
 
 // main preprocessing function
-Str* preprocess_file(const Char* filename, DictStr* macro_dict)
+Str* preprocess_file(const Char* filename, Dict* macro_dict)
 {
     Char* raw_content = read_file(filename);
     if (!raw_content) {
@@ -369,7 +369,9 @@ Str* preprocess_file(const Char* filename, DictStr* macro_dict)
     remove_comments(source);
     process_annotations(source);
 
-    dictstr_free(macro_dict);
+    str_cat(source, "\n");  // prevent incorrect lexing 
+
+    // dict_free(macro_dict);
 
     return source;
 }

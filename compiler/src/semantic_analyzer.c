@@ -15,7 +15,7 @@ THINGS CATCH BY THE SEMANTIC ANALYSER
 #include <string.h> // strcmp()
 
 typedef struct {
-    DictStr* symbol_table;
+    Dict* symbol_table;
     Bool in_loop;
     Bool in_if;
 } AnalyzerContext;
@@ -23,7 +23,7 @@ typedef struct {
 static AnalyzerContext* analyzer_context_new()
 {
     AnalyzerContext* context = malloc(sizeof(AnalyzerContext));
-    context->symbol_table = dictstr_new();
+    context->symbol_table = dict_new();
     context->in_loop = FALSE;
     context->in_if = FALSE;
     return context;
@@ -31,7 +31,7 @@ static AnalyzerContext* analyzer_context_new()
 
 static Void analyzer_context_free(AnalyzerContext* context)
 {
-    // dictstr_free(context->symbol_table);
+    // dict_free(context->symbol_table);
     free(context);
 }
 
@@ -49,7 +49,7 @@ static Void analyze_block(AnalyzerContext* context, BlockNode* block_node)
 // Check if the variable is declared
 static Void check_variable_declared(AnalyzerContext* context, const Char* name, I32 line_number)
 {
-    if (dictstr_get(context->symbol_table, name) == NULL) {
+    if (dict_get(context->symbol_table, name) == NULL) {
         USER_PANIC("Line %d: Variable '%s' referenced before declaration", line_number, name);
     }
 }
@@ -70,11 +70,11 @@ static Void analyze_vardec(AnalyzerContext* context, VardecNode* vardec_node, I3
         USER_PANIC("Line %d: Only 64-bit variables are allowed, but '%s' is of size <%s>", line_number, vardec_node->name, vardec_node->size);
     }
 
-    if (dictstr_get(context->symbol_table, vardec_node->name) != NULL) {
+    if (dict_get(context->symbol_table, vardec_node->name) != NULL) {
         USER_PANIC("Line %d: Variable '%s' already declared", line_number, vardec_node->name);
     }
 
-    dictstr_put(context->symbol_table, vardec_node->name, "64");
+    dict_put(context->symbol_table, vardec_node->name, "64");
 
     if (vardec_node->value) {
         analyze_expr(context, vardec_node->value);
@@ -88,11 +88,11 @@ static Void analyze_arraydec(AnalyzerContext* context, ArraydecNode* arraydec_no
         USER_PANIC("Line %d: Only 64-bit variables are allowed, but array '%s' contains elements of size <%s>", line_number, arraydec_node->name, arraydec_node->item_size);
     }
 
-    if (dictstr_get(context->symbol_table, arraydec_node->name) != NULL) {
+    if (dict_get(context->symbol_table, arraydec_node->name) != NULL) {
         USER_PANIC("Line %d: Array '%s' already declared", line_number, arraydec_node->name);
     }
 
-    dictstr_put(context->symbol_table, arraydec_node->name, "64");
+    dict_put(context->symbol_table, arraydec_node->name, "64");
 
     if (arraydec_node->expr_node_list) {
         for (I32 i = 0; i < arraydec_node->expr_node_list->size; i++) {
@@ -197,7 +197,7 @@ static Void analyze_stmt(AnalyzerContext* context, StmtNode* stmt_node)
 // Analyze function definition
 static Void analyze_fundef(AnalyzerContext* context, FundefNode* fundef_node)
 {
-    context->symbol_table = dictstr_new();
+    context->symbol_table = dict_new();
 
     // Analyze parameters
     for (I32 i = 0; i < fundef_node->param_node_list->size; i++) {
@@ -205,7 +205,7 @@ static Void analyze_fundef(AnalyzerContext* context, FundefNode* fundef_node)
         if (strcmp(param_node->size, "64") != 0) {
             USER_PANIC("Line %d: Only 64-bit parameters are allowed, but parameter '%s' is of size <%s>", fundef_node->line_number, param_node->name, param_node->size);
         }
-        dictstr_put(context->symbol_table, param_node->name, param_node->size);
+        dict_put(context->symbol_table, param_node->name, param_node->size);
     }
 
     // Analyze function body
@@ -213,7 +213,7 @@ static Void analyze_fundef(AnalyzerContext* context, FundefNode* fundef_node)
         analyze_stmt(context, (StmtNode*)list_get(fundef_node->block_node->stmt_node_list, i));
     }
 
-    dictstr_free(context->symbol_table);
+    dict_free(context->symbol_table);
 }
 
 // Perform semantic analysis on the AST
