@@ -49,6 +49,10 @@ typedef struct {
     List* expr_node_list;
 } SyscNode;
 
+typedef struct {
+    
+} ArrayNode;
+
 struct ExprNode {
     enum {
         NODE_NUM = 10,
