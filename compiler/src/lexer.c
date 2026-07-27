@@ -9,6 +9,7 @@ typedef struct {
     UX src_size;
     Char c;
     U32 i;
+    I32 line;
 } Lexer;
 
 static Lexer* lexer_new(const Char* src)
@@ -18,6 +19,7 @@ static Lexer* lexer_new(const Char* src)
     lexer->src_size = strlen(src);
     lexer->i = 0;
     lexer->c = src[lexer->i];
+    lexer->line = 1;
 
     return lexer;
 }
@@ -33,6 +35,10 @@ static Void lexer_advance(Lexer* lexer)
     lexer->i += 1;
 
     lexer->c = lexer->src[lexer->i];
+
+    if (lexer->c == '\n') {
+        lexer->line += 1;
+    }
 }
 
 static Void lexer_retreat(Lexer* lexer)
@@ -46,10 +52,10 @@ static Void lexer_retreat(Lexer* lexer)
     }
 }
 
-static Token* lex_eof(I32 type)
+static Token* lex_eof(Lexer* lexer, I32 type)
 {
     Str* value = str_new_c(' ');
-    Token* token = token_new(value, type);
+    Token* token = token_new(value, type, lexer->line);
 
     return token;
 }
@@ -57,7 +63,7 @@ static Token* lex_eof(I32 type)
 static Token* lex_symbol(Lexer* lexer, I32 type)
 {
     Str* value = str_new_c(lexer->c);
-    Token* token = token_new(value, type);
+    Token* token = token_new(value, type, lexer->line);
 
     lexer_advance(lexer);
 
@@ -105,7 +111,7 @@ static Token* lex_number(Lexer* lexer)
         }
     }
 
-    return token_new(value, TOKEN_NUM);
+    return token_new(value, TOKEN_NUM, lexer->line);
 }
 
 static Token* lex_word(Lexer* lexer)
@@ -141,7 +147,7 @@ static Token* lex_word(Lexer* lexer)
         token_type = TOKEN_ID;
     }
 
-    return token_new(value, token_type);
+    return token_new(value, token_type, lexer->line);
 }
 
 static Void skip_whitespace(Lexer* lexer)
@@ -246,7 +252,7 @@ static Token* lex_next_token(Lexer* lexer)
         case ';':
             return lex_symbol(lexer, TOKEN_SEMI);
         case '\0':
-            return lex_eof(TOKEN_EOF);
+            return lex_eof(lexer, TOKEN_EOF);
         default:
             USER_PANIC("Unexpected character `%c` (ascii: %d)", lexer->c, (I32)lexer->c);
             return NULL;

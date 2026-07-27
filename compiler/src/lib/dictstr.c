@@ -1,6 +1,6 @@
+#include <stdio.h>
 #include <stdlib.h> // malloc(), calloc(), realloc(), free()
 #include <string.h> // strdup(), strcmp()
-#include <stdio.h>
 
 #include "lib.h"
 
@@ -45,7 +45,7 @@ Void dictstr_put(DictStr* dict, const Char* key, const Char* value)
 // Retrieve a value by its key from the dictionary
 Char* dictstr_get(const DictStr* dict, const Char* key)
 {
-    
+
     for (I32 i = 0; i < dict->size; i++) {
         if (strcmp(dict->entries[i]->key, key) == 0) {
             return dict->entries[i]->value;

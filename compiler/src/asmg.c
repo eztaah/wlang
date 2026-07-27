@@ -42,7 +42,7 @@ static Char* loop_label_stack_top(LoopLabelStack* stack)
 typedef struct AsmG {
     const List* node_list;
     Dict* variables; // associate variable names with their stack_offset
-    Dict* arrays; // associate variable names with their stack_offset
+    Dict* arrays;    // associate variable names with their stack_offset
     I32 rbp_offset;  // store the current var offset
     Str* var_prefix; // store the current function name so create asmg->var_prefix when working with variables
     Str* data;
@@ -117,7 +117,7 @@ static Void asme_varref(AsmG* asmg, const VarrefNode* varref_node)
     I32 var_pos = dict_get(asmg->variables, str_to_char(full_var_name));
     I32 array_pos = dict_get(asmg->arrays, str_to_char(full_var_name));
     if (var_pos == -1 && array_pos == -1) {
-        USER_PANIC("Reference to %s, but this variable is not defined", str_to_char(full_var_name));
+        PANIC("Reference to %s, but this variable is not defined (should be catch by the semantic anlayser)", str_to_char(full_var_name));
     }
 
     // handle variable reference
@@ -152,7 +152,7 @@ static Void asme_varaddr(AsmG* asmg, const VaraddrNode* varaddr_node)
     I32 var_pos = dict_get(asmg->variables, str_to_char(full_var_name));
     I32 array_pos = dict_get(asmg->arrays, str_to_char(full_var_name));
     if (var_pos == -1 && array_pos == -1) {
-        USER_PANIC("Reference to %s, but this variable is not defined", str_to_char(full_var_name));
+        PANIC("Reference to %s, but this variable is not defined (should be catch by the semantic analyser)", str_to_char(full_var_name));
     }
 
     if (array_pos != -1) {
@@ -169,7 +169,7 @@ static Void asme_varaddr(AsmG* asmg, const VaraddrNode* varaddr_node)
 
 static Void asme_addrderef(AsmG* asmg, const AddrderefNode* addrderef_node)
 {
-    asme_expr(asmg, addrderef_node->expr);             // the result will be in rax (should be an adress)
+    asme_expr(asmg, addrderef_node->expr);                 // the result will be in rax (should be an adress)
     str_cat(asmg->fun_body, "    movq    (%rax), %rbx\n"); // dereference the content of rax and put it into rbx
     str_cat(asmg->fun_body, "    movq    %rbx, %rax\n");   // put the result back into rax
 }
@@ -503,18 +503,11 @@ static Void asme_vardec(AsmG* asmg, const VardecNode* vardec_node)
     str_cat(full_var_name, "_");
     str_cat(full_var_name, vardec_node->name);
 
-    I32 var_pos = dict_get(asmg->variables, str_to_char(full_var_name));
-    I32 array_pos = dict_get(asmg->arrays, str_to_char(full_var_name));
-    if (var_pos == -1 && array_pos == -1) {
-        // is the variable is not in the dict, add it in the dict
+    // is the variable is not in the dict, add it in the dict
 
-        dict_put(asmg->variables, str_to_char(full_var_name), asmg->rbp_offset);
+    dict_put(asmg->variables, str_to_char(full_var_name), asmg->rbp_offset);
 
-        print(MSG_INFO, "add in the dict: \"%s\" at location %d\n", str_to_char(full_var_name), asmg->rbp_offset);
-    }
-    else {
-        USER_PANIC("redefinition of already defined variable");
-    }
+    print(MSG_INFO, "add in the dict: \"%s\" at location %d\n", str_to_char(full_var_name), asmg->rbp_offset);
 
     // process expression only if it exists
     if (vardec_node->value != NULL) {
@@ -543,19 +536,12 @@ static Void asme_arraydec(AsmG* asmg, const ArraydecNode* arraydec_node)
     str_cat(full_array_name, "_");
     str_cat(full_array_name, arraydec_node->name);
 
-    I32 var_pos = dict_get(asmg->variables, str_to_char(full_array_name));
-    I32 array_pos = dict_get(asmg->arrays, str_to_char(full_array_name));
-    if (var_pos == -1 && array_pos == -1) {
-        // is the array is not in the dict, add it in the dict
+    // is the array is not in the dict, add it in the dict
 
-        dict_put(asmg->arrays, str_to_char(full_array_name), asmg->rbp_offset);
-        // reserve space on the stack for the whole array
+    dict_put(asmg->arrays, str_to_char(full_array_name), asmg->rbp_offset);
+    // reserve space on the stack for the whole array
 
-        print(MSG_INFO, "add array 1st elmt in the dict: \"%s\" at location %d\n", str_to_char(full_array_name), asmg->rbp_offset);
-    }
-    else {
-        USER_PANIC("redefinition of already defined variable");
-    }
+    print(MSG_INFO, "add array 1st elmt in the dict: \"%s\" at location %d\n", str_to_char(full_array_name), asmg->rbp_offset);
 
     // convert array size to int
     I32 array_size = atoi(arraydec_node->size);
@@ -576,12 +562,10 @@ static Void asme_arraydec(AsmG* asmg, const ArraydecNode* arraydec_node)
             str_cat(asmg->fun_body, "    movq    %rax, ");
             str_cat(asmg->fun_body, var_location);
             str_cat(asmg->fun_body, "\n");
-
         }
     }
 
-
-    asmg->rbp_offset -= 8 * array_size;     // we need to do that here in case you define an array without initializing it
+    asmg->rbp_offset -= 8 * array_size; // we need to do that here in case you define an array without initializing it
 }
 
 static Void asme_ret(AsmG* asmg, const RetNode* ret_node)
@@ -640,7 +624,6 @@ static Void asme_fundef(AsmG* asmg, const FundefNode* fundef_node)
 #endif
     str_cat(asmg->fun_prol, "    pushq   %rbp\n");
     str_cat(asmg->fun_prol, "    movq    %rsp, %rbp\n");
-
 
     // pushing arguments onto the stack frame
 #ifdef ASM_COMMENTS
@@ -720,7 +703,7 @@ static Void asme_fundef(AsmG* asmg, const FundefNode* fundef_node)
     str_cat(asmg->fun_body, "    pop     %rbp\n");
     str_cat(asmg->fun_body, "    ret\n");
 
-    // combine all code 
+    // combine all code
     Str* full_fun_code = str_new("");
     str_cat_str(full_fun_code, asmg->fun_prol);
     str_cat_str(full_fun_code, asmg->fun_body);
@@ -861,7 +844,7 @@ Str* asme(const List* fundef_node_list)
     Str* asm_code = str_new("");
     str_cat_str(asm_code, asmg->data);
     str_cat_str(asm_code, asmg->bss);
-    
+
     str_cat_str(asm_code, asmg->text_header);
     str_cat_str(asm_code, asmg->global);
     str_cat_str(asm_code, asmg->start);
