@@ -140,6 +140,9 @@ static Void compile_file(const Char* filename, DictStr* macro_dict)
     list_free(token_list);
     Str* node_list_printable = print_nodelist(node_list);
 
+    // Semantic anlaysis
+    analyze_ast(node_list);
+
     // Print parser output to a file
     Str* parser_out_file = str_new(str_to_char(final_output_path));
     str_cat(parser_out_file, ".ast");
