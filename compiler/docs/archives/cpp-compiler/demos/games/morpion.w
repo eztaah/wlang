@@ -5,7 +5,8 @@ var turn: i64 = 0
 var game_state: i64 = 0
 
 # draw an empty grid
-i = 0
+^
+i = 0   
 while (i < 9) {
     print("[ ]")
     if (i % 3 == 2) {

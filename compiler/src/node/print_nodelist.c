@@ -269,7 +269,7 @@ static Void print_break_node(Str* output, I32 pos_x)
     str_cat(output, "BreakNode\n");
 
     print_indent(output, pos_x);
-    str_cat(output, "└─ break\n");
+    str_cat(output, "└─ NULL\n");
 }
 
 static Void print_ass_node(const AssNode* node, Str* output, I32 pos_x)

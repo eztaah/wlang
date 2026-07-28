@@ -6,12 +6,21 @@
 #include "token.h"
 
 extern Bool verbose;
+extern Char* current_filename;
 
+extern Bool no_libc;
+extern Bool shared_library;
+
+// compiler driver
+Void compile_file(const Char* filename, Dict* macro_dict);
+Void assemble_file(const Char* filename, Str* object_files);
+Void link_executable(Str* object_files);
+
+// compiler
+Str* preprocess_file(const Char* filename, Dict* macro_dict);
 List* lex(const Char* src);
 List* parse(const List* token_list);
-Str* asme(const List* fundef_node_list);
-Str* preprocess_file(const Char* filename, Dict* macro_dict);
-Void write_preprocessed_file(const Char* base_dir, const Char* filename, const Str* processed_content);
 Void analyze_ast(List* fundef_node_list);
+Str* asme(const List* fundef_node_list);
 
-#endif // COMPILER_H
+#endif

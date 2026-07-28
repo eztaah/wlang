@@ -1,5 +1,5 @@
-SOURCE_FILES = ./main.w 
-FLAGS = --to-executable --verbose
+SOURCE_FILES = main.w
+FLAGS = --verbose
 
 default:
 	../../compiler/wlangc $(SOURCE_FILES) $(FLAGS)

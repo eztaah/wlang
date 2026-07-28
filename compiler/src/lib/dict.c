@@ -7,10 +7,7 @@
 // Create a new dictionary (Dict)
 Dict* dict_new(Void)
 {
-    Dict* dict = (Dict*)calloc(1, sizeof(Dict));
-    if (!dict) {
-        PANIC("failed to allocate memory");
-    }
+    Dict* dict = (Dict*)safe_calloc(1, sizeof(Dict));
     dict->entries = NULL;
     dict->size = 0;
     return dict;
@@ -26,18 +23,12 @@ Void dict_put(Dict* dict, const Char* key, const Char* value)
     }
 
     // Allocate memory for the new entry
-    DictEntry* entry = (DictEntry*)malloc(sizeof(DictEntry));
-    if (!entry) {
-        PANIC("failed to allocate memory");
-    }
+    DictEntry* entry = (DictEntry*)safe_malloc(sizeof(DictEntry));
     entry->key = strdup(key);
     entry->value = strdup(value);
 
     // Add the new entry to the dictionary
-    DictEntry** new_entries = (DictEntry**)realloc(dict->entries, (dict->size + 1) * sizeof(DictEntry*));
-    if (!new_entries) {
-        PANIC("failed to allocate memory");
-    }
+    DictEntry** new_entries = (DictEntry**)safe_realloc(dict->entries, (dict->size + 1) * sizeof(DictEntry*));
     dict->entries = new_entries;
     dict->entries[dict->size++] = entry;
 }

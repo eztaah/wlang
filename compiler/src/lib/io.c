@@ -5,8 +5,35 @@
 #include <string.h>   // strcat()
 #include <sys/stat.h> // stat
 
-#include "compiler.h" // dev_mode, verbose
+#include "compiler.h" // verbose
 #include "lib.h"
+
+Void* safe_malloc(UX size)
+{
+    Void* ptr = malloc(size);
+    if (!ptr) {
+        PANIC("Error: failed to allocate %zu bytes of memory\n", size);
+    }
+    return ptr;
+}
+
+Void* safe_calloc(size_t num, size_t size)
+{
+    Void* ptr = calloc(num, size);
+    if (!ptr) {
+        PANIC("Error: failed to allocate memory for %zu elements of size %zu bytes\n", num, size);
+    }
+    return ptr;
+}
+
+Void* safe_realloc(Void* ptr, UX new_size)
+{
+    Void* new_ptr = realloc(ptr, new_size);
+    if (!new_ptr && new_size > 0) {
+        PANIC("Error: failed to reallocate memory to %zu bytes\n", new_size);
+    }
+    return new_ptr;
+}
 
 Char* read_file(const Char* filename)
 {
@@ -25,7 +52,7 @@ Char* read_file(const Char* filename)
     buffer[0] = '\0';
 
     while ((read = getline(&line, &len, fp)) != -1) {
-        buffer = (Char*)realloc(buffer, (strlen(buffer) + strlen(line) + 1) * sizeof(Char));
+        buffer = (Char*)safe_realloc(buffer, (strlen(buffer) + strlen(line) + 1) * sizeof(Char));
         strcat(buffer, line);
     }
 
@@ -37,7 +64,7 @@ Char* read_file(const Char* filename)
     return buffer;
 }
 
-Void write_file(const Char* filename, Char* outbuffer)
+Void write_file(const Char* filename, const Char* outbuffer)
 {
     FILE* fp;
 
@@ -68,7 +95,7 @@ Char* sh(const Char* cmd)
     }
 
     while (fgets(path, sizeof(path), fp) != NULL) {
-        output = (Char*)realloc(output, (strlen(output) + strlen(path) + 1) * sizeof(Char));
+        output = (Char*)safe_realloc(output, (strlen(output) + strlen(path) + 1) * sizeof(Char));
         strcat(output, path);
     }
 
@@ -112,12 +139,7 @@ void print_v(MsgType msg_type, const Char* text, va_list args)
             break;
 
         case MSG_ERROR:
-            if (verbose) {
-                fprintf(stderr, "   %s", buffer);
-            }
-            else {
-                fprintf(stderr, "%s", buffer);
-            }
+            fprintf(stderr, "%s", buffer);
             break;
 
         default:
