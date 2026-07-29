@@ -79,10 +79,11 @@ Void write_file(const Char* filename, const Char* outbuffer)
     fclose(fp);
 }
 
-Char* sh(const Char* cmd)
-{
-    Char* output = (Char*)calloc(1, sizeof(Char));
-    output[0] = '\0';
+CommandResult sh(const Char* cmd) {
+    CommandResult result;
+    result.output = (Char*)calloc(1, sizeof(Char));
+    result.output[0] = '\0';
+    result.return_code = -1;
 
     FILE* fp;
     Char path[1035];
@@ -90,18 +91,27 @@ Char* sh(const Char* cmd)
     fp = popen(cmd, "r");
 
     if (fp == NULL) {
-        print(MSG_ERROR, "Failed to run command\n");
-        exit(EXIT_FAILURE);
+        PANIC("failed to run the command");
     }
 
     while (fgets(path, sizeof(path), fp) != NULL) {
-        output = (Char*)safe_realloc(output, (strlen(output) + strlen(path) + 1) * sizeof(Char));
-        strcat(output, path);
+        result.output = (Char*)safe_realloc(result.output, (strlen(result.output) + strlen(path) + 1) * sizeof(Char));
+        strcat(result.output, path);
     }
 
-    pclose(fp);
+    // capture the return code of the command
+    int status = pclose(fp);
+    if (status == -1) {
+        PANIC("failed to close the command stream");
+    }
 
-    return output;
+    if (WIFEXITED(status)) {
+        result.return_code = WEXITSTATUS(status);
+    } else {
+        PANIC("Command did not exit properly");
+    }
+
+    return result;
 }
 
 Void create_dir(const Char* dir)

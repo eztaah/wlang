@@ -90,9 +90,14 @@ Void* safe_malloc(UX size);
 Void* safe_calloc(UX num, UX size);
 Void* safe_realloc(Void* ptr, UX new_size);
 
+typedef struct {
+    Char* output;
+    I32 return_code;
+} CommandResult;
+
 Char* read_file(const Char* filename);
 Void write_file(const Char* filename, const Char* outbuffer);
-Char* sh(const Char* cmd);
+CommandResult sh(const Char* cmd);
 Void create_dir(const Char* dir);
 void print_v(MsgType msg_type, const Char* text, va_list args);
 void print(MsgType msg_type, const Char* text, ...);

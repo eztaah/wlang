@@ -13,7 +13,7 @@ Void application_panic(const Char* file_path, I32 line, const Char* format, ...)
     // handle end of the message
     print_v(MSG_ERROR, format, args);
 
-    print(MSG_ERROR, "\n");
+    // print(MSG_ERROR, "\n");
 
     va_end(args);
 
@@ -48,7 +48,7 @@ Void user_panic(const Char* current_filename, I32 line, const Char* format, ...)
     print_v(MSG_ERROR, format, args);
 
     // End the line with a newline character
-    print(MSG_ERROR, "\n");
+    // print(MSG_ERROR, "\n");
 
     va_end(args);
 

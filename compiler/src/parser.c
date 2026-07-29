@@ -48,7 +48,7 @@ static Token eat_next_token_any(Parser* parser)
 static Token eat_next_token(Parser* parser, TokenType expected_token_type)
 {
     if (parser->current_token.type != expected_token_type) {
-        USER_PANIC(current_filename, parser->current_token.line, "Expected token type %s but got %s", tokentype_to_string(expected_token_type), tokentype_to_string(parser->current_token.type));
+        USER_PANIC(current_filename, parser->current_token.line, "expected token type %s but got %s", tokentype_to_string(expected_token_type), tokentype_to_string(parser->current_token.type));
     }
     return eat_next_token_any(parser);
 }
@@ -163,20 +163,27 @@ static ExprNode* parse_primary(Parser* parser)
             break;
     }
 
-    USER_PANIC(current_filename, parser->current_token.line, "Expected primary expression (number, identifier, or parentheses)\n");
+    USER_PANIC(current_filename, parser->current_token.line, "expected primary expression (number, identifier, or parentheses)\n");
     return NULL;
 }
 
 static ExprNode* parse_unary(Parser* parser)
 {
+    I32 line = parser->current_token.line;
+
     if (parser->current_token.type == TOKEN_MINUS) {
-        I32 line = parser->current_token.line;
         eat_next_token_any(parser); // Eat '-'
         ExprNode* operand = parse_unary(parser);
         return unarop_node_new(TOKEN_MINUS, operand, line);
     }
+    else if (parser->current_token.type == TOKEN_TILDE) {
+        eat_next_token_any(parser); // Eat '~'
+        ExprNode* operand = parse_unary(parser);
+        return unarop_node_new(TOKEN_TILDE, operand, line);
+    }
     return parse_primary(parser);
 }
+
 
 static ExprNode* parse_multiplicative(Parser* parser)
 {
@@ -253,7 +260,7 @@ static ExprNode* parse_bitwise_and(Parser* parser)
 static ExprNode* parse_bitwise_xor(Parser* parser)
 {
     ExprNode* left = parse_bitwise_and(parser);
-    while (parser->current_token.type == TOKEN_CARET) {
+    while (parser->current_token.type == TOKEN_HASH) {
         I32 line = parser->current_token.line;
         Token op = eat_next_token_any(parser);
         ExprNode* right = parse_bitwise_and(parser);

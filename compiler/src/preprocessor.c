@@ -52,7 +52,7 @@ static Void convert_chars_to_ascii(Str* source)
     while ((pos = strchr(pos, '\'')) != NULL) {
         Char* end_char = strchr(pos + 1, '\'');
         if (!end_char) {
-            USER_PANIC(current_filename, current_line_number, "Unmatched single quote in character literal");
+            USER_PANIC(current_filename, current_line_number, "unmatched single quote in character literal");
         }
 
         I32 ascii_value = -1;
@@ -62,7 +62,7 @@ static Void convert_chars_to_ascii(Str* source)
             Char escape_seq[3] = {pos[1], pos[2], '\0'};
             ascii_value = escape_sequence_to_ascii(escape_seq);
             if (ascii_value == -1) {
-                USER_PANIC(current_filename, current_line_number, "Invalid escape sequence");
+                USER_PANIC(current_filename, current_line_number, "invalid escape sequence");
             }
         }
         else {
@@ -259,7 +259,7 @@ static Void process_includes(Str* source)
         // read the content of the included file
         Char* included_content = read_file(file_name);
         if (!included_content) {
-            USER_PANIC(current_filename, current_line_number, "Failed to include file: %s", file_name);
+            USER_PANIC(current_filename, current_line_number, "failed to include file: %s", file_name);
         }
 
         // replace the #incl line with the content of the file
@@ -340,7 +340,7 @@ static Void remove_annotations(Str* source)
         }
 
         // process the annotation
-        if (pos[1] == ' ') { // skip the entire line if ! is followed by a space
+        if (pos[1] == ' ' || pos[1] == '\t') { // skip the entire line if ! is followed by a space
             Char* end_line = strchr(pos, '\n');
             if (!end_line) {
                 str_remove_range(source, pos - src, source->length);
@@ -349,16 +349,14 @@ static Void remove_annotations(Str* source)
             else {
                 str_remove_range(source, pos - src, end_line + 1 - src);
             }
-        }
-        else { // skip the word until the next space
-            Char* space = strchr(pos, ' ');
-            if (!space) {
-                str_remove_range(source, pos - src, source->length);
-                break;
+        } 
+        else { // Skip the word until the next space or tab
+            Char* space = pos + 1;
+            while (*space != ' ' && *space != '\t' && *space != '\n' && *space != '\0') {
+                space++;
             }
-            else {
-                str_remove_range(source, pos - src, space - src + 1);
-            }
+
+            str_remove_range(source, pos - src, space - src);
         }
     }
 }

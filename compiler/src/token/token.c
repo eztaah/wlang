@@ -45,6 +45,10 @@ Char* tokentype_to_string(TokenType tokentype)
             return "TOKEN_PIPE";
         case TOKEN_CARET:
             return "TOKEN_CARET";
+        case TOKEN_TILDE:
+            return "TOKEN_TILDE";
+        case TOKEN_HASH:
+            return "TOKEN_HASH";
         case TOKEN_LESSTHAN:
             return "TOKEN_LESSTHAN";
         case TOKEN_GREATERTHAN:

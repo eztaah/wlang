@@ -149,10 +149,6 @@ static Void asme_varaddr(AsmG* asmg, const VaraddrNode* varaddr_node)
         PANIC("Reference to %s, but this variable is not defined (should be catch by the semantic analyser)", str_to_char(full_var_name));
     }
 
-    if (array_pos) {
-        USER_PANIC(current_filename, varaddr_node->line, "You want to get the address of an array, but the variable itself is already an address");
-    }
-
     str_cat(asmg->fun_body, "    leaq    ");
     str_cat(asmg->fun_body, var_pos);
     str_cat(asmg->fun_body, ", %rax\n");
@@ -208,18 +204,20 @@ static void asme_binop(AsmG* asmg, const BinopNode* binop_node)
             break;
 
         case TOKEN_LEFTSHIFT:
-            str_cat(asmg->fun_body, "    shl     %cl, %rax\n"); // %cl contains the number of bits to shift
+            str_cat(asmg->fun_body, "    movq    %rbx, %rcx\n"); // move the shift amount into %rcx
+            str_cat(asmg->fun_body, "    shl     %cl, %rax\n");   // %cl contains the number of bits to shift
             break;
 
         case TOKEN_RIGHTSHIFT:
-            str_cat(asmg->fun_body, "    shr     %cl, %rax\n"); // %cl contains the number of bits to shift
+            str_cat(asmg->fun_body, "    movq    %rbx, %rcx\n"); // move the shift amount into %rcx
+            str_cat(asmg->fun_body, "    shr     %cl, %rax\n");   // %cl contains the number of bits to shift
             break;
 
         case TOKEN_AMPERSAND:
             str_cat(asmg->fun_body, "    and     %rbx, %rax\n");
             break;
 
-        case TOKEN_CARET:
+        case TOKEN_HASH:
             str_cat(asmg->fun_body, "    xor     %rbx, %rax\n");
             break;
 
@@ -296,15 +294,23 @@ static Void asme_unarop(AsmG* asmg, const UnaropNode* unarop_node)
 {
     str_cat(asmg->fun_body, "    # < unarop\n");
 
-    if (unarop_node->op == TOKEN_MINUS) {
-        str_cat(asmg->fun_body, "    movq    $");
-        str_cat(asmg->fun_body, "-"); // hardcoded but it is ok for now
-        str_cat(asmg->fun_body, unarop_node->operand->num_node.value);
-        str_cat(asmg->fun_body, ", %rax\n");
+    switch (unarop_node->op) {
+        case TOKEN_MINUS:
+            // Handling for the unary minus operator (negation)
+            asme_expr(asmg, unarop_node->operand);
+            str_cat(asmg->fun_body, "    neg     %rax\n");
+            break;
+
+        case TOKEN_TILDE:
+            // Handling for the bitwise NOT operator (~)
+            asme_expr(asmg, unarop_node->operand);
+            str_cat(asmg->fun_body, "    not     %rax\n");
+            break;
+
+        default:
+            PANIC("Unknown unary operator in asm generator");
     }
-    else {
-        PANIC("Only able to convert into asm minus symbol unarop node");
-    }
+
     str_cat(asmg->fun_body, "    # unarop >\n");
 }
 

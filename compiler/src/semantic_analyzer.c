@@ -52,7 +52,7 @@ static Void analyze_block(AnalyzerContext* context, BlockNode* block_node)
 static Void check_variable_declared(AnalyzerContext* context, const Char* name, I32 line)
 {
     if (dict_get(context->symbol_table, name) == NULL) {
-        USER_PANIC(current_filename, line, "Variable '%s' referenced before declaration", name);
+        USER_PANIC(current_filename, line, "variable '%s' referenced before declaration", name);
     }
 }
 
@@ -69,11 +69,11 @@ static Void analyze_assignment(AnalyzerContext* context, AssNode* ass_node, I32 
 static Void analyze_vardec(AnalyzerContext* context, VardecNode* vardec_node, I32 line)
 {
     if (strcmp(vardec_node->size, "64") != 0) {
-        USER_PANIC(current_filename, line, " Only 64-bit variables are allowed, but '%s' is of size <%s>", vardec_node->name, vardec_node->size);
+        USER_PANIC(current_filename, line, "only 64-bit variables are allowed, but '%s' is of size <%s>", vardec_node->name, vardec_node->size);
     }
 
     if (dict_get(context->symbol_table, vardec_node->name) != NULL) {
-        USER_PANIC(current_filename, line, " Variable '%s' already declared", vardec_node->name);
+        USER_PANIC(current_filename, line, "variable '%s' already declared", vardec_node->name);
     }
 
     dict_put(context->symbol_table, vardec_node->name, "64");
@@ -91,7 +91,7 @@ static Void analyze_arraydec(AnalyzerContext* context, ArraydecNode* arraydec_no
     }
 
     if (dict_get(context->symbol_table, arraydec_node->name) != NULL) {
-        USER_PANIC(current_filename, line, " Array '%s' already declared", arraydec_node->name);
+        USER_PANIC(current_filename, line, "array '%s' already declared", arraydec_node->name);
     }
 
     dict_put(context->symbol_table, arraydec_node->name, "64");
@@ -131,7 +131,7 @@ static Void analyze_expr(AnalyzerContext* context, ExprNode* expr_node)
         case NODE_FUNCALL:
             // Check if the function call has more than six arguments
             if (expr_node->funcall_node.expr_node_list->size > 6) {
-                USER_PANIC(current_filename, expr_node->line, " Function call to '%s' contains more than six arguments", expr_node->funcall_node.name);
+                USER_PANIC(current_filename, expr_node->line, "function call to '%s' contains more than six arguments", expr_node->funcall_node.name);
             }
             for (I32 i = 0; i < expr_node->funcall_node.expr_node_list->size; i++) {
                 analyze_expr(context, list_get(expr_node->funcall_node.expr_node_list, i));
@@ -139,6 +139,9 @@ static Void analyze_expr(AnalyzerContext* context, ExprNode* expr_node)
             break;
 
         case NODE_SYSC:
+            if (expr_node->sysc_node.expr_node_list->size != 7) {
+                USER_PANIC(current_filename, expr_node->line, "syscall should contain exactly seven arguments");
+            }
             for (I32 i = 0; i < expr_node->sysc_node.expr_node_list->size; i++) {
                 analyze_expr(context, list_get(expr_node->sysc_node.expr_node_list, i));
             }
@@ -187,7 +190,7 @@ static Void analyze_stmt(AnalyzerContext* context, StmtNode* stmt_node)
 
         case NODE_BREAK:
             if (!context->in_loop) {
-                USER_PANIC(current_filename, stmt_node->line, "Break statement used outside of a loop");
+                USER_PANIC(current_filename, stmt_node->line, "break statement used outside of a loop");
             }
             break;
 
@@ -206,14 +209,14 @@ static Void analyze_fundef(AnalyzerContext* context, FundefNode* fundef_node)
 
     // Check if the function has more than six parameters
     if (fundef_node->param_node_list->size > 6) {
-        USER_PANIC(current_filename, fundef_node->line, " Function '%s' contains more than six parameters", fundef_node->name);
+        USER_PANIC(current_filename, fundef_node->line, "function '%s' contains more than six parameters", fundef_node->name);
     }
 
     // Analyze parameters
     for (I32 i = 0; i < fundef_node->param_node_list->size; i++) {
         ParamNode* param_node = (ParamNode*)list_get(fundef_node->param_node_list, i);
         if (strcmp(param_node->size, "64") != 0) {
-            USER_PANIC(current_filename, param_node->line, "Only 64-bit parameters are allowed, but parameter '%s' is of size <%s>", param_node->name, param_node->size);
+            USER_PANIC(current_filename, param_node->line, "only 64-bit parameters are allowed, but parameter '%s' is of size <%s>", param_node->name, param_node->size);
         }
         dict_put(context->symbol_table, param_node->name, param_node->size);
     }

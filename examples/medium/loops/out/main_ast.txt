@@ -1,0 +1,48 @@
+[
+    FundefNode
+    ├─ name: "w__main"
+    ├─ return_size: "64"
+    ├─ scope: "local"
+    ├─ parameters: List<ParamNode>
+                   └─ EMPTY
+    └─ block_node: BlockNode
+                   └─ content: List<StmtNode>
+                               ├─ VardecNode
+                                  ├─ size: 64
+                                  ├─ name: i
+                                  └─ value: NumNode
+                                            └─ value: 0
+                               ├─ LoopNode
+                                  └─ Block:BlockNode
+                                            └─ content: List<StmtNode>
+                                                        ├─ FuncallNode
+                                                           ├─ name: "w__print_number"
+                                                           └─ args: List<ExprNode>
+                                                                    └─ VarrefNode
+                                                                       └─ name: i
+                                                        ├─ AssNode
+                                                           ├─ lvalue: VarrefNode
+                                                                      └─ name: i
+                                                           └─ value: BinopNode
+                                                                     ├─ op: TOKEN_PLUS
+                                                                     ├─ left:  VarrefNode
+                                                                               └─ name: i
+                                                                     └─ right: NumNode
+                                                                               └─ value: 1
+                                                        └─ IfNode
+                                                           ├─ Condition:BinopNode
+                                                                     ├─ op: TOKEN_EQUAL_EQUAL
+                                                                     ├─ left:  VarrefNode
+                                                                               └─ name: i
+                                                                     └─ right: NumNode
+                                                                               └─ value: 5
+                                                           ├─ True Block:BlockNode
+                                                                     └─ content: List<StmtNode>
+                                                                                 └─ BreakNode
+                                                                                    └─ NULL
+                                                           └─ False Block: (None)
+                               └─ RetNode
+                                  └─ value: NumNode
+                                            └─ value: 0
+
+]

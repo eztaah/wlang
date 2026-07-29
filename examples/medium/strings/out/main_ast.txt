@@ -1,0 +1,52 @@
+[
+    FundefNode
+    ├─ name: "w__main"
+    ├─ return_size: "64"
+    ├─ scope: "local"
+    ├─ parameters: List<ParamNode>
+                   └─ EMPTY
+    └─ block_node: BlockNode
+                   └─ content: List<StmtNode>
+                               ├─ ArraydecNode
+                                  ├─ item_size: 64
+                                  ├─ name: str2
+                                  ├─ size: 13
+                                  └─ expr_node_list: List<ExprNode>
+                                                   ├─ NumNode
+                                                      └─ value: 72
+                                                   ├─ NumNode
+                                                      └─ value: 101
+                                                   ├─ NumNode
+                                                      └─ value: 108
+                                                   ├─ NumNode
+                                                      └─ value: 108
+                                                   ├─ NumNode
+                                                      └─ value: 111
+                                                   ├─ NumNode
+                                                      └─ value: 32
+                                                   ├─ NumNode
+                                                      └─ value: 87
+                                                   ├─ NumNode
+                                                      └─ value: 111
+                                                   ├─ NumNode
+                                                      └─ value: 114
+                                                   ├─ NumNode
+                                                      └─ value: 108
+                                                   ├─ NumNode
+                                                      └─ value: 100
+                                                   ├─ NumNode
+                                                      └─ value: 33
+                                                   └─ NumNode
+                                                      └─ value: 10
+                               ├─ FuncallNode
+                                  ├─ name: "w__print_array"
+                                  └─ args: List<ExprNode>
+                                           ├─ VarrefNode
+                                              └─ name: str2
+                                           └─ NumNode
+                                              └─ value: 13
+                               └─ RetNode
+                                  └─ value: NumNode
+                                            └─ value: 0
+
+]
