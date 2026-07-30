@@ -44,7 +44,7 @@ char* read_file(const char* filename)
 
     fp = fopen(filename, "rb");
     if (fp == NULL) {
-        print(MSG_ERROR, "Could not read file `%s`\n", filename);
+        print(ERROR, 0, "Could not read file `%s`\n", filename);
         exit(EXIT_FAILURE);
     }
 
@@ -70,7 +70,7 @@ void write_file(const char* filename, const char* outbuffer)
 
     fp = fopen(filename, "wb");
     if (fp == NULL) {
-        print(MSG_ERROR, "Could not open file for writing `%s`\n", filename);
+        print(ERROR, 0, "Could not open file for writing `%s`\n", filename);
         exit(EXIT_FAILURE);
     }
 
@@ -128,28 +128,42 @@ void create_dir(const char* dir)
 }
 
 #define MAX_LOG_LENGTH 1024
-void print_v(MsgType msg_type, const char* text, va_list args)
+void print_v(MsgType msg_type, int indent, const char* text, va_list args)
 {
     char buffer[MAX_LOG_LENGTH];
+    char indented_buffer[MAX_LOG_LENGTH + 40]; // Extra space for indentation, assuming max indent level is small
 
-    // using vsnprintf to format the text
+    // Using vsnprintf to format the text
     vsnprintf(buffer, MAX_LOG_LENGTH, text, args);
 
+    // Create indentation prefix (4 spaces per indent level)
+    unsigned int indent_spaces = 0;
+    if (indent > 0) {
+        indent_spaces = indent * 4;
+    }
+    if (indent_spaces > sizeof(indented_buffer) - MAX_LOG_LENGTH - 1) {
+        indent_spaces = sizeof(indented_buffer) - MAX_LOG_LENGTH - 1; // Ensure it fits
+    }
+    memset(indented_buffer, ' ', indent_spaces);
+    indented_buffer[indent_spaces] = '\0';  // Null-terminate the string
+
+    // Concatenate the indentation and the formatted message
+    strncat(indented_buffer, buffer, MAX_LOG_LENGTH - indent_spaces);
+
     switch (msg_type) {
-        case MSG_STEP:
+        case VERBOSE:
             if (verbose) {
-                fprintf(stdout, "%s", buffer);
+                if (indent == 0) {
+                    // Print in bold if indent is 0
+                    fprintf(stdout, "\033[1m%s\033[0m", indented_buffer);  // \033[1m starts bold, \033[0m ends it
+                } else {
+                    fprintf(stdout, "%s", indented_buffer);
+                }
             }
             break;
 
-        case MSG_INFO:
-            if (verbose) {
-                fprintf(stdout, "   %s", buffer);
-            }
-            break;
-
-        case MSG_ERROR:
-            fprintf(stderr, "%s", buffer);
+        case ERROR:
+            fprintf(stderr, "%s", buffer); // No indentation for errors
             break;
 
         default:
@@ -158,10 +172,11 @@ void print_v(MsgType msg_type, const char* text, va_list args)
     }
 }
 
-void print(MsgType msg_type, const char* text, ...)
+
+void print(MsgType msg_type, int indent, const char* text, ...)
 {
     va_list args;
     va_start(args, text);
-    print_v(msg_type, text, args);
+    print_v(msg_type, indent, text, args);
     va_end(args);
 }

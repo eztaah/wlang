@@ -71,9 +71,8 @@ void dict_free(Dict* dict);
 
 // io
 typedef enum {
-    MSG_STEP,
-    MSG_INFO,
-    MSG_ERROR,
+    VERBOSE,
+    ERROR,
 } MsgType;
 
 
@@ -90,8 +89,8 @@ char* read_file(const char* filename);
 void write_file(const char* filename, const char* outbuffer);
 CommandResult sh(const char* cmd);
 void create_dir(const char* dir);
-void print_v(MsgType msg_type, const char* text, va_list args);
-void print(MsgType msg_type, const char* text, ...);
+void print_v(MsgType msg_type, int indent, const char* text, va_list args);
+void print(MsgType msg_type, int indent, const char* text, ...);
 
 // error handling
 void application_panic(const char* file_path, int line, const char* format, ...);

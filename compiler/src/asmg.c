@@ -510,7 +510,7 @@ static void asme_vardec(AsmG* asmg, const VardecNode* vardec_node)
     sprintf(var_pos_c, "%d(%%rbp)", asmg->rbp_offset);
     dict_put(asmg->variables, str_to_char(full_var_name), var_pos_c);
 
-    print(MSG_INFO, "add in the dict: \"%s\" at location %s\n", str_to_char(full_var_name), var_pos_c);
+    print(VERBOSE, 2, "add in the dict: \"%s\" at location %s\n", str_to_char(full_var_name), var_pos_c);
 
     // process expression only if it exists
     if (vardec_node->value != NULL) {
@@ -538,7 +538,7 @@ static void asme_arraydec(AsmG* asmg, const ArraydecNode* arraydec_node)
     sprintf(array_pos_c, "%d(%%rbp)", asmg->rbp_offset);
     dict_put(asmg->arrays, str_to_char(full_array_name), array_pos_c);
 
-    print(MSG_INFO, "add array 1st elmt in the dict: \"%s\" at location %s\n", str_to_char(full_array_name), array_pos_c);
+    print(VERBOSE, 2, "add array 1st elmt in the dict: \"%s\" at location %s\n", str_to_char(full_array_name), array_pos_c);
 
     // convert array size to int
     int array_size = atoi(arraydec_node->size);
@@ -641,7 +641,7 @@ static void asme_fundef(AsmG* asmg, const FundefNode* fundef_node)
         sprintf(var_pos_c, "%d(%%rbp)", asmg->rbp_offset);
         dict_put(asmg->variables, str_to_char(full_var_name), var_pos_c);
 
-        print(MSG_INFO, "add in the dict: \"%s\" at location %s\n", str_to_char(full_var_name), var_pos_c);
+        print(VERBOSE, 2, "add in the dict: \"%s\" at location %s\n", str_to_char(full_var_name), var_pos_c);
 
         // move the arguments from the registers (rdi, rsi, rdx, rcx, r8, r9) to the stack
         switch (i) {
@@ -813,7 +813,6 @@ static void init_asm_file(AsmG* asmg)
 
 Str* asme(const List* fundef_node_list)
 {
-    print(MSG_STEP, "generating assembly...\n");
     AsmG* asmg = asmg_new(fundef_node_list);
 
     // initialize asm stmtuctions
