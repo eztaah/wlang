@@ -231,17 +231,17 @@ static void process_conditionals(Str* source, Dict* macro_dict)
             }
         }
 
-        // remove the #endif line
-        endif_pos = strstr(str_to_char(source), "#endif");
-        if (endif_pos) {
-            char* end_of_endif_line = strchr(endif_pos, '\n');
-            if (end_of_endif_line) {
-                str_remove_range(source, endif_pos - str_to_char(source), end_of_endif_line + 1 - str_to_char(source));
-            }
-            else {
-                str_remove_range(source, endif_pos - str_to_char(source), strlen(str_to_char(source)));
-            }
-        }
+        // // remove the #endif line
+        // endif_pos = strstr(str_to_char(source), "#endif");
+        // if (endif_pos) {
+        //     char* end_of_endif_line = strchr(endif_pos, '\n');
+        //     if (end_of_endif_line) {
+        //         str_remove_range(source, endif_pos - str_to_char(source), end_of_endif_line + 1 - str_to_char(source));
+        //     }
+        //     else {
+        //         str_remove_range(source, endif_pos - str_to_char(source), strlen(str_to_char(source)));
+        //     }
+        // }
 
         // update the `src` pointer since we've modified the source
         src = str_to_char(source);

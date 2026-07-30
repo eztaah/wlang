@@ -6,6 +6,7 @@ import subprocess
 # Output directory for the compiled executables
 OUT_DIR = "./out"
 EXECUTABLE_NAME = "prog"
+TIMEOUT_SECONDS = 1  # Timeout for each compilation or execution step
 
 # Create the output directory if it doesn't exist
 os.makedirs(OUT_DIR, exist_ok=True)
@@ -63,14 +64,21 @@ def run_test(test_file):
 
     # Compile and link the .w file using the compiler
     compile_command = ["./wlangc", test_file]
-    result = subprocess.run(compile_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    try:
+        result = subprocess.run(compile_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=TIMEOUT_SECONDS)
 
-    if result.returncode != 0:
+        if result.returncode != 0:
+            print(f"{BOLD}{RED}{format_test_path(test_file)}: FAIL{RESET}")
+
+            error_message = result.stderr.decode().strip().splitlines()
+            formatted_error_message = "\n".join([f"    {line}" for line in error_message])
+            print(formatted_error_message)
+            fail_count += 1
+            return
+
+    except subprocess.TimeoutExpired:
         print(f"{BOLD}{RED}{format_test_path(test_file)}: FAIL{RESET}")
-
-        error_message = result.stderr.decode().strip().splitlines()
-        formatted_error_message = "\n".join([f"    {line}" for line in error_message])
-        print(formatted_error_message)
+        print(f"    {YELLOW}compilation timed out after {TIMEOUT_SECONDS} seconds{RESET}")
         fail_count += 1
         return
 
@@ -82,7 +90,7 @@ def run_test(test_file):
     # Run the compiled executable and capture the exit code or output
     try:
         run_command = [os.path.join(OUT_DIR, EXECUTABLE_NAME)]
-        result = subprocess.run(run_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        result = subprocess.run(run_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=TIMEOUT_SECONDS)
         
         if check_exit_code:
             # Compare the actual exit code with the expected one
@@ -107,6 +115,11 @@ def run_test(test_file):
                 print(f"    {YELLOW}expected output:{RESET} {repr(expected_output)}")
                 print(f"    {YELLOW}actual output:{RESET} {repr(actual_output)}")
                 fail_count += 1
+
+    except subprocess.TimeoutExpired:
+        print(f"{BOLD}{RED}{format_test_path(test_file)}: FAIL{RESET}")
+        print(f"    {YELLOW}execution timed out after {TIMEOUT_SECONDS} seconds{RESET}")
+        fail_count += 1
 
     except FileNotFoundError as e:
         print(f"{BOLD}{RED}Failed to run {EXECUTABLE_NAME} in {format_test_path(test_file)}. Error: {e}{RESET}")
@@ -159,4 +172,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
