@@ -6,9 +6,9 @@
 
 typedef struct {
     const List* token_list;
-    I32 token_list_size;
-    I32 index;
-    I32 index_next_token;
+    int token_list_size;
+    int index;
+    int index_next_token;
     Token current_token;
     Token next_token;
 } Parser;
@@ -27,7 +27,7 @@ static Parser* parser_new(const List* token_list)
     return parser;
 }
 
-static Void parser_free(Parser* parser)
+static void parser_free(Parser* parser)
 {
     free(parser);
 }
@@ -58,7 +58,7 @@ static ExprNode* parse_expr(Parser* parser);
 static ExprNode* parse_fun_call(Parser* parser)
 {
     Str* final_name = str_new("");
-    I32 line = parser->current_token.line;
+    int line = parser->current_token.line;
 
     // handling @
     if (parser->current_token.type == TOKEN_AT) {
@@ -66,14 +66,14 @@ static ExprNode* parse_fun_call(Parser* parser)
 
         // handling name
         Token name_token = eat_next_token(parser, TOKEN_ID);
-        Char* name = strdup(name_token.value);
+        char* name = strdup(name_token.value);
 
         str_cat(final_name, name);
     }
     else {
         // handling name
         Token name_token = eat_next_token(parser, TOKEN_ID);
-        Char* name = strdup(name_token.value);
+        char* name = strdup(name_token.value);
 
         str_cat(final_name, "w__");
         str_cat(final_name, name);
@@ -97,7 +97,7 @@ static ExprNode* parse_fun_call(Parser* parser)
 
 static ExprNode* parse_sysc(Parser* parser)
 {
-    I32 line = parser->current_token.line;
+    int line = parser->current_token.line;
 
     // eat %
     eat_next_token(parser, TOKEN_PERCENT);
@@ -122,7 +122,7 @@ static ExprNode* parse_sysc(Parser* parser)
 static ExprNode* parse_primary(Parser* parser)
 {
     Token token = parser->current_token;
-    I32 line = token.line;
+    int line = token.line;
 
     switch (token.type) {
         case TOKEN_NUM: {
@@ -143,11 +143,7 @@ static ExprNode* parse_primary(Parser* parser)
             }
             break;
         }
-        case TOKEN_CARET: {
-            eat_next_token_any(parser);
-            ExprNode* expr = parse_expr(parser);
-            return addrderef_node_new(expr, line);
-        }
+
         case TOKEN_AMPERSAND: {
             eat_next_token_any(parser);
             Token id_token = eat_next_token(parser, TOKEN_ID);
@@ -169,7 +165,7 @@ static ExprNode* parse_primary(Parser* parser)
 
 static ExprNode* parse_unary(Parser* parser)
 {
-    I32 line = parser->current_token.line;
+    int line = parser->current_token.line;
 
     if (parser->current_token.type == TOKEN_MINUS) {
         eat_next_token_any(parser); // Eat '-'
@@ -181,6 +177,11 @@ static ExprNode* parse_unary(Parser* parser)
         ExprNode* operand = parse_unary(parser);
         return unarop_node_new(TOKEN_TILDE, operand, line);
     }
+    else if (parser->current_token.type == TOKEN_CARET) {
+        eat_next_token_any(parser);
+        ExprNode* operand = parse_unary(parser);
+        return unarop_node_new(TOKEN_CARET, operand, line);
+    }
     return parse_primary(parser);
 }
 
@@ -189,7 +190,7 @@ static ExprNode* parse_multiplicative(Parser* parser)
 {
     ExprNode* left = parse_unary(parser);
     while (parser->current_token.type == TOKEN_MUL || parser->current_token.type == TOKEN_DIV || parser->current_token.type == TOKEN_PERCENT) {
-        I32 line = parser->current_token.line;
+        int line = parser->current_token.line;
         Token op = eat_next_token_any(parser);
         ExprNode* right = parse_unary(parser);
         left = binop_node_new(left, op.type, right, line);
@@ -201,7 +202,7 @@ static ExprNode* parse_additive(Parser* parser)
 {
     ExprNode* left = parse_multiplicative(parser);
     while (parser->current_token.type == TOKEN_PLUS || parser->current_token.type == TOKEN_MINUS) {
-        I32 line = parser->current_token.line;
+        int line = parser->current_token.line;
         Token op = eat_next_token_any(parser);
         ExprNode* right = parse_multiplicative(parser);
         left = binop_node_new(left, op.type, right, line);
@@ -213,7 +214,7 @@ static ExprNode* parse_shift(Parser* parser)
 {
     ExprNode* left = parse_additive(parser);
     while (parser->current_token.type == TOKEN_LEFTSHIFT || parser->current_token.type == TOKEN_RIGHTSHIFT) {
-        I32 line = parser->current_token.line;
+        int line = parser->current_token.line;
         Token op = eat_next_token_any(parser);
         ExprNode* right = parse_additive(parser);
         left = binop_node_new(left, op.type, right, line);
@@ -225,7 +226,7 @@ static ExprNode* parse_relational(Parser* parser)
 {
     ExprNode* left = parse_shift(parser);
     while (parser->current_token.type == TOKEN_LESSTHAN || parser->current_token.type == TOKEN_GREATERTHAN || parser->current_token.type == TOKEN_LESSTHAN_EQ || parser->current_token.type == TOKEN_GREATERTHAN_EQ) {
-        I32 line = parser->current_token.line;
+        int line = parser->current_token.line;
         Token op = eat_next_token_any(parser);
         ExprNode* right = parse_shift(parser);
         left = binop_node_new(left, op.type, right, line);
@@ -237,7 +238,7 @@ static ExprNode* parse_equality(Parser* parser)
 {
     ExprNode* left = parse_relational(parser);
     while (parser->current_token.type == TOKEN_EQUAL_EQUAL || parser->current_token.type == TOKEN_NOT_EQUAL) {
-        I32 line = parser->current_token.line;
+        int line = parser->current_token.line;
         Token op = eat_next_token_any(parser);
         ExprNode* right = parse_relational(parser);
         left = binop_node_new(left, op.type, right, line);
@@ -249,7 +250,7 @@ static ExprNode* parse_bitwise_and(Parser* parser)
 {
     ExprNode* left = parse_equality(parser);
     while (parser->current_token.type == TOKEN_AMPERSAND) {
-        I32 line = parser->current_token.line;
+        int line = parser->current_token.line;
         Token op = eat_next_token_any(parser);
         ExprNode* right = parse_equality(parser);
         left = binop_node_new(left, op.type, right, line);
@@ -261,7 +262,7 @@ static ExprNode* parse_bitwise_xor(Parser* parser)
 {
     ExprNode* left = parse_bitwise_and(parser);
     while (parser->current_token.type == TOKEN_HASH) {
-        I32 line = parser->current_token.line;
+        int line = parser->current_token.line;
         Token op = eat_next_token_any(parser);
         ExprNode* right = parse_bitwise_and(parser);
         left = binop_node_new(left, op.type, right, line);
@@ -273,7 +274,7 @@ static ExprNode* parse_bitwise_or(Parser* parser)
 {
     ExprNode* left = parse_bitwise_xor(parser);
     while (parser->current_token.type == TOKEN_PIPE) {
-        I32 line = parser->current_token.line;
+        int line = parser->current_token.line;
         Token op = eat_next_token_any(parser);
         ExprNode* right = parse_bitwise_xor(parser);
         left = binop_node_new(left, op.type, right, line);
@@ -285,7 +286,7 @@ static ExprNode* parse_logical_and(Parser* parser)
 {
     ExprNode* left = parse_bitwise_or(parser);
     while (parser->current_token.type == TOKEN_AND) {
-        I32 line = parser->current_token.line;
+        int line = parser->current_token.line;
         Token op = eat_next_token_any(parser);
         ExprNode* right = parse_bitwise_or(parser);
         left = binop_node_new(left, op.type, right, line);
@@ -297,7 +298,7 @@ static ExprNode* parse_logical_or(Parser* parser)
 {
     ExprNode* left = parse_logical_and(parser);
     while (parser->current_token.type == TOKEN_OR) {
-        I32 line = parser->current_token.line;
+        int line = parser->current_token.line;
         Token op = eat_next_token_any(parser);
         ExprNode* right = parse_logical_and(parser);
         left = binop_node_new(left, op.type, right, line);
@@ -312,16 +313,23 @@ static ExprNode* parse_expr(Parser* parser)
 
 static StmtNode* parse_ret(Parser* parser)
 {
-    I32 line = parser->current_token.line;
+    int line = parser->current_token.line;
     eat_next_token(parser, TOKEN_RET);
 
     // handling expression
-    ExprNode* expr_node = parse_expr(parser);
-    eat_next_token(parser, TOKEN_SEMI);
-    return ret_node_new(expr_node, line);
+    if (parser->current_token.type != TOKEN_SEMI) {
+        ExprNode* expr_node = parse_expr(parser);
+        eat_next_token(parser, TOKEN_SEMI);
+        return ret_node_new(expr_node, line);
+    }
+    else {
+        ExprNode* expr_node = NULL;
+        eat_next_token(parser, TOKEN_SEMI);
+        return ret_node_new(expr_node, line);
+    }
 }
 
-static StmtNode* expr_to_stmt_node(ExprNode* expr_node, I32 line)
+static StmtNode* expr_to_stmt_node(ExprNode* expr_node, int line)
 {
     StmtNode* stmt_node = (StmtNode*)safe_malloc(sizeof(StmtNode));
     stmt_node->type = NODE_EXPR;
@@ -335,7 +343,7 @@ static StmtNode* parse_stmt(Parser* parser);
 
 static BlockNode* parse_block_node(Parser* parser)
 {
-    I32 line = parser->current_token.line;
+    int line = parser->current_token.line;
     eat_next_token(parser, TOKEN_LBRACE);
 
     List* stmt_node_list = list_new(sizeof(StmtNode));
@@ -351,7 +359,7 @@ static BlockNode* parse_block_node(Parser* parser)
 
 static StmtNode* parse_if_stmt(Parser* parser)
 {
-    I32 line = parser->current_token.line;
+    int line = parser->current_token.line;
     eat_next_token(parser, TOKEN_IF);
 
     // Parse condition
@@ -374,7 +382,7 @@ static StmtNode* parse_if_stmt(Parser* parser)
 
 static StmtNode* parse_loop_stmt(Parser* parser)
 {
-    I32 line = parser->current_token.line;
+    int line = parser->current_token.line;
     eat_next_token(parser, TOKEN_LOOP);
 
     BlockNode* block_node = parse_block_node(parser);
@@ -383,7 +391,7 @@ static StmtNode* parse_loop_stmt(Parser* parser)
 
 static StmtNode* parse_break_stmt(Parser* parser)
 {
-    I32 line = parser->current_token.line;
+    int line = parser->current_token.line;
     eat_next_token(parser, TOKEN_BREAK);
     eat_next_token(parser, TOKEN_SEMI);
     return break_node_new(line);
@@ -391,14 +399,14 @@ static StmtNode* parse_break_stmt(Parser* parser)
 
 static StmtNode* parse_vardec_stmt(Parser* parser)
 {
-    I32 line = parser->current_token.line;
+    int line = parser->current_token.line;
     eat_next_token(parser, TOKEN_LESSTHAN);
     Token size_token = eat_next_token(parser, TOKEN_NUM);
-    Char* size = strdup(size_token.value);
+    char* size = strdup(size_token.value);
     eat_next_token(parser, TOKEN_GREATERTHAN);
 
     Token name_token = eat_next_token(parser, TOKEN_ID);
-    Char* name = strdup(name_token.value);
+    char* name = strdup(name_token.value);
 
     // handle variable dec without assignement
     if (parser->current_token.type == TOKEN_SEMI) {
@@ -418,7 +426,7 @@ static StmtNode* parse_vardec_stmt(Parser* parser)
     else if (parser->current_token.type == TOKEN_LBRACKET) {
         eat_next_token(parser, TOKEN_LBRACKET);
         Token array_size_token = eat_next_token(parser, TOKEN_NUM);
-        Char* array_size = strdup(array_size_token.value);
+        char* array_size = strdup(array_size_token.value);
         eat_next_token(parser, TOKEN_RBRACKET);
 
         // with assignement
@@ -457,7 +465,7 @@ static StmtNode* parse_vardec_stmt(Parser* parser)
 
 static StmtNode* parse_ass_stmt(Parser* parser, ExprNode* expr_node1)
 {
-    I32 line = parser->current_token.line;
+    int line = parser->current_token.line;
     eat_next_token(parser, TOKEN_EQUAL);
 
     // Parse value of the var assignement
@@ -486,7 +494,7 @@ static StmtNode* parse_stmt(Parser* parser)
             return parse_vardec_stmt(parser);
 
         default: {
-            I32 line = parser->current_token.line;
+            int line = parser->current_token.line;
             ExprNode* expr_node = parse_expr(parser);
 
             if (parser->current_token.type == TOKEN_EQUAL) {
@@ -505,27 +513,27 @@ static StmtNode* parse_stmt(Parser* parser)
 
 static ParamNode* parse_fun_param(Parser* parser)
 {
-    I32 line = parser->current_token.line;
+    int line = parser->current_token.line;
 
     // handling size
     eat_next_token(parser, TOKEN_LESSTHAN);
     Token size_token = eat_next_token(parser, TOKEN_NUM);
-    Char* size = strdup(size_token.value);
+    char* size = strdup(size_token.value);
     eat_next_token(parser, TOKEN_GREATERTHAN);
 
     // handling name
     Token name_token = eat_next_token(parser, TOKEN_ID);
-    Char* name = strdup(name_token.value);
+    char* name = strdup(name_token.value);
 
     return param_node_new(name, size, line);
 }
 
 static FundefNode* parse_fundef(Parser* parser)
 {
-    I32 line = parser->current_token.line;
+    int line = parser->current_token.line;
 
     // Handle function scope
-    Char scope[255];
+    char scope[255];
     if (parser->current_token.type == TOKEN_GLB) {
         eat_next_token(parser, TOKEN_GLB);
         sprintf(scope, "global");
@@ -535,7 +543,7 @@ static FundefNode* parse_fundef(Parser* parser)
     }
 
     // handle return size
-    Char* return_size;
+    char* return_size;
     if (parser->current_token.type == TOKEN_LESSTHAN) {
         eat_next_token(parser, TOKEN_LESSTHAN);
         Token size_token = eat_next_token(parser, TOKEN_NUM);
@@ -548,7 +556,7 @@ static FundefNode* parse_fundef(Parser* parser)
 
     // handle name
     Token name_token = eat_next_token(parser, TOKEN_ID);
-    Char* name = strdup(name_token.value);
+    char* name = strdup(name_token.value);
     Str* full_name = str_new("w__");
     str_cat(full_name, name);
 

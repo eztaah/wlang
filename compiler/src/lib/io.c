@@ -8,39 +8,39 @@
 #include "compiler.h" // verbose
 #include "lib.h"
 
-Void* safe_malloc(UX size)
+void* safe_malloc(size_t size)
 {
-    Void* ptr = malloc(size);
+    void* ptr = malloc(size);
     if (!ptr) {
         PANIC("Error: failed to allocate %zu bytes of memory\n", size);
     }
     return ptr;
 }
 
-Void* safe_calloc(size_t num, size_t size)
+void* safe_calloc(size_t num, size_t size)
 {
-    Void* ptr = calloc(num, size);
+    void* ptr = calloc(num, size);
     if (!ptr) {
         PANIC("Error: failed to allocate memory for %zu elements of size %zu bytes\n", num, size);
     }
     return ptr;
 }
 
-Void* safe_realloc(Void* ptr, UX new_size)
+void* safe_realloc(void* ptr, size_t new_size)
 {
-    Void* new_ptr = realloc(ptr, new_size);
+    void* new_ptr = realloc(ptr, new_size);
     if (!new_ptr && new_size > 0) {
         PANIC("Error: failed to reallocate memory to %zu bytes\n", new_size);
     }
     return new_ptr;
 }
 
-Char* read_file(const Char* filename)
+char* read_file(const char* filename)
 {
     FILE* fp;
-    Char* line = NULL;
-    UX len = 0;
-    IX read;
+    char* line = NULL;
+    size_t len = 0;
+    ssize_t read;
 
     fp = fopen(filename, "rb");
     if (fp == NULL) {
@@ -48,11 +48,11 @@ Char* read_file(const Char* filename)
         exit(EXIT_FAILURE);
     }
 
-    Char* buffer = (Char*)calloc(1, sizeof(Char));
+    char* buffer = (char*)calloc(1, sizeof(char));
     buffer[0] = '\0';
 
     while ((read = getline(&line, &len, fp)) != -1) {
-        buffer = (Char*)safe_realloc(buffer, (strlen(buffer) + strlen(line) + 1) * sizeof(Char));
+        buffer = (char*)safe_realloc(buffer, (strlen(buffer) + strlen(line) + 1) * sizeof(char));
         strcat(buffer, line);
     }
 
@@ -64,7 +64,7 @@ Char* read_file(const Char* filename)
     return buffer;
 }
 
-Void write_file(const Char* filename, const Char* outbuffer)
+void write_file(const char* filename, const char* outbuffer)
 {
     FILE* fp;
 
@@ -79,14 +79,14 @@ Void write_file(const Char* filename, const Char* outbuffer)
     fclose(fp);
 }
 
-CommandResult sh(const Char* cmd) {
+CommandResult sh(const char* cmd) {
     CommandResult result;
-    result.output = (Char*)calloc(1, sizeof(Char));
+    result.output = (char*)calloc(1, sizeof(char));
     result.output[0] = '\0';
     result.return_code = -1;
 
     FILE* fp;
-    Char path[1035];
+    char path[1035];
 
     fp = popen(cmd, "r");
 
@@ -95,7 +95,7 @@ CommandResult sh(const Char* cmd) {
     }
 
     while (fgets(path, sizeof(path), fp) != NULL) {
-        result.output = (Char*)safe_realloc(result.output, (strlen(result.output) + strlen(path) + 1) * sizeof(Char));
+        result.output = (char*)safe_realloc(result.output, (strlen(result.output) + strlen(path) + 1) * sizeof(char));
         strcat(result.output, path);
     }
 
@@ -114,7 +114,7 @@ CommandResult sh(const Char* cmd) {
     return result;
 }
 
-Void create_dir(const Char* dir)
+void create_dir(const char* dir)
 {
     struct stat st = {0};
 
@@ -128,9 +128,9 @@ Void create_dir(const Char* dir)
 }
 
 #define MAX_LOG_LENGTH 1024
-void print_v(MsgType msg_type, const Char* text, va_list args)
+void print_v(MsgType msg_type, const char* text, va_list args)
 {
-    Char buffer[MAX_LOG_LENGTH];
+    char buffer[MAX_LOG_LENGTH];
 
     // using vsnprintf to format the text
     vsnprintf(buffer, MAX_LOG_LENGTH, text, args);
@@ -158,7 +158,7 @@ void print_v(MsgType msg_type, const Char* text, va_list args)
     }
 }
 
-void print(MsgType msg_type, const Char* text, ...)
+void print(MsgType msg_type, const char* text, ...)
 {
     va_list args;
     va_start(args, text);

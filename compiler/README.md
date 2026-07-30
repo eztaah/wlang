@@ -10,7 +10,7 @@ The compiler is written in C, you can see the use of custom types and structures
 
 - rename primitive types
     ```c
-    typedef unsigned int U32;
+    typedef unsigned int unsigned int;
     typedef size_t UX;
     typedef int I32;
     typedef ssize_t IX;

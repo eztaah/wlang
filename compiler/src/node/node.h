@@ -5,9 +5,9 @@
 #include "token.h"
 
 typedef struct {
-    Char* name;
-    Char* size;
-    I32 line;
+    char* name;
+    char* size;
+    int line;
 } ParamNode;
 
 // OTHER NODE
@@ -15,66 +15,59 @@ typedef struct {
 typedef struct ExprNode ExprNode;
 
 typedef struct {
-    Char* value;
-    I32 line;
+    char* value;
+    int line;
 } NumNode;
 
 typedef struct {
-    Char* name;
-    I32 line;
+    char* name;
+    int line;
 } VarrefNode;
 
 typedef struct {
-    ExprNode* expr;
-    I32 line;
-} AddrderefNode;
-
-typedef struct {
-    Char* name;
-    I32 line;
+    char* name;
+    int line;
 } VaraddrNode;
 
 typedef struct {
     TokenType op;
     ExprNode* operand;
-    I32 line;
+    int line;
 } UnaropNode;
 
 typedef struct {
     ExprNode* left;
     TokenType op;
     ExprNode* right;
-    I32 line;
+    int line;
 } BinopNode;
 
 typedef struct {
-    Char* name;
+    char* name;
     List* expr_node_list;
-    I32 line;
+    int line;
 } FuncallNode;
 
 typedef struct {
     List* expr_node_list;
-    I32 line;
+    int line;
 } SyscNode;
 
 struct ExprNode {
     enum {
         NODE_NUM = 10,
         NODE_VARREF = 11,
-        NODE_ADDRDEREF = 12,
         NODE_VARADDR = 13,
         NODE_BINOP = 14,
         NODE_UNARYOP = 15,
         NODE_FUNCALL = 16,
         NODE_SYSC = 17,
     } type;
-    I32 line;
+    int line;
     union {
         BinopNode binop_node;
         UnaropNode unarop_node;
         VarrefNode varref_node;
-        AddrderefNode addrderef_node;
         VaraddrNode varaddr_node;
         NumNode num_node;
         FuncallNode funcall_node;
@@ -86,49 +79,49 @@ struct ExprNode {
 
 typedef struct {
     List* stmt_node_list;
-    I32 line;
+    int line;
 } BlockNode;
 
 typedef struct {
-    Char* item_size;
-    Char* name;
-    Char* size;
+    char* item_size;
+    char* name;
+    char* size;
     List* expr_node_list;
-    I32 line;
+    int line;
 } ArraydecNode;
 
 typedef struct {
-    Char* size;
-    Char* name;
+    char* size;
+    char* name;
     ExprNode* value;
-    I32 line;
+    int line;
 } VardecNode;
 
 typedef struct {
     ExprNode* cond_node;
     BlockNode* true_block;
     BlockNode* false_block;
-    I32 line;
+    int line;
 } IfNode;
 
 typedef struct {
     BlockNode* block;
-    I32 line;
+    int line;
 } LoopNode;
 
 typedef struct {
-    I32 line;
+    int line;
 } BreakNode;
 
 typedef struct {
     ExprNode* lvalue;
     ExprNode* value;
-    I32 line;
+    int line;
 } AssNode;
 
 typedef struct {
     ExprNode* expr_node;
-    I32 line;
+    int line;
 } RetNode;
 
 typedef struct {
@@ -142,7 +135,7 @@ typedef struct {
         NODE_RET,
         NODE_EXPR,
     } type;
-    I32 line;
+    int line;
     union {
         ArraydecNode arraydec_node;
         VardecNode vardec_node;
@@ -158,38 +151,37 @@ typedef struct {
 // STATEMENT NODES
 
 typedef struct {
-    Char* name;
-    Char* return_size;
-    Char* scope;
+    char* name;
+    char* return_size;
+    char* scope;
     List* param_node_list;
     BlockNode* block_node;
-    I32 line;
+    int line;
 } FundefNode;
 
 // DEFINITION NODES
 
-ParamNode* param_node_new(Char* name, Char* size, I32 line);
+ParamNode* param_node_new(char* name, char* size, int line);
 
-ExprNode* num_node_new(Char* value, I32 line);
-ExprNode* varref_node_new(Char* name, I32 line);
-ExprNode* addrderef_node_new(ExprNode* expr, I32 line);
-ExprNode* varaddr_node_new(Char* name, I32 line);
-ExprNode* binop_node_new(ExprNode* left, TokenType op, ExprNode* right, I32 line);
-ExprNode* unarop_node_new(TokenType op, ExprNode* operand, I32 line);
-ExprNode* funcall_node_new(const Char* name, List* expr_node_list, I32 line);
-ExprNode* sysc_node_new(List* expr_node_list, I32 line);
+ExprNode* num_node_new(char* value, int line);
+ExprNode* varref_node_new(char* name, int line);
+ExprNode* varaddr_node_new(char* name, int line);
+ExprNode* binop_node_new(ExprNode* left, TokenType op, ExprNode* right, int line);
+ExprNode* unarop_node_new(TokenType op, ExprNode* operand, int line);
+ExprNode* funcall_node_new(const char* name, List* expr_node_list, int line);
+ExprNode* sysc_node_new(List* expr_node_list, int line);
 
-StmtNode* arraydec_node_new(Char* item_size, Char* name, Char* size, List* expr_node_list, I32 line);
-StmtNode* vardec_node_new(Char* size, Char* name, ExprNode* value, I32 line);
-StmtNode* if_node_new(ExprNode* cond_node, BlockNode* true_block, BlockNode* false_block, I32 line);
-StmtNode* loop_node_new(BlockNode* block, I32 line);
-StmtNode* break_node_new(I32 line);
-StmtNode* ass_node_new(ExprNode* lvalue, ExprNode* value, I32 line);
-StmtNode* ret_node_new(ExprNode* expr_node, I32 line);
+StmtNode* arraydec_node_new(char* item_size, char* name, char* size, List* expr_node_list, int line);
+StmtNode* vardec_node_new(char* size, char* name, ExprNode* value, int line);
+StmtNode* if_node_new(ExprNode* cond_node, BlockNode* true_block, BlockNode* false_block, int line);
+StmtNode* loop_node_new(BlockNode* block, int line);
+StmtNode* break_node_new(int line);
+StmtNode* ass_node_new(ExprNode* lvalue, ExprNode* value, int line);
+StmtNode* ret_node_new(ExprNode* expr_node, int line);
 
-FundefNode* fundef_node_new(Char* name, Char* return_size, Char* scope, List* param_node_list, BlockNode* block_node, I32 line);
+FundefNode* fundef_node_new(char* name, char* return_size, char* scope, List* param_node_list, BlockNode* block_node, int line);
 
-BlockNode* block_node_new(List* def_node_list, I32 line);
+BlockNode* block_node_new(List* def_node_list, int line);
 
 Str* print_nodelist(const List* node_list);
 

@@ -15,6 +15,22 @@ _start:
     syscall
 
 
+w__printuu:
+    # prologue
+    pushq   %rbp
+    movq    %rsp, %rbp
+    subq    $24, %rsp
+
+    # variable declaration
+    movq    $2, %rax
+    movq    %rax, -8(%rbp)
+
+    # epilogue (from brace)
+    movq    %rbp, %rsp
+    pop     %rbp
+    ret
+
+
 w__main:
     # prologue
     pushq   %rbp
@@ -87,6 +103,9 @@ w__main:
 .Lend0:
     jmp     .Lloop0
 .Lloopend0:
+
+    # function call
+    call    w__printuu
 
     # return statement
     movq    $0, %rax

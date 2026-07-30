@@ -1,5 +1,19 @@
 [
     FundefNode
+    ├─ name: "w__printuu"
+    ├─ return_size: "NULL"
+    ├─ scope: "local"
+    ├─ parameters: List<ParamNode>
+                   └─ EMPTY
+    └─ block_node: BlockNode
+                   └─ content: List<StmtNode>
+                               └─ VardecNode
+                                  ├─ size: 64
+                                  ├─ name: bonjour
+                                  └─ value: NumNode
+                                            └─ value: 2
+    ,
+    FundefNode
     ├─ name: "w__main"
     ├─ return_size: "64"
     ├─ scope: "local"
@@ -30,30 +44,31 @@
                                                            ├─ name: "w__print_number"
                                                            └─ args: List<ExprNode>
                                                                     └─ AddrderefNode
-                                                                       └─ expr: BinopNode
+                                                                       └─ value: expr
+BinopNode
                                                                                  ├─ op: TOKEN_MINUS
                                                                                  ├─ left:  VarrefNode
-                                                                                           └─ name: arr
+                                                                                           └─ value: arr
                                                                                  └─ right: BinopNode
                                                                                            ├─ op: TOKEN_MUL
                                                                                            ├─ left:  VarrefNode
-                                                                                                     └─ name: i
+                                                                                                     └─ value: i
                                                                                            └─ right: NumNode
                                                                                                      └─ value: 8
                                                         ├─ AssNode
                                                            ├─ lvalue: VarrefNode
-                                                                      └─ name: i
+                                                                      └─ value: i
                                                            └─ value: BinopNode
                                                                      ├─ op: TOKEN_PLUS
                                                                      ├─ left:  VarrefNode
-                                                                               └─ name: i
+                                                                               └─ value: i
                                                                      └─ right: NumNode
                                                                                └─ value: 1
                                                         └─ IfNode
                                                            ├─ Condition:BinopNode
                                                                      ├─ op: TOKEN_EQUAL_EQUAL
                                                                      ├─ left:  VarrefNode
-                                                                               └─ name: i
+                                                                               └─ value: i
                                                                      └─ right: NumNode
                                                                                └─ value: 4
                                                            ├─ True Block:BlockNode
@@ -61,6 +76,10 @@
                                                                                  └─ BreakNode
                                                                                     └─ NULL
                                                            └─ False Block: (None)
+                               ├─ FuncallNode
+                                  ├─ name: "w__printuu"
+                                  └─ args: List<ExprNode>
+                                           └─ EMPTY
                                └─ RetNode
                                   └─ value: NumNode
                                             └─ value: 0

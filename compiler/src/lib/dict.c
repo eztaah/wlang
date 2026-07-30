@@ -5,7 +5,7 @@
 #include "lib.h"
 
 // Create a new dictionary (Dict)
-Dict* dict_new(Void)
+Dict* dict_new(void)
 {
     Dict* dict = (Dict*)safe_calloc(1, sizeof(Dict));
     dict->entries = NULL;
@@ -14,7 +14,7 @@ Dict* dict_new(Void)
 }
 
 // Add a key-value pair to the dictionary
-Void dict_put(Dict* dict, const Char* key, const Char* value)
+void dict_put(Dict* dict, const char* key, const char* value)
 {
     // Ensure the value is not NULL
     if (!value) {
@@ -34,10 +34,10 @@ Void dict_put(Dict* dict, const Char* key, const Char* value)
 }
 
 // Retrieve a value by its key from the dictionary
-Char* dict_get(const Dict* dict, const Char* key)
+char* dict_get(const Dict* dict, const char* key)
 {
 
-    for (I32 i = 0; i < dict->size; i++) {
+    for (int i = 0; i < dict->size; i++) {
         if (strcmp(dict->entries[i]->key, key) == 0) {
             return dict->entries[i]->value;
         }
@@ -45,7 +45,7 @@ Char* dict_get(const Dict* dict, const Char* key)
     return NULL; // key not found
 }
 
-Void dict_print(const Dict* dict)
+void dict_print(const Dict* dict)
 {
     if (dict->size == 0) {
         printf("The dictionary is empty.\n");
@@ -54,16 +54,16 @@ Void dict_print(const Dict* dict)
 
     printf("Dictionary contains %d entries:\n", dict->size);
 
-    for (I32 i = 0; i < dict->size; i++) {
+    for (int i = 0; i < dict->size; i++) {
         DictEntry* entry = dict->entries[i];
         printf("Key: %s, Value: %s\n", entry->key, entry->value);
     }
 }
 
 // Free the memory allocated for the dictionary
-Void dict_free(Dict* dict)
+void dict_free(Dict* dict)
 {
-    for (I32 i = 0; i < dict->size; i++) {
+    for (int i = 0; i < dict->size; i++) {
         free(dict->entries[i]->key);
         free(dict->entries[i]->value);
         free(dict->entries[i]);

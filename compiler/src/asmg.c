@@ -11,39 +11,39 @@ typedef struct {
 static LoopLabelStack* loop_label_stack_new()
 {
     LoopLabelStack* stack = safe_calloc(1, sizeof(LoopLabelStack));
-    stack->loop_end_labels = list_new(sizeof(Char*));
+    stack->loop_end_labels = list_new(sizeof(char*));
     return stack;
 }
 
-static Void loop_label_stack_free(LoopLabelStack* stack)
+static void loop_label_stack_free(LoopLabelStack* stack)
 {
-    for (I32 i = 0; i < stack->loop_end_labels->size; i++) {
+    for (int i = 0; i < stack->loop_end_labels->size; i++) {
         free(stack->loop_end_labels->items[i]);
     }
     list_free(stack->loop_end_labels);
     free(stack);
 }
 
-static Void loop_label_stack_push(LoopLabelStack* stack, const Char* label)
+static void loop_label_stack_push(LoopLabelStack* stack, const char* label)
 {
     list_push(stack->loop_end_labels, strdup(label));
 }
 
-static Char* loop_label_stack_pop(LoopLabelStack* stack)
+static char* loop_label_stack_pop(LoopLabelStack* stack)
 {
     return list_pop(stack->loop_end_labels);
 }
 
-static Char* loop_label_stack_top(LoopLabelStack* stack)
+static char* loop_label_stack_top(LoopLabelStack* stack)
 {
-    return (Char*)stack->loop_end_labels->items[stack->loop_end_labels->size - 1];
+    return (char*)stack->loop_end_labels->items[stack->loop_end_labels->size - 1];
 }
 
 typedef struct AsmG {
     const List* node_list;
     Dict* variables; // associate variable names with their stack_offset as a string
     Dict* arrays; 
-    I32 rbp_offset;  // store the current var offset
+    int rbp_offset;  // store the current var offset
     Str* var_prefix; // store the current function name so create asmg->var_prefix when working with variables
     Str* data;
     Str* bss;
@@ -58,8 +58,8 @@ typedef struct AsmG {
 } AsmG;
 
 // Function prototypes
-static Void asme_expr(AsmG* asmg, const ExprNode* expr_node);
-static Void asme_stmt(AsmG* asmg, const StmtNode* stmt_node);
+static void asme_expr(AsmG* asmg, const ExprNode* expr_node);
+static void asme_stmt(AsmG* asmg, const StmtNode* stmt_node);
 
 static AsmG* asmg_new(const List* node_list)
 {
@@ -82,7 +82,7 @@ static AsmG* asmg_new(const List* node_list)
     return asmg;
 }
 
-static Void asmg_free(AsmG* asmg)
+static void asmg_free(AsmG* asmg)
 {
     dict_free(asmg->variables); 
     dict_free(asmg->arrays); 
@@ -99,14 +99,14 @@ static Void asmg_free(AsmG* asmg)
 }
 
 
-static Void asme_num(AsmG* asmg, const NumNode* num_node)
+static void asme_num(AsmG* asmg, const NumNode* num_node)
 {
     str_cat(asmg->fun_body, "    movq    $");
     str_cat(asmg->fun_body, num_node->value);
     str_cat(asmg->fun_body, ", %rax\n");
 }
 
-static Void asme_varref(AsmG* asmg, const VarrefNode* varref_node)
+static void asme_varref(AsmG* asmg, const VarrefNode* varref_node)
 {
     // combine function name and variable name
     Str* full_var_name = str_new(str_to_char(asmg->var_prefix));
@@ -114,8 +114,8 @@ static Void asme_varref(AsmG* asmg, const VarrefNode* varref_node)
     str_cat(full_var_name, varref_node->name);
 
     // check if the variable is in the dict
-    Char* var_pos = dict_get(asmg->variables, str_to_char(full_var_name));
-    Char* array_pos = dict_get(asmg->arrays, str_to_char(full_var_name));
+    char* var_pos = dict_get(asmg->variables, str_to_char(full_var_name));
+    char* array_pos = dict_get(asmg->arrays, str_to_char(full_var_name));
     if (!var_pos && !array_pos) {
         PANIC("Reference to %s, but this variable is not defined (should be catch by the semantic analyser)", str_to_char(full_var_name));
     }
@@ -135,7 +135,7 @@ static Void asme_varref(AsmG* asmg, const VarrefNode* varref_node)
     }
 }
 
-static Void asme_varaddr(AsmG* asmg, const VaraddrNode* varaddr_node)
+static void asme_varaddr(AsmG* asmg, const VaraddrNode* varaddr_node)
 {
     // combine function name and variable name
     Str* full_var_name = str_new(str_to_char(asmg->var_prefix));
@@ -143,8 +143,8 @@ static Void asme_varaddr(AsmG* asmg, const VaraddrNode* varaddr_node)
     str_cat(full_var_name, varaddr_node->name);
 
     // check if the variable is in the dict
-    Char* var_pos = dict_get(asmg->variables, str_to_char(full_var_name));
-    Char* array_pos = dict_get(asmg->arrays, str_to_char(full_var_name));
+    char* var_pos = dict_get(asmg->variables, str_to_char(full_var_name));
+    char* array_pos = dict_get(asmg->arrays, str_to_char(full_var_name));
     if (!var_pos && !array_pos) {
         PANIC("Reference to %s, but this variable is not defined (should be catch by the semantic analyser)", str_to_char(full_var_name));
     }
@@ -154,16 +154,17 @@ static Void asme_varaddr(AsmG* asmg, const VaraddrNode* varaddr_node)
     str_cat(asmg->fun_body, ", %rax\n");
 }
 
-static Void asme_addrderef(AsmG* asmg, const AddrderefNode* addrderef_node)
+static void asme_l_unarop(AsmG* asmg, const UnaropNode* unarop_node)
 {
-    asme_expr(asmg, addrderef_node->expr);                 // the result will be in rax (should be an adress)
-    str_cat(asmg->fun_body, "    movq    (%rax), %rbx\n"); // dereference the content of rax and put it into rbx
-    str_cat(asmg->fun_body, "    movq    %rbx, %rax\n");   // put the result back into rax
-}
+    switch(unarop_node->op) {
+        case TOKEN_CARET:
+            // Handling for the deref operator (^)
+            asme_expr(asmg, unarop_node->operand);
+            break;
 
-static Void asme_l_addrderef(AsmG* asmg, const AddrderefNode* addrderef_node)
-{
-    asme_expr(asmg, addrderef_node->expr); // the result will be in rax (should be an adress)
+        default:
+            PANIC("you cant put any other unary operator than addrderef on the left side");
+    }
 }
 
 static void asme_binop(AsmG* asmg, const BinopNode* binop_node)
@@ -176,7 +177,7 @@ static void asme_binop(AsmG* asmg, const BinopNode* binop_node)
 
     // evaluate the left operand and place it in %rax
     asme_expr(asmg, binop_node->left);
-    str_cat(asmg->fun_body, "    pop     %rbx\n"); // pop the right operand into %rbx (pop from stack to %rbx)
+    str_cat(asmg->fun_body, "    popq     %rbx\n"); // pop the right operand into %rbx (pop from stack to %rbx)
 
     // generate code based on the operation type
     switch (binop_node->op) {
@@ -290,7 +291,7 @@ static void asme_binop(AsmG* asmg, const BinopNode* binop_node)
     str_cat(asmg->fun_body, "    # binop >\n");
 }
 
-static Void asme_unarop(AsmG* asmg, const UnaropNode* unarop_node)
+static void asme_unarop(AsmG* asmg, const UnaropNode* unarop_node)
 {
     str_cat(asmg->fun_body, "    # < unarop\n");
 
@@ -307,6 +308,13 @@ static Void asme_unarop(AsmG* asmg, const UnaropNode* unarop_node)
             str_cat(asmg->fun_body, "    not     %rax\n");
             break;
 
+        case TOKEN_CARET:
+            // Handling for the deref operator (^)
+            asme_expr(asmg, unarop_node->operand);
+            str_cat(asmg->fun_body, "    movq    (%rax), %rbx\n"); // dereference the content of rax and put it into rbx
+            str_cat(asmg->fun_body, "    movq    %rbx, %rax\n");   // put the result back into rax
+            break;
+
         default:
             PANIC("Unknown unary operator in asm generator");
     }
@@ -314,17 +322,17 @@ static Void asme_unarop(AsmG* asmg, const UnaropNode* unarop_node)
     str_cat(asmg->fun_body, "    # unarop >\n");
 }
 
-static Void asme_funcall(AsmG* asmg, const FuncallNode* funcall_node)
+static void asme_funcall(AsmG* asmg, const FuncallNode* funcall_node)
 {
 
     str_cat(asmg->fun_body, "\n    # function call\n");
 
     // handle arguments
-    I32 num_args = funcall_node->expr_node_list->size;
+    int num_args = funcall_node->expr_node_list->size;
 
     // process the first 6 arguments, mapping them to registers
-    const Char* reg_names[6] = {"%rdi", "%rsi", "%rdx", "%rcx", "%r8", "%r9"};
-    for (I32 i = 0; i < num_args && i < 6; i++) {
+    const char* reg_names[6] = {"%rdi", "%rsi", "%rdx", "%rcx", "%r8", "%r9"};
+    for (int i = 0; i < num_args && i < 6; i++) {
         const ExprNode* arg_expr = (ExprNode*)funcall_node->expr_node_list->items[i];
         asme_expr(asmg, arg_expr); // the result of the expression should be in %rax
         str_cat(asmg->fun_body, "    movq    %rax, ");
@@ -338,17 +346,17 @@ static Void asme_funcall(AsmG* asmg, const FuncallNode* funcall_node)
     str_cat(asmg->fun_body, "\n");
 }
 
-static Void asme_syscall(AsmG* asmg, const SyscNode* sysc_node)
+static void asme_syscall(AsmG* asmg, const SyscNode* sysc_node)
 {
 
     str_cat(asmg->fun_body, "\n    # syscall\n");
 
     // handle arguments
-    I32 num_args = sysc_node->expr_node_list->size;
+    int num_args = sysc_node->expr_node_list->size;
 
     // process the first 6 arguments, mapping them to registers
-    const Char* reg_names[6] = {"%rdi", "%rsi", "%rdx", "%rcx", "%r8", "%r9"};
-    for (I32 i = 0; i < num_args && i < 6; i++) {
+    const char* reg_names[6] = {"%rdi", "%rsi", "%rdx", "%rcx", "%r8", "%r9"};
+    for (int i = 0; i < num_args && i < 6; i++) {
         const ExprNode* arg_expr = (ExprNode*)sysc_node->expr_node_list->items[i + 1];
         asme_expr(asmg, arg_expr); // the result of the expression should be in %rax
         str_cat(asmg->fun_body, "    movq    %rax, ");
@@ -365,16 +373,16 @@ static Void asme_syscall(AsmG* asmg, const SyscNode* sysc_node)
     if (strcmp(((ExprNode*)sysc_node->expr_node_list->items[0])->num_node.value, "60") == 0) {
         str_cat(asmg->fun_body, "\n    # clean stack (only for exit syscall)\n");
         str_cat(asmg->fun_body, "    movq    %rbp, %rsp\n");
-        str_cat(asmg->fun_body, "    pop     %rbp\n");
+        str_cat(asmg->fun_body, "    popq     %rbp\n");
     }
 
     // call the function
     str_cat(asmg->fun_body, "    syscall\n");
 }
 
-static Void asme_lexpr(AsmG* asmg, const ExprNode* expr_node);
+static void asme_lexpr(AsmG* asmg, const ExprNode* expr_node);
 
-static Void asme_ass(AsmG* asmg, const AssNode* ass_node)
+static void asme_ass(AsmG* asmg, const AssNode* ass_node)
 {
 
     str_cat(asmg->fun_body, "\n    # variable assignement\n");
@@ -390,31 +398,31 @@ static Void asme_ass(AsmG* asmg, const AssNode* ass_node)
     str_cat(asmg->fun_body, "    movq    %rax, (%r15)\n");
 }
 
-static Void asme_if(AsmG* asmg, const IfNode* if_node)
+static void asme_if(AsmG* asmg, const IfNode* if_node)
 {
 
     str_cat(asmg->fun_body, "\n    # if statement\n");
 
-    static I32 if_label_counter = 0; // Unique label counter for if statements
-    I32 current_label = if_label_counter++;
+    static int if_label_counter = 0; // Unique label counter for if statements
+    int current_label = if_label_counter++;
 
     // evaluate the condition
     asme_expr(asmg, if_node->cond_node);
     str_cat(asmg->fun_body, "    cmpq    $0, %rax\n"); // Compare the result with 0
 
     // jump to the false block if condition is false
-    Char label_false[64];
+    char label_false[64];
     sprintf(label_false, "    je      .Lelse%d\n", current_label);
     str_cat(asmg->fun_body, label_false);
 
     // generate code for each stmt of the true block
-    for (I32 i = 0; i < if_node->true_block->stmt_node_list->size; i++) {
+    for (int i = 0; i < if_node->true_block->stmt_node_list->size; i++) {
         const StmtNode* stmt_node = (StmtNode*)if_node->true_block->stmt_node_list->items[i];
         asme_stmt(asmg, stmt_node);
     }
 
     // jump to the end after executing true block
-    Char label_end[64];
+    char label_end[64];
     sprintf(label_end, "    jmp     .Lend%d\n", current_label);
     str_cat(asmg->fun_body, label_end);
 
@@ -424,7 +432,7 @@ static Void asme_if(AsmG* asmg, const IfNode* if_node)
     str_cat(asmg->fun_body, label_false);
     if (if_node->false_block) {
         // generate code for each stmt of the true block
-        for (I32 i = 0; i < if_node->false_block->stmt_node_list->size; i++) {
+        for (int i = 0; i < if_node->false_block->stmt_node_list->size; i++) {
             const StmtNode* stmt_node = (StmtNode*)if_node->false_block->stmt_node_list->items[i];
             asme_stmt(asmg, stmt_node);
         }
@@ -436,17 +444,17 @@ static Void asme_if(AsmG* asmg, const IfNode* if_node)
     str_cat(asmg->fun_body, label_end);
 }
 
-static Void asme_loop(AsmG* asmg, const LoopNode* loop_node)
+static void asme_loop(AsmG* asmg, const LoopNode* loop_node)
 {
 
     str_cat(asmg->fun_body, "\n    # loop\n");
 
-    static I32 loop_label_counter = 0; // Unique label counter for loops
-    I32 current_label = loop_label_counter++;
+    static int loop_label_counter = 0; // Unique label counter for loops
+    int current_label = loop_label_counter++;
 
     // generate loop labels
-    Char label_start[64];
-    Char label_end[64];
+    char label_start[64];
+    char label_end[64];
     sprintf(label_start, ".Lloop%d", current_label);
     sprintf(label_end, ".Lloopend%d", current_label);
 
@@ -458,7 +466,7 @@ static Void asme_loop(AsmG* asmg, const LoopNode* loop_node)
     str_cat(asmg->fun_body, ":\n");
 
     // generate code for each stmt in the loop block
-    for (I32 i = 0; i < loop_node->block->stmt_node_list->size; i++) {
+    for (int i = 0; i < loop_node->block->stmt_node_list->size; i++) {
         const StmtNode* stmt_node = (StmtNode*)loop_node->block->stmt_node_list->items[i];
         asme_stmt(asmg, stmt_node);
     }
@@ -476,19 +484,19 @@ static Void asme_loop(AsmG* asmg, const LoopNode* loop_node)
     loop_label_stack_pop(asmg->loop_stack);
 }
 
-static Void asme_break(AsmG* asmg)
+static void asme_break(AsmG* asmg)
 {
 
     str_cat(asmg->fun_body, "\n    # break\n");
 
     // use the top label from the loop stack
-    Char* label_end = loop_label_stack_top(asmg->loop_stack);
+    char* label_end = loop_label_stack_top(asmg->loop_stack);
     str_cat(asmg->fun_body, "    jmp     ");
     str_cat(asmg->fun_body, label_end);
     str_cat(asmg->fun_body, "\n");
 }
 
-static Void asme_vardec(AsmG* asmg, const VardecNode* vardec_node)
+static void asme_vardec(AsmG* asmg, const VardecNode* vardec_node)
 {
     str_cat(asmg->fun_body, "\n    # variable declaration\n");
 
@@ -498,7 +506,7 @@ static Void asme_vardec(AsmG* asmg, const VardecNode* vardec_node)
     str_cat(full_var_name, vardec_node->name);
 
     // Format the offset as a string and store it in the dictionary
-    Char var_pos_c[256];
+    char var_pos_c[256];
     sprintf(var_pos_c, "%d(%%rbp)", asmg->rbp_offset);
     dict_put(asmg->variables, str_to_char(full_var_name), var_pos_c);
 
@@ -516,7 +524,7 @@ static Void asme_vardec(AsmG* asmg, const VardecNode* vardec_node)
     asmg->rbp_offset -= 8;
 }
 
-static Void asme_arraydec(AsmG* asmg, const ArraydecNode* arraydec_node)
+static void asme_arraydec(AsmG* asmg, const ArraydecNode* arraydec_node)
 {
     str_cat(asmg->fun_body, "\n    # array declaration\n");
 
@@ -526,24 +534,24 @@ static Void asme_arraydec(AsmG* asmg, const ArraydecNode* arraydec_node)
     str_cat(full_array_name, arraydec_node->name);
 
     // Format the offset as a string and store it in the dictionary
-    Char array_pos_c[256];
+    char array_pos_c[256];
     sprintf(array_pos_c, "%d(%%rbp)", asmg->rbp_offset);
     dict_put(asmg->arrays, str_to_char(full_array_name), array_pos_c);
 
     print(MSG_INFO, "add array 1st elmt in the dict: \"%s\" at location %s\n", str_to_char(full_array_name), array_pos_c);
 
     // convert array size to int
-    I32 array_size = atoi(arraydec_node->size);
+    int array_size = atoi(arraydec_node->size);
     // process expression only if it exists
     if (arraydec_node->expr_node_list != NULL) {
-        I32 current_offset = asmg->rbp_offset;
+        int current_offset = asmg->rbp_offset;
 
         for (int i = 0; i < array_size; i++) {
             // get the expression
             const ExprNode* arg_expr = (ExprNode*)arraydec_node->expr_node_list->items[i];
             asme_expr(asmg, arg_expr); // the result of the expression should be in %rax
 
-            Char var_location[256];
+            char var_location[256];
             current_offset -= 8;
 
             sprintf(var_location, "%d(%%rbp)", current_offset);
@@ -558,22 +566,24 @@ static Void asme_arraydec(AsmG* asmg, const ArraydecNode* arraydec_node)
 }
 
 
-static Void asme_ret(AsmG* asmg, const RetNode* ret_node)
+static void asme_ret(AsmG* asmg, const RetNode* ret_node)
 {
 
     str_cat(asmg->fun_body, "\n    # return statement\n");
 
     // handle expression
-    asme_expr(asmg, ret_node->expr_node); // this will put the value into rax
+    if (ret_node->expr_node) {
+        asme_expr(asmg, ret_node->expr_node); // this will put the value into rax
+    }
 
     str_cat(asmg->fun_body, "\n    # epilogue (from ret)\n");
 
     str_cat(asmg->fun_body, "    movq    %rbp, %rsp\n");
-    str_cat(asmg->fun_body, "    pop     %rbp\n");
+    str_cat(asmg->fun_body, "    popq     %rbp\n");
     str_cat(asmg->fun_body, "    ret\n"); // we can use rax after to use the return value
 }
 
-static Void asme_fundef(AsmG* asmg, const FundefNode* fundef_node)
+static void asme_fundef(AsmG* asmg, const FundefNode* fundef_node)
 {
     if (strcmp(fundef_node->name, "w__main") == 0) {
         // start code
@@ -618,7 +628,7 @@ static Void asme_fundef(AsmG* asmg, const FundefNode* fundef_node)
 
     asmg->rbp_offset = -8; // because when we declare the first variable, it needs to have space
 
-    for (I32 i = 0; i < fundef_node->param_node_list->size; i++) {
+    for (int i = 0; i < fundef_node->param_node_list->size; i++) {
         const ParamNode* param_node = (ParamNode*)fundef_node->param_node_list->items[i];
 
         // get full variable name
@@ -627,7 +637,7 @@ static Void asme_fundef(AsmG* asmg, const FundefNode* fundef_node)
         str_cat(full_var_name, param_node->name);
 
         // Format the offset as a string and store it in the dictionary
-        Char var_pos_c[256];
+        char var_pos_c[256];
         sprintf(var_pos_c, "%d(%%rbp)", asmg->rbp_offset);
         dict_put(asmg->variables, str_to_char(full_var_name), var_pos_c);
 
@@ -668,17 +678,17 @@ static Void asme_fundef(AsmG* asmg, const FundefNode* fundef_node)
     asmg->var_prefix = str_new(fundef_node->name);
 
     // generate code for each stmt of the block_node
-    for (I32 i = 0; i < fundef_node->block_node->stmt_node_list->size; i++) {
+    for (int i = 0; i < fundef_node->block_node->stmt_node_list->size; i++) {
         const StmtNode* stmt_node = (StmtNode*)fundef_node->block_node->stmt_node_list->items[i];
         asme_stmt(asmg, stmt_node);
     }
 
     // add fun prologue for how much space we need
-    I32 required_space = abs(asmg->rbp_offset);
+    int required_space = abs(asmg->rbp_offset);
     if (required_space % 2 == 0) {
         required_space += 8;
     }
-    Char required_space_str[255];
+    char required_space_str[255];
     sprintf(required_space_str, "%d", required_space);
     str_cat(asmg->fun_prol, "    subq    $");
     str_cat(asmg->fun_prol, required_space_str);
@@ -687,7 +697,7 @@ static Void asme_fundef(AsmG* asmg, const FundefNode* fundef_node)
     // handle case where the function returns nothing
     str_cat(asmg->fun_body, "\n    # epilogue (from brace)\n");
     str_cat(asmg->fun_body, "    movq    %rbp, %rsp\n");
-    str_cat(asmg->fun_body, "    pop     %rbp\n");
+    str_cat(asmg->fun_body, "    popq     %rbp\n");
     str_cat(asmg->fun_body, "    ret\n");
 
     // combine all code
@@ -699,15 +709,15 @@ static Void asme_fundef(AsmG* asmg, const FundefNode* fundef_node)
 }
 
 
-static Void asme_lexpr(AsmG* asmg, const ExprNode* expr_node)
+static void asme_lexpr(AsmG* asmg, const ExprNode* expr_node)
 {
     switch (expr_node->type) {
         case NODE_VARREF:
             asme_varaddr(asmg, &expr_node->varaddr_node);
             break;
 
-        case NODE_ADDRDEREF:
-            asme_l_addrderef(asmg, &expr_node->addrderef_node);
+        case NODE_UNARYOP: 
+            asme_l_unarop(asmg, &expr_node->unarop_node);
             break;
 
         default:
@@ -715,7 +725,7 @@ static Void asme_lexpr(AsmG* asmg, const ExprNode* expr_node)
     }
 }
 
-static Void asme_expr(AsmG* asmg, const ExprNode* expr_node)
+static void asme_expr(AsmG* asmg, const ExprNode* expr_node)
 {
     switch (expr_node->type) {
         case NODE_NUM:
@@ -728,10 +738,6 @@ static Void asme_expr(AsmG* asmg, const ExprNode* expr_node)
 
         case NODE_VARADDR:
             asme_varaddr(asmg, &expr_node->varaddr_node);
-            break;
-
-        case NODE_ADDRDEREF:
-            asme_addrderef(asmg, &expr_node->addrderef_node);
             break;
 
         case NODE_BINOP:
@@ -755,7 +761,7 @@ static Void asme_expr(AsmG* asmg, const ExprNode* expr_node)
     }
 }
 
-static Void asme_stmt(AsmG* asmg, const StmtNode* stmt_node)
+static void asme_stmt(AsmG* asmg, const StmtNode* stmt_node)
 {
     switch (stmt_node->type) {
         case NODE_VARDEC:
@@ -814,7 +820,7 @@ Str* asme(const List* fundef_node_list)
     init_asm_file(asmg);
 
     // Generate assembly code for each node
-    for (I32 i = 0; i < fundef_node_list->size; i++) {
+    for (int i = 0; i < fundef_node_list->size; i++) {
         const FundefNode* fundef_node = (FundefNode*)fundef_node_list->items[i];
         asme_fundef(asmg, fundef_node);
     }

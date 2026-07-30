@@ -10,7 +10,9 @@
 
 !int <64> main() 
 {
-    ret add(multiply(2, 3), multiply(4, 5)); 
+    !int <64> a = multiply(2, 3);
+    !int <64> b = multiply(4, 5);
+    ret add(a, b); 
 }
 
 : expected exit code : 26

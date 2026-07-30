@@ -1,3 +1,11 @@
+!void printuu()
+{
+    !int <64> bonjour = 2;
+
+    ret ;
+
+}
+
 !int <64> main()
 {
     !ascii <64> arr[3] = [1, 2, 3];
@@ -11,6 +19,8 @@
             break;
         }
     }
+
+    printuu();
 
     ret 0;
 }

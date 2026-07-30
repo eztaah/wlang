@@ -8,13 +8,13 @@
 #include "lib.h"
 #include "compiler.h"
 
-Char* current_filename = NULL;
+char* current_filename = NULL;
 
-static Str* create_output_filename(const Char* filename)
+static Str* create_output_filename(const char* filename)
 {
     // Extract just the filename without the path
-    Char* out_filename = strdup(filename);
-    Char* slash = strrchr(out_filename, '/');
+    char* out_filename = strdup(filename);
+    char* slash = strrchr(out_filename, '/');
     if (slash) {
         // Keep only the portion after the last slash
         char* temp = strdup(slash + 1);
@@ -23,7 +23,7 @@ static Str* create_output_filename(const Char* filename)
     }
 
     // Remove the extension from the base filename
-    Char* dot = strrchr(out_filename, '.');
+    char* dot = strrchr(out_filename, '.');
     if (dot) {
         *dot = '\0';
     }
@@ -37,7 +37,7 @@ static Str* create_output_filename(const Char* filename)
     return final_output_path;
 }
 
-static Void write_to_file(const Str* base_path, const Char* extension, const Char* content)
+static void write_to_file(const Str* base_path, const char* extension, const char* content)
 {
     Str* out_file = str_new(str_to_char(base_path));
     str_cat(out_file, extension);
@@ -45,7 +45,7 @@ static Void write_to_file(const Str* base_path, const Char* extension, const Cha
     str_free(out_file);
 }
 
-Void compile_file(const Char* filename, Dict* macro_dict)
+void compile_file(const char* filename, Dict* macro_dict)
 {
     current_filename = strdup(filename);
 
@@ -59,7 +59,7 @@ Void compile_file(const Char* filename, Dict* macro_dict)
     write_to_file(output_filename, "_pp.w", str_to_char(preprocessed_content));
 
     // Lexing
-    Char* src = str_to_char(preprocessed_content);
+    char* src = str_to_char(preprocessed_content);
     List* token_list = lex(src);
     str_free(preprocessed_content); // Free preprocessed content
     Str* token_list_printable = print_tokenlist(token_list);
@@ -83,7 +83,7 @@ Void compile_file(const Char* filename, Dict* macro_dict)
     str_free(output_filename);
 }
 
-I32 assemble_file(const Char* filename, Str* object_files)
+int assemble_file(const char* filename, Str* object_files)
 {
     // Create paths for the .s (assembly) and .o (object) files
     Str* asm_out_file = create_output_filename(filename);
@@ -118,9 +118,9 @@ I32 assemble_file(const Char* filename, Str* object_files)
     return res.return_code;
 }
 
-Char* get_executable_path() {
+char* get_executable_path() {
     // Buffer pour stocker le chemin complet de l'exécutable
-    Char buffer[1024];
+    char buffer[1024];
     ssize_t len = readlink("/proc/self/exe", buffer, sizeof(buffer) - 1);
     
     if (len != -1) {
@@ -133,9 +133,9 @@ Char* get_executable_path() {
     }
 }
 
-Char* get_executable_dir() {
-    Char* exec_path = get_executable_path();
-    Char* last_slash = strrchr(exec_path, '/');
+char* get_executable_dir() {
+    char* exec_path = get_executable_path();
+    char* last_slash = strrchr(exec_path, '/');
     
     if (last_slash != NULL) {
         *last_slash = '\0';  // Terminer la chaîne juste avant le dernier '/'
@@ -149,7 +149,7 @@ Char* get_executable_dir() {
 }
 
 
-I32 link_executable(Str* object_files)
+int link_executable(Str* object_files)
 {
 
     Str* link_cmd;
@@ -166,7 +166,7 @@ I32 link_executable(Str* object_files)
 
         // Add libc if not disabled
         if (!no_libw) {
-            Char* exec_dir = get_executable_dir();
+            char* exec_dir = get_executable_dir();
             str_cat(link_cmd, "-L");
             str_cat(link_cmd, exec_dir);
             str_cat(link_cmd, " -l:libw.a ");

@@ -5,14 +5,14 @@
 #include "compiler.h"
 
 typedef struct {
-    const Char* src;
-    UX src_size;
-    Char c;
-    U32 i;
-    I32 line;
+    const char* src;
+    size_t src_size;
+    char c;
+    unsigned int i;
+    int line;
 } Lexer;
 
-static Lexer* lexer_new(const Char* src)
+static Lexer* lexer_new(const char* src)
 {
     Lexer* lexer = safe_calloc(1, sizeof(Lexer));
     lexer->src = src;
@@ -24,12 +24,12 @@ static Lexer* lexer_new(const Char* src)
     return lexer;
 }
 
-static Void lexer_free(Lexer* lexer)
+static void lexer_free(Lexer* lexer)
 {
     free(lexer);
 }
 
-static Void lexer_advance(Lexer* lexer)
+static void lexer_advance(Lexer* lexer)
 {
     ASSERT(lexer->i < lexer->src_size, "lexer position should be < lexer->src_size");
     lexer->i += 1;
@@ -41,7 +41,7 @@ static Void lexer_advance(Lexer* lexer)
     }
 }
 
-static Void lexer_retreat(Lexer* lexer)
+static void lexer_retreat(Lexer* lexer)
 {
     if (lexer->i > 0) {
         lexer->i -= 1;
@@ -52,7 +52,7 @@ static Void lexer_retreat(Lexer* lexer)
     }
 }
 
-static Token* lex_eof(Lexer* lexer, I32 type)
+static Token* lex_eof(Lexer* lexer, int type)
 {
     Str* value = str_new_c(' ');
     Token* token = token_new(value, type, lexer->line);
@@ -60,7 +60,7 @@ static Token* lex_eof(Lexer* lexer, I32 type)
     return token;
 }
 
-static Token* lex_symbol(Lexer* lexer, I32 type)
+static Token* lex_symbol(Lexer* lexer, int type)
 {
     Str* value = str_new_c(' ');
     Token* token = token_new(value, type, lexer->line);
@@ -123,7 +123,7 @@ static Token* lex_word(Lexer* lexer)
         lexer_advance(lexer);
     }
 
-    I32 token_type;
+    int token_type;
     // handle keywords
     if (str_cmp(value, "ret")) {
         token_type = TOKEN_RET;
@@ -150,7 +150,7 @@ static Token* lex_word(Lexer* lexer)
     return token_new(value, token_type, lexer->line);
 }
 
-static Void skip_whitespace(Lexer* lexer)
+static void skip_whitespace(Lexer* lexer)
 {
     while (lexer->c == ' ' || lexer->c == '\t' || lexer->c == 13 || lexer->c == 10) {
         lexer_advance(lexer);
@@ -215,7 +215,7 @@ static Token* lex_next_token(Lexer* lexer)
                 return lex_symbol(lexer, TOKEN_NOT_EQUAL);
             }
             lexer_retreat(lexer);
-            USER_PANIC(current_filename, lexer->line, "unexpected character after `!`: `%c` (ascii: %d)", lexer->c, (I32)lexer->c);
+            USER_PANIC(current_filename, lexer->line, "unexpected character after `!`: `%c` (ascii: %d)", lexer->c, (int)lexer->c);
             return NULL;
         case '(':
             return lex_symbol(lexer, TOKEN_LPAREN);
@@ -258,12 +258,12 @@ static Token* lex_next_token(Lexer* lexer)
         case '\0':
             return lex_eof(lexer, TOKEN_EOF);
         default:
-            USER_PANIC(current_filename, lexer->line, "unexpected character `%c` (ascii: %d)", lexer->c, (I32)lexer->c);
+            USER_PANIC(current_filename, lexer->line, "unexpected character `%c` (ascii: %d)", lexer->c, (int)lexer->c);
             return NULL;
     }
 }
 
-List* lex(const Char* src)
+List* lex(const char* src)
 {
     print(MSG_STEP, "lexing...\n");
 

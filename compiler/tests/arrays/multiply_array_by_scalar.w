@@ -17,7 +17,7 @@
     !ascii <64> arr[3] = [1, 2, 3];
     multiply_array(arr, 3, 10);
 
-    ret ^(arr - 1*8); 
+    ret ^(arr - 2 * 8); 
 }
 
 : expected exit code : 20
