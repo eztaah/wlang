@@ -557,8 +557,15 @@ static FundefNode* parse_fundef(Parser* parser)
     // handle name
     Token name_token = eat_next_token(parser, TOKEN_ID);
     char* name = strdup(name_token.value);
-    Str* full_name = str_new("w__");
-    str_cat(full_name, name);
+    Str* full_name = str_new("");
+
+    if (strcmp(name, "main") == 0 && no_start_fun) {
+        str_cat(full_name, "main");
+    }
+    else {
+        str_cat(full_name, "w__");
+        str_cat(full_name, name);
+    }
 
     eat_next_token(parser, TOKEN_LPAREN);
 

@@ -1,0 +1,44 @@
+all:
+	gcc -c raylib_wrapper.c -o raylib_wrapper.o
+
+	gcc -Wno-implicit-function-declaration -c pong.c -o pong.o
+
+	ld -o pong pong.o -e main raylib_wrapper.o -L../../ -lw -L. -lraylib -lm -ldl -lpthread -lX11 -lc -lGL -lGLU -lglfw --dynamic-linker /lib64/ld-linux-x86-64.so.2
+
+clean:
+	rm -f pong pong.o pong.s raylib_wrapper.o
+
+
+
+
+all:
+	gcc -c raylib_wrapper.c -o raylib_wrapper.o
+
+	../../wlangc pong.w --compile-only --verbose
+	out/pong.s -o pong.o
+
+	ld -o pong pong.o raylib_wrapper.o -L../../ -lw -L. -lraylib -lm -ldl -lpthread -lX11 -lc -lGL -lGLU -lglfw --dynamic-linker /lib64/ld-linux-x86-64.so.2
+
+clean:
+	rm -f pong pong.o pong.s raylib_wrapper.o
+
+
+
+
+nm -g --defined-only libmylibrary.a
+
+
+
+
+	ld -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o pong \
+		/usr/lib/gcc/x86_64-redhat-linux/14/../../../../lib64/crt1.o \
+		/usr/lib/gcc/x86_64-redhat-linux/14/../../../../lib64/crti.o \
+		/usr/lib/gcc/x86_64-redhat-linux/14/crtbegin.o \
+		-L../../ -L. -L/usr/lib/gcc/x86_64-redhat-linux/14 \
+		-L/usr/lib/gcc/x86_64-redhat-linux/14/../../../../lib64 \
+		-L/lib/../lib64 -L/usr/lib/../lib64 \
+		-L/usr/lib/gcc/x86_64-redhat-linux/14/../../.. \
+		pong.o raylib_wrapper.o -lw -lraylib -lm \
+		-lc \
+		/usr/lib/gcc/x86_64-redhat-linux/14/crtend.o \
+		/usr/lib/gcc/x86_64-redhat-linux/14/../../../../lib64/crtn.o

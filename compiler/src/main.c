@@ -9,6 +9,7 @@
 
 Bool verbose = FALSE;
 Bool compile_only = FALSE;
+Bool no_start_fun = FALSE;
 Bool no_libc = FALSE;
 Bool no_libw = FALSE;
 Bool static_library = FALSE;
@@ -24,6 +25,7 @@ static void print_usage(void)
     printf("    -d, --define <macro>             define a macro\n");
     printf("    --no-libc                        do not link with the libc\n");
     printf("    --compile-only                   compile only; do not assemble or link\n");
+    printf("    --no-start-fun                   no _start function, and do not rename main to w__main\n");
     printf("    --lib                            create a static library\n");
     printf("\n");
 }
@@ -69,6 +71,9 @@ static List* handle_arguments(int argc, const char* argv[], Dict* macro_dict)
             else if (char_cmp(argv[i], "--compile-only")) {
                 compile_only = TRUE;
             }
+            else if (char_cmp(argv[i], "--no-start-fun")) {
+                no_start_fun = TRUE;
+            }
             else if (char_cmp(argv[i], "--lib")) {
                 static_library = TRUE;
             }
@@ -102,6 +107,7 @@ static List* handle_arguments(int argc, const char* argv[], Dict* macro_dict)
     print(VERBOSE, 0, "options summary:\n");
     print(VERBOSE, 1, "--verbose:      %s\n", verbose ? "used" : "not used");
     print(VERBOSE, 1, "--compile-only: %s\n", compile_only ? "used" : "not used");
+    print(VERBOSE, 1, "--no-start-fun: %s\n", no_start_fun ? "used" : "not used");
     print(VERBOSE, 1, "--no-libc:      %s\n", no_libc ? "used" : "not used");
     print(VERBOSE, 1, "--no-libw:      %s\n", no_libw ? "used" : "not used");
     print(VERBOSE, 1, "--lib:          %s\n", static_library ? "used" : "not used");
