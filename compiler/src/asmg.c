@@ -324,11 +324,17 @@ static void asme_unarop(AsmG* asmg, const UnaropNode* unarop_node)
 
 static void asme_funcall(AsmG* asmg, const FuncallNode* funcall_node)
 {
-
     str_cat(asmg->fun_body, "\n    # function call\n");
 
     // handle arguments
     int num_args = funcall_node->expr_node_list->size;
+
+    // handle arguments beyond the 6th by pushing them onto the stack in reverse order
+    for (int i = num_args - 1; i >= 6; i--) {
+        const ExprNode* arg_expr = (ExprNode*)funcall_node->expr_node_list->items[i];
+        asme_expr(asmg, arg_expr); // the result of the expression should be in %rax
+        str_cat(asmg->fun_body, "    pushq   %rax\n"); // push it onto the stack
+    }
 
     // process the first 6 arguments, mapping them to registers
     const char* reg_names[6] = {"%rdi", "%rsi", "%rdx", "%rcx", "%r8", "%r9"};
@@ -344,7 +350,15 @@ static void asme_funcall(AsmG* asmg, const FuncallNode* funcall_node)
     str_cat(asmg->fun_body, "    call    ");
     str_cat(asmg->fun_body, funcall_node->name);
     str_cat(asmg->fun_body, "\n");
+
+    // Clean up the stack if we pushed arguments (beyond the first 6) onto it
+    if (num_args > 6) {
+        char stack_cleanup[256];
+        sprintf(stack_cleanup, "    addq    $%d, %%rsp\n", 8 * (num_args - 6));
+        str_cat(asmg->fun_body, stack_cleanup);
+    }
 }
+
 
 static void asme_syscall(AsmG* asmg, const SyscNode* sysc_node)
 {
@@ -628,7 +642,9 @@ static void asme_fundef(AsmG* asmg, const FundefNode* fundef_node)
 
     asmg->rbp_offset = -8; // because when we declare the first variable, it needs to have space
 
-    for (int i = 0; i < fundef_node->param_node_list->size; i++) {
+    int num_params = fundef_node->param_node_list->size;
+
+    for (int i = 0; i < num_params; i++) {
         const ParamNode* param_node = (ParamNode*)fundef_node->param_node_list->items[i];
 
         // get full variable name
@@ -643,31 +659,26 @@ static void asme_fundef(AsmG* asmg, const FundefNode* fundef_node)
 
         print(VERBOSE, 2, "add in the dict: \"%s\" at location %s\n", str_to_char(full_var_name), var_pos_c);
 
-        // move the arguments from the registers (rdi, rsi, rdx, rcx, r8, r9) to the stack
-        switch (i) {
-            case 0:
-                str_cat(asmg->fun_body, "    movq    %rdi, ");
-                break;
-            case 1:
-                str_cat(asmg->fun_body, "    movq    %rsi, ");
-                break;
-            case 2:
-                str_cat(asmg->fun_body, "    movq    %rdx, ");
-                break;
-            case 3:
-                str_cat(asmg->fun_body, "    movq    %rcx, ");
-                break;
-            case 4:
-                str_cat(asmg->fun_body, "    movq    %r8, ");
-                break;
-            case 5:
-                str_cat(asmg->fun_body, "    movq    %r9, ");
-                break;
-            default:
-                PANIC("Too many arguments");
+        if (i < 6) {
+            // move the arguments from the registers (rdi, rsi, rdx, rcx, r8, r9) to the stack
+            const char* reg_names[6] = {"%rdi", "%rsi", "%rdx", "%rcx", "%r8", "%r9"};
+            str_cat(asmg->fun_body, "    movq    ");
+            str_cat(asmg->fun_body, reg_names[i]);
+            str_cat(asmg->fun_body, ", ");
+            str_cat(asmg->fun_body, var_pos_c);
+            str_cat(asmg->fun_body, "\n");
+        } else {
+            // retrieve the arguments passed via the stack
+            int stack_offset = (i - 6 + 1) * 8;
+            char stack_offset_c[256];
+            sprintf(stack_offset_c, "%d(%%rbp)", stack_offset + 8); // 8 is added for the return address offset
+            str_cat(asmg->fun_body, "    movq    ");
+            str_cat(asmg->fun_body, stack_offset_c);
+            str_cat(asmg->fun_body, ", %rax\n");
+            str_cat(asmg->fun_body, "    movq    %rax, ");
+            str_cat(asmg->fun_body, var_pos_c);
+            str_cat(asmg->fun_body, "\n");
         }
-        str_cat(asmg->fun_body, var_pos_c);
-        str_cat(asmg->fun_body, "\n");
 
         // decrease the offset for the next argument
         asmg->rbp_offset -= 8;
@@ -707,7 +718,6 @@ static void asme_fundef(AsmG* asmg, const FundefNode* fundef_node)
 
     str_cat_str(asmg->text, full_fun_code);
 }
-
 
 static void asme_lexpr(AsmG* asmg, const ExprNode* expr_node)
 {

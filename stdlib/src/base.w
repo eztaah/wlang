@@ -32,16 +32,82 @@ glb !int <64> ascii_array_to_int(!ascii& <64> str_array, !int <64> array_size)
         }
 
         !ascii <64> current_char = ^(str_array - i*8);
-        !digit <64> current_digit = ascii_to_digit(current_char);
 
+        : Check for null terminator or newline character
+        if (current_char == '\0' || current_char == '\n') {
+            break;
+        }
+
+        !digit <64> current_digit = ascii_to_digit(current_char);
         result = result * 10 + current_digit;
+
         i = i + 1;
     }
 
     ret result;
 }
 
-glb !ascii& int_to_ascii_array(!int number)
+#def MAX_DIGIT 20
+glb !ascii& <64> int_to_ascii_array(!int <64> number)
 {
+    !ascii& <64> ascii_array[MAX_DIGIT];
 
+    !int <64> i = 1;
+
+    : Gérer le cas des nombres négatifs
+    !ascii <64> is_negative = 0;
+    if (number < 0) {
+        is_negative = 1;
+        number = -number;
+    }
+
+    : Conversion des chiffres en ASCII en commençant par les moins significatifs
+    loop {
+        !digit <64> current_digit = number % 10;
+        !ascii <64> ascii_char = digit_to_ascii(current_digit);
+
+        ^(ascii_array - i*8) = ascii_char;
+        number = number / 10;
+        i = i + 1;
+
+        if (number == 0) {
+            break;
+        }
+    }
+
+    : Ajouter le signe négatif si nécessaire
+    if (is_negative) {
+        ^(ascii_array - i*8) = '-';
+        i = i + 1;
+    }
+
+    : Reverse the string because digits were added from right to left
+    !int <64> start = 1;
+    !int <64> end = i - 1;  : i points to the next free position
+
+    loop {
+        if (start >= end) {
+            break;
+        }
+
+        !ascii <64> temp = ^(ascii_array - start*8);
+        ^(ascii_array - start*8) = ^(ascii_array - end*8);
+        ^(ascii_array - end*8) = temp;
+
+        start = start + 1;
+        end = end - 1;
+    }
+
+    : Fill the remaining array with \0 characters after reversing
+    loop {
+        if (i >= MAX_DIGIT) {
+            break;
+        }
+        ^(ascii_array - i*8) = '\0';
+        i = i + 1;
+    }
+
+    print_ascii_array(ascii_array, MAX_DIGIT);
+
+    ret ascii_array;
 }

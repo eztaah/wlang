@@ -22,20 +22,20 @@
         !ascii <64> pipe[2] = " |";
         !ascii <64> dash[2] = "-";
         !ascii <64> space[2] = " ";
-        print_str_array(pipe, 2);
-        print_str_array(space, 2);
+        print_ascii_array(pipe, 2);
+        print_ascii_array(space, 2);
         _print_digit(^(board + i*8));
-        print_str_array(pipe, 2);
+        print_ascii_array(pipe, 2);
         if ((i + 1) % BOARD_SIZE == 0) {
-            print_str_array(newline, 2);
+            print_ascii_array(newline, 2);
             if (i < BOARD_SIZE * (BOARD_SIZE - 1)) {
                 !ascii <64> row_separator[12] = "---------\n";
-                print_str_array(row_separator, 12);
+                print_ascii_array(row_separator, 12);
             }
         }
         i = i + 1;
     }
-    print_str_array(newline, 2);
+    print_ascii_array(newline, 2);
 }
 
 !void get_player_move(!ascii <64> current_player, !ascii& <64> board)
@@ -50,7 +50,7 @@
             break;
         }
 
-        print_str_array(prompt, 32);
+        print_ascii_array(prompt, 32);
         !void& <64> input_str = input();
         move = ascii_array_to_int(input_str, 64);
 
@@ -62,7 +62,7 @@
             ^(board + move*8) = current_player;
             valid_move = 1;
         } else {
-            print_str_array(invalid_move, 25);
+            print_ascii_array(invalid_move, 25);
         }
     }
 }
@@ -148,17 +148,17 @@ glb !void game()
         if (winner != 0) {
             print_board(board);
             if (winner == 88) {  : Vérifier si le gagnant est 'X'
-                print_str_array(win_msg, 22);
+                print_ascii_array(win_msg, 22);
             } else {  : Sinon, c'est 'O' qui gagne
                 win_msg[7] = 79;  : Modifier le message pour 'O'
-                print_str_array(win_msg, 22);
+                print_ascii_array(win_msg, 22);
             }
             break;
         }
 
         if (is_draw(board)) {
             print_board(board);
-            print_str_array(draw_msg, 20);
+            print_ascii_array(draw_msg, 20);
             break;
         }
 
