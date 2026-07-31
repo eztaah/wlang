@@ -119,37 +119,38 @@ glb !void print_ascii_array(!int& <64> array_addr, !int <64> array_size)
     }
 
     : print the string
-    %sysc(1, 1, str_addr, i - 1, 0, 0, 0);  : 'i - 1' because 'i' is incremented after the last valid char
+    %sysc(1, 1, str_addr, array_size, 0, 0, 0);  : 'i - 1' because 'i' is incremented after the last valid char
 
     free(str_addr, array_size);
 }
 
-#def MAX_SIZE 100
-glb !ascii& <64> input()
+glb !void input(!ascii& <64> buffer, !int <64> buffer_size)
 {
     : allocate memory for the input string (temporarily stores 8-bit characters)
-    !ascii& <64> buffer = malloc(MAX_SIZE);
+    !ascii& <64> malloc_buffer = malloc(buffer_size);
 
     : read the input string from stdin
-    @read(0, buffer, MAX_SIZE);
-
-    : allocate memory for the output array (64-bit per element)
-    !void& <64> str_array_addr[MAX_SIZE];
+    %sysc(0, 0, malloc_buffer, buffer_size, 0, 0, 0);
 
     : copy and expand each 8-bit character to 64 bits
-    !int <64> i = 0;
+    !int <64> i = 1;
     loop {
-        if (^(buffer + i) == 0 || i == MAX_SIZE) {
-            break;  : stop if we reach the end of the string or the maximum size
+        if (i >= buffer_size) {
+            break;  
         }
 
-        ^(str_array_addr - (i+1) * 8) = ^(buffer + i);  : expand 8-bit to 64-bit
+        : Retrieve the 8-bit character and expand to 64-bit
+        !ascii <64> char_8bit = ^(malloc_buffer + i - 1);
+        !ascii <64> char_64bit = char_8bit & 0xFF;  : Mask to ensure only the lower 8 bits are kept
+        
+        : Store the 64-bit value in the array
+        ^(buffer - i * 8) = char_64bit;
 
         i = i + 1;
     }
 
     : free the temporary memory
-    free(buffer, MAX_SIZE);
+    free(malloc_buffer, buffer_size);
 
-    ret str_array_addr;  : return the address of the 64-bit array
+    ret buffer;  : return the address of the 64-bit array
 }

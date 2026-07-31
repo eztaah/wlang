@@ -1,10 +1,12 @@
 !int <64> main()
 {
-    !ascii& <64> input_str = input();
+    !ascii& <64> buffer[10];
+    input(buffer, 10);
 
-    print_ascii_array(input_str, 100);
-    
+    print_ascii_array(buffer, 10);
+
     ret 0;
 }
 
-: expected exit code : 5678\n
+: input : echo 5678
+: expected output : 5678\n
