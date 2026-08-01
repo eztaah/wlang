@@ -1,0 +1,31 @@
+program = Program(block)
+
+block = Block(statement*)
+
+statement = VarDeclaration(int size, identifier name, expr)
+
+          | Assignement(identifier name, expr)
+
+          | Return(expr) 
+
+          | If(expr condition, block true_block, block false_block)
+
+          | Loop(block)
+
+          | Break
+
+expr = Constant(int)
+
+    | Var(identifier)
+
+    | Unary(unary_operator, expr)
+
+    | Binary(binary_operator, expr, expr)
+
+unary_operator = Negate
+
+binary_operator = Add | Subtract | Multiply | Divide | Remainder 
+
+                | And | Or
+
+                | Equal | NotEqual | LessThan | LessOrEqual | GreaterThan | GreaterOrEqual
