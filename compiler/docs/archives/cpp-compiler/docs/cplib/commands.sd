@@ -1,6 +1,0 @@
-gcc -c cplib.c -o cplib.o    # compile + assemble mylib.c
-
-$ as main.s -o main.o        # assemble main.s vers un fichier objet main.o
-
-$ ld main.o cplib.o -lc -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o prog        
- # link main.o, mylib, libc (-lc), le tout en utilisant dynamic linker /lib64/ld-linux-x86-64.so.2
