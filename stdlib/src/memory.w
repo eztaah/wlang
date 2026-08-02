@@ -1,29 +1,37 @@
-glb !void& malloc(!int <64> size)
+: allocates a block of memory of the specified size
+:
+: this function allocates a block of memory of size `size` bytes. if the `USE_C_MEMORY_FUN`
+: preprocessor flag is defined, the standard C `malloc` function is used. otherwise, the 
+: function uses a system call to request memory from the operating system. the memory 
+: is allocated with read and write permissions and is not backed by any file (anonymous mapping).
+glb !void& malloc(<64> len)
 {
-#ifdef USE_C_MEMORY_FUN
-    !void <64> allocated_memory = @malloc(size);
+#ifdef C_MEMORY
+    !void& <64> allocated_memory = @malloc(len);
 #else
-    !int <64> addr = 0;                 : NULL, let the kernel choose the address
-    !int <64> length = size;            : the size of the memory to allocate
-    !int <64> prot = 0x3;               : read and write permissions (PROT_READ | PROT_WRITE)
-    !int <64> flags = 0x22;             : MAP_PRIVATE | MAP_ANONYMOUS
-    !int <64> fd = -1;                  : no file descriptor, because we're using MAP_ANONYMOUS
-    !int <64> offset = 0;               : offset is zero since we're not mapping a file
+    <64> addr = 0;                 : NULL, let the kernel choose the address
+    : len                          : the size of the memory to allocate
+    <64> prot = 0x3;               : read and write permissions (PROT_READ | PROT_WRITE)
+    <64> flags = 0x22;             : MAP_PRIVATE | MAP_ANONYMOUS, memory not backed by a file
+    <64> fd = -1;                  : no file descriptor, because we're using MAP_ANONYMOUS
+    <64> offset = 0;               : offset is zero since we're not mapping a file
 
-    !void& <64> allocated_memory = %sysc(9, addr, length, prot, flags, fd, offset);
+    : use the mmap system call to allocate memory
+    !void& <64> allocated_memory = %sysc(9, addr, len, prot, flags, fd, offset);
 #endif
     ret allocated_memory;
 }
 
-glb !void free(!void& <64> addr, !int <64> size)
+: frees a previously allocated block of memory
+:
+: this function frees a block of memory that was previously allocated with `malloc`.
+: if the `USE_C_MEMORY_FUN` preprocessor flag is defined, the standard C `free` function is used.
+: otherwise, the function uses a system call to unmap the memory region, effectively freeing it.
+glb free(!void& <64> addr, <64> len)
 {
-#ifdef USE_C_MEMORY_FUN
+#ifdef C_MEMORY
     @free(addr);
 #else
-    !int <64> syscall_number = 11;      : SYS_munmap
-    !int <64> memory_addr = addr;       : address of the memory to be freed
-    !int <64> length = size;            : size of the memory region to unmap
-
-    %sysc(syscall_number, memory_addr, length, 0, 0, 0, 0);
+    %sysc(11, addr, len, 0, 0, 0, 0)
 #endif
 }

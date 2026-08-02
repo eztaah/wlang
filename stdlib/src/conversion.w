@@ -184,6 +184,14 @@ glb !cstr& wstr_to_cstr(!wstr& <64> wstr, <64> str_size)
     ret cstr;
 }
 
+: converts a cstr to a wstr by expanding each 8-bit character to 64 bits
+:
+: this function takes a cstr (standard C string where each character is stored on 8 bits)
+: and converts it into a wstr (where each character is expanded to 64 bits). the conversion 
+: is done by copying each character from the cstr and expanding it to 64 bits before storing 
+: it in the wstr buffer. 
+: 
+: after the conversion, the original cstr is freed as it was dynamically allocated.
 glb cstr_to_wstr(!cstr& <64> cstr, !wstr& wstr_buffer, <64> str_size)
 {
     : copy and expand each 8-bit character to 64 bits
@@ -194,14 +202,14 @@ glb cstr_to_wstr(!cstr& <64> cstr, !wstr& wstr_buffer, <64> str_size)
         }
 
         !aiic <64> char_8bit = ^(cstr + i - 1);
-        !aiic <64> char_64bit = char_8bit & 0xFF;  : Mask to ensure only the lower 8 bits are kept
+        !aiic <64> char_64bit = char_8bit & 0xFF;  : mask to ensure only the lower 8 bits are kept
         
-        : Store the 64-bit value in the array
+        : store the 64-bit value in the wstr array
         ^(wstr_buffer - i * 8) = char_64bit;
 
         i = i + 1;
     }
 
-    : the cstr was forcement créé avec un malloc
+    : free the cstr memory as it was dynamically allocated
     free(cstr, str_size);
 }
