@@ -1,35 +1,42 @@
-# le script attend en argument la version 
+#!/bin/bash
 
+# Check if version argument is provided
+if [ -z "$1" ]; then
+  echo "Usage: $0 <version>"
+  exit 1
+fi
 
-# create release folder for each releases (linux and windows)
-mkdir wlang + version  # wlang-1.0.0_linux_amd64
-mkdir wlang + version  # wlang-1.0.0_win64
+VERSION=$1
+RELEASE_DIR="wlang-${VERSION}_linux_amd64"
 
+# Create release folder
+mkdir -p "${RELEASE_DIR}"
 
-# compile wlangc and libw for linux
-cd compiler 
-make release -DLINUX_BUILD
-cd ../stdlib
-make            # build stdlib
-# move the generated files into the release folder
-mv ./wlangc ./wlang-1.0.0_linux_amd64/wlangc
-mv ./libw.a ./wlang-1.0.0_linux_amd64/libw.a
+# Compile wlangc and libw
+cd compiler || exit 1
+make clean || exit 1
+make release || exit 1
+cd ../stdlib || exit 1
+make clean || exit 1
+make default || exit 1  # Build stdlib
 
-# compile wlangc for windows
-cd compiler 
-make release -DWINDOW_BUILD
-# move the generated files into the release folder
-mv ./wlangc ./wlang-1.0.0_win64/wlangc
+cd ..
 
-# for all the created folders
-# add changelelog, add readme
-cp ./CHANGELOG.txt ./wlang_linux/CHANGELOG.txt
-cp ./CHANGELOG.txt ./wlang_win64/CHANGELOG.txt
-cp ./README-linux.md ./wlang_linux/README.md
-cp ./README-win64.md ./wlang_win64/README.md
+# Move the generated files into the release folder
+mv ./wlangc "./${RELEASE_DIR}/wlangc"
+mv ./libw.a "./${RELEASE_DIR}/libw.a"
 
-# add hello-world example
-cp hello-world-linux/ ./wlang-linux/
-cp hello-world-windows/ ./wlang-windows/
+# Copy additional files to the release folder
+cp ./CHANGELOG.txt "./${RELEASE_DIR}/CHANGELOG.txt"
+cp ./release-data/README-release.md "./${RELEASE_DIR}/README.md"
 
-# compress release folders
+# Copy the hello-world example
+cp -r ./release-data/hello-world "./${RELEASE_DIR}/"
+
+# Compress release folder into a tar.gz archive
+tar -czvf "${RELEASE_DIR}.tar.gz" "${RELEASE_DIR}"
+
+# Clean up the release directory (optional)
+rm -rf "${RELEASE_DIR}"
+
+echo "Release ${VERSION} created: ${RELEASE_DIR}.tar.gz"

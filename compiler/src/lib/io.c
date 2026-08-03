@@ -79,7 +79,8 @@ void write_file(const char* filename, const char* outbuffer)
     fclose(fp);
 }
 
-CommandResult sh(const char* cmd) {
+CommandResult sh(const char* cmd)
+{
     CommandResult result;
     result.output = (char*)calloc(1, sizeof(char));
     result.output[0] = '\0';
@@ -107,7 +108,8 @@ CommandResult sh(const char* cmd) {
 
     if (WIFEXITED(status)) {
         result.return_code = WEXITSTATUS(status);
-    } else {
+    }
+    else {
         PANIC("Command did not exit properly");
     }
 
@@ -120,7 +122,7 @@ void create_dir(const char* dir)
 
     // check if folder already exist
     if (stat(dir, &st) == -1) {
-        // create folder with 0755 permissions (read, write et execute for the owner, read and execute for other)
+        // create folder with 0755 permissions (read, write, execute for the owner, read, and execute for others)
         if (mkdir(dir, 0755) != 0) {
             PANIC("failed to create output directory");
         }
@@ -128,6 +130,7 @@ void create_dir(const char* dir)
 }
 
 #define MAX_LOG_LENGTH 1024
+
 void print_v(MsgType msg_type, int indent, const char* text, va_list args)
 {
     char buffer[MAX_LOG_LENGTH];
@@ -136,34 +139,35 @@ void print_v(MsgType msg_type, int indent, const char* text, va_list args)
     // Using vsnprintf to format the text
     vsnprintf(buffer, MAX_LOG_LENGTH, text, args);
 
-    // Create indentation prefix (4 spaces per indent level)
+    // create indentation prefix (4 spaces per indent level)
     unsigned int indent_spaces = 0;
     if (indent > 0) {
         indent_spaces = indent * 4;
     }
     if (indent_spaces > sizeof(indented_buffer) - MAX_LOG_LENGTH - 1) {
-        indent_spaces = sizeof(indented_buffer) - MAX_LOG_LENGTH - 1; // Ensure it fits
+        indent_spaces = sizeof(indented_buffer) - MAX_LOG_LENGTH - 1; // ensure it fits
     }
     memset(indented_buffer, ' ', indent_spaces);
-    indented_buffer[indent_spaces] = '\0';  // Null-terminate the string
+    indented_buffer[indent_spaces] = '\0'; // null-terminate the string
 
-    // Concatenate the indentation and the formatted message
+    // concatenate the indentation and the formatted message
     strncat(indented_buffer, buffer, MAX_LOG_LENGTH - indent_spaces);
 
     switch (msg_type) {
         case VERBOSE:
             if (verbose) {
                 if (indent == 0) {
-                    // Print in bold if indent is 0
-                    fprintf(stdout, "\033[1m%s\033[0m", indented_buffer);  // \033[1m starts bold, \033[0m ends it
-                } else {
+                    // print in bold if indent is 0
+                    fprintf(stdout, "\033[1m%s\033[0m", indented_buffer); // \033[1m starts bold, \033[0m ends it
+                }
+                else {
                     fprintf(stdout, "%s", indented_buffer);
                 }
             }
             break;
 
         case ERROR:
-            fprintf(stderr, "%s", buffer); // No indentation for errors
+            fprintf(stderr, "%s", buffer); // no indentation for errors
             break;
 
         default:
@@ -171,7 +175,6 @@ void print_v(MsgType msg_type, int indent, const char* text, va_list args)
             break;
     }
 }
-
 
 void print(MsgType msg_type, int indent, const char* text, ...)
 {

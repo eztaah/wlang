@@ -1,7 +1,7 @@
-!int <64> main()
+<64> main()
 {
     print_libw_version();
     ret 0;
 }
 
-: expected output : libw version 0.3.0\n
+: expected output : libw 0.3.0\n

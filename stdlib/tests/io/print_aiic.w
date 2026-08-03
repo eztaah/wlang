@@ -1,6 +1,6 @@
-!int <64> main()
+<64> main()
 {
-    print_ascii('[');
+    print_aiic('[');
     ret 0;
 }
 

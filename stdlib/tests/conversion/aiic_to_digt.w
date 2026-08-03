@@ -1,6 +1,6 @@
-!int <64> main()
+<64> main()
 {
-    !digit <64> result = ascii_to_digit(50);  : 50 is ASCII for '2'
+    !digt <64> result = aiic_to_digt(50);  : 50 is ASCII for '2'
     ret result;
 }
 

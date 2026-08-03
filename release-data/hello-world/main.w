@@ -1,6 +1,7 @@
-!int <64> main()
+<64> main()
 {
-    !ascii <64> str[13] = "Hello World!\n"; 
-    print_ascii_array(str, 13);
+    !wstr& <64> str[13] = "Hello World!\n"; 
+    print_wstr(str, 13);
+
     ret 0;
 }

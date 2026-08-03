@@ -3,7 +3,7 @@
 
 #include "lib.h"
 
-// Create a new Str from a C-string
+// create a new Str from a C-string
 Str* str_new(const char* value)
 {
     size_t length = strlen(value);
@@ -17,7 +17,7 @@ Str* str_new(const char* value)
     return str;
 }
 
-// Create a new Str with a single character
+// create a new Str with a single character
 Str* str_new_c(const char c)
 {
     char* char_array = safe_malloc(2 * sizeof(char)); // 2 for the character and the null-terminating character
@@ -31,7 +31,7 @@ Str* str_new_c(const char c)
     return str;
 }
 
-// Concatenate another Str to this one
+// concatenate another Str to this one
 void str_cat_str(Str* dest, const Str* src)
 {
     size_t new_length = dest->length + src->length;
@@ -46,7 +46,7 @@ void str_cat_str(Str* dest, const Str* src)
     dest->length = new_length;
 }
 
-// Concatenate a C-string to this one
+// concatenate a C-string to this one
 void str_cat(Str* dest, const char* src)
 {
     size_t src_len = strlen(src);
@@ -62,7 +62,7 @@ void str_cat(Str* dest, const char* src)
     dest->length = new_length;
 }
 
-// Concatenate a single character to this one
+// concatenate a single character to this one
 void str_cat_c(Str* dest, const char c)
 {
     if (dest->length + 2 > dest->capacity) {
@@ -75,7 +75,7 @@ void str_cat_c(Str* dest, const char c)
     dest->length += 1;
 }
 
-// Insert a C-string at a specific position
+// insert a C-string at a specific position
 void str_insert(Str* dest, size_t index, const char* src)
 {
     if (index > dest->length) {
@@ -96,7 +96,7 @@ void str_insert(Str* dest, size_t index, const char* src)
     dest->length = new_length;
 }
 
-// Remove a range of characters from the string
+// remove a range of characters from the string
 void str_remove_range(Str* str, size_t start, size_t end)
 {
     if (start > str->length || end > str->length || start > end) {
@@ -107,63 +107,52 @@ void str_remove_range(Str* str, size_t start, size_t end)
     str->length -= (end - start);
 }
 
-// Replace all instances of target with replacement
+// replace all instances of target with replacement
 void str_replace(Str* str, const char* target, const char* replacement)
 {
     size_t target_len = strlen(target);
-    // size_t replacement_len = strlen(replacement);
     char* pos;
 
     while ((pos = strstr(str->char_array_location, target)) != NULL) {
         size_t pos_index = pos - str->char_array_location;
 
-        // Remove the target
         str_remove_range(str, pos_index, pos_index + target_len);
-
-        // Insert the replacement
         str_insert(str, pos_index, replacement);
     }
 }
 
+// compare two C-strings
 Bool char_cmp(const char* s1, const char* s2)
 {
-    if (strcmp(s1, s2) == 0) {
-        return TRUE;
-    }
-    else {
-        return FALSE;
-    }
+    return strcmp(s1, s2) == 0 ? TRUE : FALSE;
 }
 
-// Compare a Str with a C-string
+// compare a Str with a C-string
 Bool str_cmp(const Str* s1, const char* s2)
 {
     return strcmp(s1->char_array_location, s2) == 0 ? TRUE : FALSE;
 }
 
-// Compare two Str objects
+// compare two Str objects
 Bool str_cmp_str(const Str* s1, const Str* s2)
 {
     return strcmp(s1->char_array_location, s2->char_array_location) == 0 ? TRUE : FALSE;
 }
 
-// Convert the Str to a C-string
+// convert the Str to a C-string
 char* str_to_char(const Str* str)
 {
     return str->char_array_location;
 }
 
-// Find the first occurrence of target in the string
+// find the first occurrence of target in the string
 size_t str_find(const Str* str, const char* target)
 {
     char* pos = strstr(str->char_array_location, target);
-    if (pos) {
-        return pos - str->char_array_location;
-    }
-    return -1; // not found
+    return pos ? pos - str->char_array_location : -1; // return -1 if not found
 }
 
-// Check if the string starts with a prefix
+// check if the string starts with a prefix
 Bool str_starts_with(const Str* str, const char* prefix)
 {
     size_t prefix_len = strlen(prefix);
@@ -173,7 +162,7 @@ Bool str_starts_with(const Str* str, const char* prefix)
     return strncmp(str->char_array_location, prefix, prefix_len) == 0 ? TRUE : FALSE;
 }
 
-// Check if the string ends with a suffix
+// check if the string ends with a suffix
 Bool str_ends_with(const Str* str, const char* suffix)
 {
     size_t suffix_len = strlen(suffix);
@@ -183,7 +172,7 @@ Bool str_ends_with(const Str* str, const char* suffix)
     return strcmp(str->char_array_location + str->length - suffix_len, suffix) == 0 ? TRUE : FALSE;
 }
 
-// Free the memory associated with the Str
+// free the memory associated with the Str
 void str_free(Str* str)
 {
     free(str->char_array_location);

@@ -1,12 +1,13 @@
 #include <stdio.h>  // printf()
 #include <stdlib.h> // exit(), free()
-#include <string.h>
+#include <string.h> // strdup()
 
 #include "compiler.h"
 #include "lib.h"
 
-#define COMPILER_VERSION "0.3.0"
+#define COMPILER_VERSION "1.0.0"
 
+// global flags for compiler options
 Bool verbose = FALSE;
 Bool compile_only = FALSE;
 Bool no_start_fun = FALSE;
@@ -14,6 +15,7 @@ Bool no_libc = FALSE;
 Bool no_libw = FALSE;
 Bool static_library = FALSE;
 
+// function to display usage information
 static void print_usage(void)
 {
     printf("Usage:\n");
@@ -32,9 +34,9 @@ static void print_usage(void)
 
 static List* handle_arguments(int argc, const char* argv[], Dict* macro_dict)
 {
-    List* source_files = list_new(sizeof(char*));
+    List* source_files = list_new(sizeof(char*)); // initialize list to hold source files
 
-    // handle base arguments
+    // if no arguments provided, or help/version flags are given, show usage/version and exit
     if (argc < 2) {
         print_usage();
         exit(EXIT_FAILURE);
@@ -48,19 +50,23 @@ static List* handle_arguments(int argc, const char* argv[], Dict* macro_dict)
         exit(EXIT_SUCCESS);
     }
 
-    // handle arguments
+    // parse each argument to set appropriate flags or collect source files
     for (int i = 1; i < argc; i++) {
         if (argv[i][0] == '-') {
+            // handle options with flags
             if (char_cmp(argv[i], "-v") || char_cmp(argv[i], "--verbose")) {
                 verbose = TRUE;
             }
             else if (char_cmp(argv[i], "-d") || char_cmp(argv[i], "--define")) {
+                // make sure there's a macro specified after -d or --define
                 if (i + 1 >= argc) {
                     print(ERROR, 0, "No macro specified after %s\n", argv[i]);
                     exit(EXIT_FAILURE);
                 }
+                // store the macro definition in the dictionary
                 char* macro_name = strdup(argv[++i]);
                 dict_put(macro_dict, macro_name, str_to_char(str_new("")));
+                free(macro_name);
             }
             else if (char_cmp(argv[i], "--no-libc")) {
                 no_libc = TRUE;
@@ -84,18 +90,19 @@ static List* handle_arguments(int argc, const char* argv[], Dict* macro_dict)
             }
         }
         else {
-            // assume it is a source file
+            // assume non-flag arguments are source files
             list_push(source_files, &argv[i]);
         }
     }
 
+    // if no source files were provided, show an error and exit
     if (source_files->size == 0) {
         printf("No source files specified\n");
         print_usage();
         exit(EXIT_FAILURE);
     }
 
-    // Verbose: print the full command line used
+    // if verbose mode is enabled, print a summary of the options used
     print(VERBOSE, 0, "command: \n");
     print(VERBOSE, -1, "    ");
     for (int i = 0; i < argc; i++) {
@@ -103,7 +110,6 @@ static List* handle_arguments(int argc, const char* argv[], Dict* macro_dict)
     }
     print(VERBOSE, 0, "\n");
 
-    // Verbose summary of the options used
     print(VERBOSE, 0, "options summary:\n");
     print(VERBOSE, 1, "--verbose:      %s\n", verbose ? "used" : "not used");
     print(VERBOSE, 1, "--compile-only: %s\n", compile_only ? "used" : "not used");
@@ -130,7 +136,7 @@ static List* handle_arguments(int argc, const char* argv[], Dict* macro_dict)
         print(VERBOSE, 2, "%s\n", filename);
     }
 
-    return source_files;
+    return source_files; // return the list of source files to be compiled
 }
 
 int main(int argc, const char* argv[])
@@ -139,39 +145,46 @@ int main(int argc, const char* argv[])
 
     List* source_files = handle_arguments(argc, argv, macro_dict);
 
-    // Compile each file
+    // compile each source file provided
     for (int i = 0; i < source_files->size; i++) {
         char* filename = *(char**)list_get(source_files, i);
         print(VERBOSE, 0, "compiling %s\n", filename);
         compile_file(filename, macro_dict);
     }
 
-    // Check if we need to assemble and link
+    // check if we need to proceed with assembling and linking
     if (!compile_only) {
         Str* object_files = str_new("");
 
         for (int i = 0; i < source_files->size; i++) {
             char* filename = *(char**)list_get(source_files, i);
 
-            // Replace the extension .w with .s for logging
+            // replace the extension .w with .s for assembly, if applicable
             char* dot = strrchr(filename, '.');
             if (dot && strcmp(dot, ".w") == 0) {
-                *dot = '\0';  // Remove the .w
+                *dot = '\0'; // temporarily remove the .w extension
                 print(VERBOSE, 0, "assembling %s.s\n", filename);
-                *dot = '.';  // restore the filename with .w 
-            } else {
-                print(VERBOSE, 0, "assembling %s\n", filename);  // fallback if no .w extension found
+                *dot = '.'; // restore the original filename
+            }
+            else {
+                print(VERBOSE, 0, "assembling %s\n", filename); // log assembly process for files without .w extension
             }
 
-            int ret_code = assemble_file(filename, object_files);
+            int ret_code = assemble_file(filename, object_files); // assemble the file
             if (ret_code != 0) {
+                // list_free(source_files);
+                dict_free(macro_dict);
+                str_free(object_files);
                 return ret_code;
             }
         }
 
         print(VERBOSE, 0, "linking\n");
-        int ret_code = link_executable(object_files, argv[0]);
+        int ret_code = link_executable(object_files, argv[0]); // link object files to create the final executable
         if (ret_code != 0) {
+            // list_free(source_files);
+            dict_free(macro_dict);
+            str_free(object_files);
             return ret_code;
         }
 
@@ -180,17 +193,20 @@ int main(int argc, const char* argv[])
 
     print(VERBOSE, -1, "\n");
 
-    if (static_library) {
-        printf("compilation completed. the generated shared library is located in ./out/lib.a.\n");
-    } 
+    // provide final feedback to the user about the output location
+    printf("compilation completed. the generated ");
+    if (compile_only) {
+        printf("assembly code is located in ./out/\n");
+    }
+    else if (static_library) {
+        printf("shared library is located in ./out/lib.a.\n");
+    }
     else {
-        printf("compilation completed. the generated executable is located in ./out/prog.\n");
+        printf("executable is located in ./out/prog.\n");
     }
 
-    // clean up
     // list_free(source_files);
-    // list_free(assembler_options);
-    // list_free(linker_options);
+    dict_free(macro_dict);
+
     return 0;
 }
-

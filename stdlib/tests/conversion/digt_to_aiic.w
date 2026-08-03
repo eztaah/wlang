@@ -1,6 +1,6 @@
-!int <64> main()
+<64> main()
 {
-    !ascii <64> result = digit_to_ascii(7);
+    !aiic <64> result = digt_to_aiic(7);
     ret result;
 }
 

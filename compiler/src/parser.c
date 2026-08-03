@@ -5,12 +5,12 @@
 #include "compiler.h"
 
 typedef struct {
-    const List* token_list;
-    int token_list_size;
-    int index;
-    int index_next_token;
-    Token current_token;
-    Token next_token;
+    const List* token_list; 
+    int token_list_size;    
+    int index;              
+    int index_next_token;   
+    Token current_token;    
+    Token next_token;       
 } Parser;
 
 static Parser* parser_new(const List* token_list)
@@ -85,14 +85,15 @@ static ExprNode* parse_fun_call(Parser* parser)
     List* expr_node_list = list_new(sizeof(ExprNode));
     while (parser->current_token.type != TOKEN_RPAREN) {
         list_push(expr_node_list, parse_expr(parser));
-        if (parser->current_token.type == TOKEN_COMMA) { // for handling case where this is the last parameters (and there is no comma after)
+        if (parser->current_token.type == TOKEN_COMMA) { // for handling case where this is the last parameter (and there is no comma after)
             eat_next_token(parser, TOKEN_COMMA);
         }
     }
 
     eat_next_token(parser, TOKEN_RPAREN);
-
-    return funcall_node_new(str_to_char(final_name), expr_node_list, line);
+    ExprNode* node = funcall_node_new(str_to_char(final_name), expr_node_list, line);
+    str_free(final_name); 
+    return node;
 }
 
 static ExprNode* parse_sysc(Parser* parser)
@@ -110,7 +111,7 @@ static ExprNode* parse_sysc(Parser* parser)
     List* expr_node_list = list_new(sizeof(ExprNode));
     while (parser->current_token.type != TOKEN_RPAREN) {
         list_push(expr_node_list, parse_expr(parser));
-        if (parser->current_token.type == TOKEN_COMMA) { // for handling case where this is the last parameters (and there is no comma after)
+        if (parser->current_token.type == TOKEN_COMMA) { // for handling case where this is the last parameter (and there is no comma after)
             eat_next_token(parser, TOKEN_COMMA);
         }
     }
@@ -143,7 +144,6 @@ static ExprNode* parse_primary(Parser* parser)
             }
             break;
         }
-
         case TOKEN_AMPERSAND: {
             eat_next_token_any(parser);
             Token id_token = eat_next_token(parser, TOKEN_ID);
@@ -178,13 +178,12 @@ static ExprNode* parse_unary(Parser* parser)
         return unarop_node_new(TOKEN_TILDE, operand, line);
     }
     else if (parser->current_token.type == TOKEN_CARET) {
-        eat_next_token_any(parser);
+        eat_next_token_any(parser); // Eat '^'
         ExprNode* operand = parse_unary(parser);
         return unarop_node_new(TOKEN_CARET, operand, line);
     }
     return parse_primary(parser);
 }
-
 
 static ExprNode* parse_multiplicative(Parser* parser)
 {
@@ -408,13 +407,13 @@ static StmtNode* parse_vardec_stmt(Parser* parser)
     Token name_token = eat_next_token(parser, TOKEN_ID);
     char* name = strdup(name_token.value);
 
-    // handle variable dec without assignement
+    // handle variable declaration without assignment
     if (parser->current_token.type == TOKEN_SEMI) {
         eat_next_token(parser, TOKEN_SEMI);
         return vardec_node_new(size, name, NULL, line);
     }
 
-    // handle variable dec with assignement
+    // handle variable declaration with assignment
     else if (parser->current_token.type == TOKEN_EQUAL) {
         eat_next_token(parser, TOKEN_EQUAL);
         ExprNode* expr_node = parse_expr(parser);
@@ -422,14 +421,14 @@ static StmtNode* parse_vardec_stmt(Parser* parser)
         return vardec_node_new(size, name, expr_node, line);
     }
 
-    // handle array declarations (with and without assignement)
+    // handle array declarations (with and without assignment)
     else if (parser->current_token.type == TOKEN_LBRACKET) {
         eat_next_token(parser, TOKEN_LBRACKET);
         Token array_size_token = eat_next_token(parser, TOKEN_NUM);
         char* array_size = strdup(array_size_token.value);
         eat_next_token(parser, TOKEN_RBRACKET);
 
-        // with assignement
+        // with assignment
         if (parser->current_token.type == TOKEN_EQUAL) {
             eat_next_token(parser, TOKEN_EQUAL);
 
@@ -448,7 +447,7 @@ static StmtNode* parse_vardec_stmt(Parser* parser)
             return arraydec_node_new(size, name, array_size, expr_node_list, line);
         }
 
-        // without assignement
+        // without assignment
         else if (parser->current_token.type == TOKEN_SEMI) {
             eat_next_token(parser, TOKEN_SEMI);
             return arraydec_node_new(size, name, array_size, NULL, line);
@@ -468,7 +467,7 @@ static StmtNode* parse_ass_stmt(Parser* parser, ExprNode* expr_node1)
     int line = parser->current_token.line;
     eat_next_token(parser, TOKEN_EQUAL);
 
-    // Parse value of the var assignement
+    // parse value of the var assignment
     ExprNode* expr_node2 = parse_expr(parser);
     eat_next_token(parser, TOKEN_SEMI);
 
@@ -543,15 +542,12 @@ static FundefNode* parse_fundef(Parser* parser)
     }
 
     // handle return size
-    char* return_size;
+    char* return_size = NULL;
     if (parser->current_token.type == TOKEN_LESSTHAN) {
         eat_next_token(parser, TOKEN_LESSTHAN);
         Token size_token = eat_next_token(parser, TOKEN_NUM);
         return_size = strdup(size_token.value);
         eat_next_token(parser, TOKEN_GREATERTHAN);
-    }
-    else {
-        return_size = NULL;
     }
 
     // handle name
@@ -573,7 +569,7 @@ static FundefNode* parse_fundef(Parser* parser)
     List* param_node_list = list_new(sizeof(ParamNode));
     while (parser->current_token.type != TOKEN_RPAREN) {
         list_push(param_node_list, parse_fun_param(parser));
-        if (parser->current_token.type == TOKEN_COMMA) { // for handling case where this is the last parameters (and there is no comma after)
+        if (parser->current_token.type == TOKEN_COMMA) { // for handling case where this is the last parameter (and there is no comma after)
             eat_next_token(parser, TOKEN_COMMA);
         }
     }
@@ -582,12 +578,14 @@ static FundefNode* parse_fundef(Parser* parser)
     // handling block_node
     BlockNode* block_node = parse_block_node(parser);
 
-    return fundef_node_new(str_to_char(full_name), return_size, scope, param_node_list, block_node, line);
+    FundefNode* fundef_node = fundef_node_new(str_to_char(full_name), return_size, scope, param_node_list, block_node, line);
+    str_free(full_name);
+    free(name);         
+    return fundef_node;
 }
 
 List* parse(const List* token_list)
 {
-
     Parser* parser = parser_new(token_list);
 
     List* fundef_node_list = list_new(sizeof(FundefNode));

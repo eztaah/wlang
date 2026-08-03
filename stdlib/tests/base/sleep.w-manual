@@ -1,0 +1,6 @@
+glb <64> main() {
+    sleep(2000);  
+
+    ret 0; 
+}
+: expected output : 0

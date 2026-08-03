@@ -2,7 +2,7 @@
 
 !int <64> main()
 {
-    #ifdef   FEATURE_ENABLED   
+    #ifdef   FEATURE_ENABLED    	 
         !int <64> feature_val = 100;
       #else   
         !int <64> feature_val = 0;
