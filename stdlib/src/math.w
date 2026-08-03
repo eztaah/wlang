@@ -46,8 +46,8 @@ glb <64> min(<64> a, <64> b)
 glb <64> pow(<64> base, <64> exponent)
 {
     if (exponent < 0) {
-        !wstr& <64> err_msg[64] = "error: libw/math/pow: negative exponent is not supported\n";
-        print_wstr(err_msg, 64);
+        !wstr& <64> err_msg[57] = "error: libw/math/pow: negative exponent is not supported\n";
+        print_wstr(err_msg, 57);
         exit(1);
     }
 
@@ -73,8 +73,8 @@ glb <64> pow(<64> base, <64> exponent)
 glb <64> sqrt(<64> x)
 {
     if (x < 0) {
-        !wstr& <64> err_msg[64] = "error: libw/math/sqrt: square root of a negative number is not supported\n";
-        print_wstr(err_msg, 64);
+        !wstr& <64> err_msg[73] = "error: libw/math/sqrt: square root of a negative number is not supported\n";
+        print_wstr(err_msg, 73);
         exit(1);
     }
 

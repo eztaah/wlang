@@ -59,26 +59,20 @@ static void convert_chars_to_ascii(Str* source)
         int ascii_value = -1;
         char character = *(pos + 1);
         if (character == '\\') {
-            // handle escape sequences
             char escape_seq[3] = {pos[1], pos[2], '\0'};
             ascii_value = escape_sequence_to_ascii(escape_seq);
             if (ascii_value == -1) {
                 USER_PANIC(current_filename, current_line_number, "invalid escape sequence");
             }
-        }
-        else {
-            // regular character
+        } else {
             ascii_value = (int)character;
         }
 
-        char ascii_str[12]; // enough to hold any ASCII value as string
+        char ascii_str[12];
         sprintf(ascii_str, "%d", ascii_value);
 
-        // replace the character or escape sequence with its ASCII value
         str_remove_range(source, pos - src, end_char + 1 - src);
         str_insert(source, pos - src, ascii_str);
-
-        // update the src pointer because we've modified the source
         src = str_to_char(source);
     }
 }
@@ -95,24 +89,21 @@ static void convert_string_literals_to_ascii_array(Str* source)
             USER_PANIC(current_filename, current_line_number, "unmatched double quote in string literal");
         }
 
-        // Create a new Str to store the ASCII array
         Str* ascii_array = str_new("[");
-
         for (char* p = pos + 1; p < end_string; p++) {
             int ascii_value = -1;
             if (*p == '\\') {
-                // Handle escape sequences
                 char escape_seq[3] = {p[0], p[1], '\0'};
                 ascii_value = escape_sequence_to_ascii(escape_seq);
                 if (ascii_value == -1) {
                     USER_PANIC(current_filename, current_line_number, "invalid escape sequence");
                 }
-                p++; // Skip the next character as it's part of the escape sequence
+                p++;
             } else {
                 ascii_value = (int)*p;
             }
 
-            char ascii_str[12]; // Enough to hold any ASCII value as string
+            char ascii_str[12];
             sprintf(ascii_str, "%d", ascii_value);
             str_cat(ascii_array, ascii_str);
             if (p < end_string - 1) {
@@ -120,25 +111,18 @@ static void convert_string_literals_to_ascii_array(Str* source)
             }
         }
 
-        str_cat(ascii_array, "]"); // Close the array
-
-        // Get the current position offset
+        str_cat(ascii_array, "]");
         int start_pos = pos - src;
         int end_pos = end_string + 1 - src;
 
-        // Replace the string literal with the ASCII array
         str_remove_range(source, start_pos, end_pos);
         str_insert(source, start_pos, str_to_char(ascii_array));
 
-        // Update the `src` pointer because we modified the source
         src = str_to_char(source);
-        pos = src + start_pos + ascii_array->length; // Move the pointer past the inserted array
-
+        pos = src + start_pos + ascii_array->length;
         str_free(ascii_array);
     }
 }
-
-
 
 
 static void collect_macros(Str* source, Dict* macro_dict)
@@ -153,35 +137,33 @@ static void collect_macros(Str* source, Dict* macro_dict)
             break;
         }
 
-        char* macro_start = pos + 5; // start after "#def "
-        char* macro_end = strchr(macro_start, ' ');
-
-        // handle macros with or without values
-        char* macro_value = NULL;
-        if (macro_end && macro_end < end_line) {
-            char* value_start = macro_end + 1;
-            macro_value = strndup(value_start, end_line - value_start);
+        // Trim leading spaces and tabs
+        char* macro_start = pos + 4;
+        while (*macro_start == ' ' || *macro_start == '\t') {
+            macro_start++;
         }
-        else {
-            // handle case where macro doesn't have value
-            macro_end = end_line;
-            macro_value = strdup("1"); // use 1 as the default value
+
+        char* macro_end = macro_start;
+        while (*macro_end != ' ' && *macro_end != '\t' && *macro_end != '\n') {
+            macro_end++;
+        }
+
+        char* value_start = macro_end;
+        while (*value_start == ' ' || *value_start == '\t') {
+            value_start++;
         }
 
         char* macro_name = strndup(macro_start, macro_end - macro_start);
+        char* macro_value = strndup(value_start, end_line - value_start);
 
-        dict_put(macro_dict, macro_name, str_to_char(str_new(macro_value)));
+        dict_put(macro_dict, macro_name, macro_value);
         print(VERBOSE, 3, "collect macro: %s = %s\n", macro_name, macro_value);
 
         free(macro_name);
         free(macro_value);
 
-        // remove the #def line from the source
-        str_remove_range(source, pos - src, end_line + 1 - src);
-
-        // update the src pointer since we have modified the source
+        str_remove_range(source, pos - src, end_line - src);
         src = str_to_char(source);
-        advance_to_next_line(&pos);
     }
 }
 
@@ -194,11 +176,6 @@ static void replace_macros(Str* source, Dict* macro_dict)
         print(VERBOSE, 3, "replace macro: %s with %s\n", entry->key, entry->value);
     }
 }
-
-// static void remove_endif_line()
-// {
-
-// }
 
 static void process_conditionals(Str* source, Dict* macro_dict)
 {
@@ -234,43 +211,78 @@ static void process_conditionals(Str* source, Dict* macro_dict)
             USER_PANIC(current_filename, current_line_number, "missing #endif for #if directive");
         }
 
+        int newline_count = 0;
+
         if (macro_defined) {
             print(VERBOSE, 3, "macro %s condition is true\n", macro_name);
+
             // If macro condition is true, remove the #else block if it exists
             if (else_pos && else_pos < endif_pos) {
-                str_remove_range(source, else_pos - src, endif_pos + 6 - src); // remove from #else to #endif
-            }
-            else {
-                // remove the #endif line
+                // Count newlines in the #else block
+                char* tmp_pos = else_pos;
+                while (tmp_pos < endif_pos) {
+                    if (*tmp_pos == '\n') {
+                        newline_count++;
+                    }
+                    tmp_pos++;
+                }
+
+                // Remove from #else to #endif and insert the newlines
+                str_remove_range(source, else_pos - src, endif_pos + 6 - src);
+                for (int i = 0; i < newline_count; i++) {
+                    str_insert(source, else_pos - src, "\n");
+                }
+
+            } else {
+                // Just remove the #endif line
                 endif_pos = strstr(str_to_char(source), "#endif");
                 if (endif_pos) {
                     char* end_of_endif_line = strchr(endif_pos, '\n');
                     if (end_of_endif_line) {
-                        str_remove_range(source, endif_pos - str_to_char(source), end_of_endif_line + 1 - str_to_char(source));
-                    }
-                    else {
+                        str_remove_range(source, endif_pos - str_to_char(source), end_of_endif_line - str_to_char(source));
+                    } else {
                         str_remove_range(source, endif_pos - str_to_char(source), strlen(str_to_char(source)));
                     }
                 }
             }
-            str_remove_range(source, pos - src, end_line + 1 - src); // remove the #if line
-        } 
-        else {
+
+            // Remove the #if line
+            str_remove_range(source, pos - src, end_line + 1 - src);
+
+            // Insert a newline after removing #if line
+            str_insert(source, pos - src, "\n");
+
+        } else {
             print(VERBOSE, 3, "macro %s condition is false\n", macro_name);
+
+            // Count newlines in the #if block
+            char* tmp_pos = end_line;
+            while (tmp_pos < (else_pos ? else_pos : endif_pos)) {
+                if (*tmp_pos == '\n') {
+                    newline_count++;
+                }
+                tmp_pos++;
+            }
+
             // If macro condition is false, remove the #if block and keep #else or remove all if no #else
             if (else_pos && else_pos < endif_pos) {
-                str_remove_range(source, pos - src, else_pos + 6 - src); // remove from #if to #else
+                str_remove_range(source, pos - src, else_pos + 6 - src);
             } else {
-                str_remove_range(source, pos - src, endif_pos + 6 - src); // remove from #if to #endif
+                str_remove_range(source, pos - src, endif_pos + 6 - src);
             }
-            // remove the #endif line
+
+            // Insert the newlines after removal
+            for (int i = 0; i < newline_count + 1; i++) {
+                str_insert(source, pos - src, "\n");
+            }
+
+            // Remove the #endif line
             endif_pos = strstr(str_to_char(source), "#endif");
             if (endif_pos) {
                 char* end_of_endif_line = strchr(endif_pos, '\n');
                 if (end_of_endif_line) {
-                    str_remove_range(source, endif_pos - str_to_char(source), end_of_endif_line + 1 - str_to_char(source));
-                }
-                else {
+                    str_remove_range(source, endif_pos - str_to_char(source), end_of_endif_line - str_to_char(source));
+                } else {
                     str_remove_range(source, endif_pos - str_to_char(source), strlen(str_to_char(source)));
                 }
             }
@@ -284,45 +296,6 @@ static void process_conditionals(Str* source, Dict* macro_dict)
     }
 }
 
-
-static void process_includes(Str* source)
-{
-    print(VERBOSE, 2, "processing includes\n");
-    char* src = str_to_char(source);
-    char* pos = src;
-
-    while ((pos = strstr(pos, "#incl")) != NULL) {
-        char* end_line = strchr(pos, '\n');
-        if (!end_line) {
-            break;
-        }
-
-        // extract file name
-        char* file_start = pos + 6; // Start after "#incl "
-        char* file_end = end_line;
-        char* file_name = strndup(file_start, file_end - file_start);
-
-        print(VERBOSE, 3, "including file: %s\n", file_name);
-
-        // read the content of the included file
-        char* included_content = read_file(file_name);
-        if (!included_content) {
-            USER_PANIC(current_filename, current_line_number, "failed to include file: %s", file_name);
-        }
-
-        // replace the #incl line with the content of the file
-        Str* included_str = str_new(included_content);
-        str_remove_range(source, pos - src, end_line + 1 - src);
-        str_insert(source, pos - src, included_content);
-
-        free(file_name);
-        free(included_content);
-        str_free(included_str);
-
-        advance_to_next_line(&pos);
-    }
-}
-
 static void remove_comments(Str* source)
 {
     print(VERBOSE, 2, "removing comments\n");
@@ -331,36 +304,33 @@ static void remove_comments(Str* source)
     Bool in_string = FALSE;
     Bool in_char = FALSE;
 
-    while ((pos = strchr(pos, ':')) != NULL) {
-        // check if ':' is inside a string or a character
-        char* scan_pos = src;
-        while (scan_pos < pos) {
-            if (*scan_pos == '"' && (scan_pos == src || *(scan_pos - 1) != '\\')) {
-                in_string = !in_string;
-            }
-            else if (*scan_pos == '\'' && (scan_pos == src || *(scan_pos - 1) != '\\')) {
-                in_char = !in_char; 
-            }
-            scan_pos++;
+    while (*pos != '\0') {
+        // Track whether we're inside a string or character literal
+        if (*pos == '"' && (pos == src || *(pos - 1) != '\\')) {
+            in_string = !in_string;
+        } else if (*pos == '\'' && (pos == src || *(pos - 1) != '\\')) {
+            in_char = !in_char;
         }
 
-        // if ':' is inside a string or character, skip it
-        if (in_string || in_char) {
-            pos++;
-            continue;
+        // If we find a ':' that is not inside a string or char literal, treat it as a comment
+        if (*pos == ':' && !in_string && !in_char) {
+            char* end_line = strchr(pos, '\n');
+            if (end_line) {
+                // Preserve the newline, remove everything up to it
+                str_remove_range(source, pos - src, end_line - src);
+            } else {
+                // No newline, remove until the end of the source
+                str_remove_range(source, pos - src, source->length);
+                break;
+            }
         }
 
-        // ':' is not inside a string or character, so it is a comment
-        char* end_line = strchr(pos, '\n');
-        if (!end_line) {
-            str_remove_range(source, pos - src, source->length); // remove from ':' to end of string
-            break;
-        }
-        else {
-            str_remove_range(source, pos - src, end_line - src); // remove the comment
-        }
+        pos++;
     }
 }
+
+
+
 
 static void remove_annotations(Str* source)
 {
@@ -370,46 +340,47 @@ static void remove_annotations(Str* source)
     Bool in_string = FALSE;
     Bool in_char = FALSE;
 
-    while ((pos = strchr(pos, '!')) != NULL) {
-        // check if '!' is inside a string, character, or is part of '!='
-        char* scan_pos = src;
-        while (scan_pos < pos) {
-            if (*scan_pos == '"' && (scan_pos == src || *(scan_pos - 1) != '\\')) {
-                in_string = !in_string; 
-            }
-            else if (*scan_pos == '\'' && (scan_pos == src || *(scan_pos - 1) != '\\')) {
-                in_char = !in_char; 
-            }
-            scan_pos++;
+    while (*pos != '\0') {
+        // Track whether we're inside a string or character literal
+        if (*pos == '"' && (pos == src || *(pos - 1) != '\\')) {
+            in_string = !in_string;
+        } else if (*pos == '\'' && (pos == src || *(pos - 1) != '\\')) {
+            in_char = !in_char;
         }
 
-        // if '!' is inside a string, character, or followed by '=', skip it
-        if (in_string || in_char || (*(pos + 1) == '=')) {
-            pos++; 
+        // Handle '!' that should not be removed as an annotation
+        if (*pos == '!' && !in_string && !in_char) {
+            // Check if '!' is followed by '=' (indicating a "not equal" operator)
+            if (*(pos + 1) == '=') {
+                pos += 2; // Skip the '!=' operator
+                continue;
+            }
+
+            // Proceed to remove the word following '!', as it's an annotation
+            char* word_start = pos + 1;
+            while (*word_start == ' ' || *word_start == '\t') {
+                word_start++;
+            }
+
+            char* word_end = word_start;
+            while (*word_end != ' ' && *word_end != '\t' && *word_end != '\n' && *word_end != '\0' && *word_end != '<') {
+                word_end++;
+            }
+
+            // Remove the annotation
+            str_remove_range(source, pos - src, word_end - src + 1);
+
+            // Update position pointer
+            pos = src + (word_end - src) - 1;
             continue;
         }
 
-        // process the annotation
-        if (pos[1] == ' ' || pos[1] == '\t') { // skip the entire line if ! is followed by a space
-            char* end_line = strchr(pos, '\n');
-            if (!end_line) {
-                str_remove_range(source, pos - src, source->length);
-                break;
-            }
-            else {
-                str_remove_range(source, pos - src, end_line + 1 - src);
-            }
-        } 
-        else { // Skip the word until the next space or tab
-            char* space = pos + 1;
-            while (*space != ' ' && *space != '\t' && *space != '\n' && *space != '\0') {
-                space++;
-            }
-
-            str_remove_range(source, pos - src, space - src);
-        }
+        pos++;
     }
 }
+
+
+
 
 Str* preprocess_file(const char* filename, Dict* macro_dict)
 {
@@ -421,8 +392,6 @@ Str* preprocess_file(const char* filename, Dict* macro_dict)
     remove_comments(source);
     remove_annotations(source);
 
-    process_includes(source);
-    
     collect_macros(source, macro_dict);
     process_conditionals(source, macro_dict);
     replace_macros(source, macro_dict); 

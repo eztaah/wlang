@@ -9,15 +9,15 @@
 : an error message and terminates the program.
 _write(<64> fd, !cstr& <64> buf, <64> count)
 {
-#ifdef C_WRITE
+#ifndef C_WRITE
     <64> result = @write(fd, buf, count);
 #else
     <64> result = %sysc(1, fd, buf, count, 0, 0, 0);
 #endif
 
     if (result < 0) {
-        !wstr& <64> err_msg[64] = "error: libw/io/_write: write operation failed\n";
-        print_wstr(err_msg, 64);
+        !wstr& <64> err_msg[46] = "error: libw/io/_write: write operation failed\n";
+        print_wstr(err_msg, 46);
         exit(1);
     }
 }
@@ -36,8 +36,8 @@ _read(<64> fd, !cstr& <64> buf, <64> count)
 #endif
 
     if (result < 0) {
-        !wstr& <64> err_msg[64] = "error: libw/io/_read: read operation failed\n";
-        print_wstr(err_msg, 64);
+        !wstr& <64> err_msg[44] = "error: libw/io/_read: read operation failed\n";
+        print_wstr(err_msg, 44);
         exit(1);
     }
 }
@@ -50,8 +50,8 @@ _read(<64> fd, !cstr& <64> buf, <64> count)
 _print_digt(!digt <64> digt)
 {
     if (digt < 0 || digt > 9) {
-        !wstr& <64> err_msg[64] = "error: libw/io/_print_digt: invalid digit, must be between 0 and 9\n";
-        print_wstr(err_msg, 64);
+        !wstr& <64> err_msg[67] = "error: libw/io/_print_digt: invalid digit, must be between 0 and 9\n";
+        print_wstr(err_msg, 67);
         exit(1);
     }
 
