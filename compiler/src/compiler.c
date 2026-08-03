@@ -1,6 +1,4 @@
-#define _GNU_SOURCE
 #include <unistd.h>
-
 #include <stdio.h>  // printf()
 #include <stdlib.h> // exit(), free()
 #include <string.h>
@@ -124,40 +122,22 @@ int assemble_file(const char* filename, Str* object_files)
     return res.return_code;
 }
 
-char* get_executable_path() {
-    // Buffer pour stocker le chemin complet de l'exécutable
-    char buffer[1024];
-    ssize_t len = readlink("/proc/self/exe", buffer, sizeof(buffer) - 1);
-    
-    if (len != -1) {
-        buffer[len] = '\0';
-        return strdup(buffer);
-    } else {
-        // Gestion d'erreur si la lecture du chemin échoue
-        perror("readlink");
-        exit(EXIT_FAILURE);
-    }
-}
-
-char* get_executable_dir() {
-    char* exec_path = get_executable_path();
+char* get_executable_dir(const char* argv0) {
+    char* exec_path = strdup(argv0);
     char* last_slash = strrchr(exec_path, '/');
     
     if (last_slash != NULL) {
-        *last_slash = '\0';  // Terminer la chaîne juste avant le dernier '/'
+        *last_slash = '\0';  // Terminate the string just before the last '/'
         return exec_path;
-    } 
-    else {
+    } else {
         free(exec_path);
         PANIC("failed to determine executable location");
         return NULL;
     }
 }
 
-
-int link_executable(Str* object_files)
+int link_executable(Str* object_files, const char* argv0)
 {
-
     Str* link_cmd;
 
     if (static_library) {
@@ -172,18 +152,16 @@ int link_executable(Str* object_files)
 
         // Add libc if not disabled
         if (!no_libw) {
-            char* exec_dir = get_executable_dir();
+            char* exec_dir = get_executable_dir(argv0);
             str_cat(link_cmd, "-L");
             str_cat(link_cmd, exec_dir);
             str_cat(link_cmd, " -l:libw.a ");
-
-            // str_cat(link_cmd, "-L/home/antoine/Documents -l:libw.a ");
+            free(exec_dir);
         }
         if (!no_libc) {
             str_cat(link_cmd, "-lc -dynamic-linker /lib64/ld-linux-x86-64.so.2");
         }
     }
-
 
     // Print linking message and command
     print(VERBOSE, 1, "$ %s\n", str_to_char(link_cmd));
