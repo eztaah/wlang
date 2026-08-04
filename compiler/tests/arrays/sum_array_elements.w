@@ -19,7 +19,7 @@
 {
     !ascii <64> arr[4] = [10, 20, 30, 40];
     !int <64> result = sum_array(arr, 4);
-    ret result;  : should ret 100 (sum of array elements)
+    ret result;
 }
 
 : expected exit code : 100

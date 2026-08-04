@@ -1,66 +1,38 @@
 # wlang
 
-The goal is to create a simple high-level programming language.  
-The compiler is written in C and translates your high-level code into x86_64 GNU assembly.
+wlang is a simple, high-level compiled programming language.    
 
-```
-C'est un language compilé (pas interpreté)
+- The compiler is written in C and translates wlang code into x86_64 GNU assembly. The generated code follows (or attempts to follow) the Linux System V ABI.
 
-A ajouter : 
-wlangc est un compiler driver, il va gerer le preprocessing, et va aussi utiliser en interne as et ld pour generer l'elf executable. 
+- The standard library has been written from scratch in wlang itself and is designed to interface directly with the Linux kernel via system calls, without relying on the C standard library.
 
-Lors du linkage, votre systeme a besoin d'avoir la libc sur son systeme, le linkage est dynamic (la libc n'est pas inclus dans l'executable), link avec ce fichier : ld-linux-x86-64.so.2
+- The language is untyped, leaving variable interpretation and management entirely to the developer. Annotations (! followed by a word) can be used to track types, but they are stripped out before compilation.      
+Additionnaly, all variables are fixed at 64 bits in size.
 
-Vision : 
-    - le compilateur à pour but d'etre le plus simple possible
-    - le compilateur ne fournit aucune optimisation
-    - aucune volonté de supporter d'autres architecutre (cela compile pour du x86_64 pour linux system)
-    - ce language a uniquement un set minimal de feature, (pas de switch, pas de +=, pas de ++, pas de elif), tout ce qui est un wrapper autout d'une fonctionnalité existant n'est pas implementé (pas de [] pour les tableaux).
-
-Infos : 
-    - pas de skip avec les operateur || et &&, toutes les expressions sont evaluées (pas de Short-Circuiting Operators)
-
-
-
-The generated assembly code follow the linux ABI System V, you can link it with c.
-
-
-
-Le compilateur ne sait pas ce qu'il y a dans chaque boites, 
-    - Il n'y a donc pas de type checking
-
-    - il n'y a pas de type float, car ajouter le type float dans mon language me forcerais à ajouter un type à chaque boite, car le compilateur aurait besoin de savoir si il doit utiliser le add ou addss lorsqu'il additionne le contenu de la boite. 
-
-
-Rappel language C : 
-Les "type" mis en place sont la uniqument pour empecher au developpeur de faire des erreurs, 
-Caster un entier signé dans un entier non signé ne modifie en aucun cas le contentu de la variable, cela modifie juste l'etiquette sur la variable pour dire : "je veux que cette valeur soit interpreté comme un entier non signé", si cette valeur est passé à une fonction qui attend un type signé, il y aura une erreur. MAIS CELA NE CHANGE PAS LE CODE EN ASSEMBLEUR
-
-```
+- The language offers basic arithmetic, logical, and bitwise operations, along with functions, loops, and conditional branching with if/else. It supports dereferencing, addressing, multifile compilation, macros, and conditional compilation.    
 
 <br>
 
-## Language Syntax
+Below is a preview of the language syntax:
+<img src="./docs/language-preview.png" alt="wlang syntax preview" width="600">
 
 > A Visual Studio Code extension for syntax highlighting is available:  
 [https://marketplace.visualstudio.com/items?itemName=eztaah.w](https://marketplace.visualstudio.com/items?itemName=eztaah.w)
 
 <br>
 
-Below is a program that adds two numbers and prints the sum to the terminal:  
-<img src="./docs/language-preview.png" alt="image" width="575">
-
-Key Points:
-- The `return` keyword is mandatory, even if the function returns nothing.
-- Functions prefixed with `@` are directly translated to assembly during compilation and do not have "definitions".
-- The only existing type is `I64` (a signed 64-bit integer). Keep in mind that you can store ASCII codes and even memory addresses in it. Therefore, it's possible to manipulate characters and addresses.
-- Instructions cannot be written outside of functions.
+You can find various demonstration programs in the `./demos` directory.
 
 <br>
+<br>
 
-## How to use the compiler
+## How to Use the Compiler
 
-To compile your code, use the `wlangc` program (see below for building the compiler).
+To compile your wlang code, use the `wlangc` command-line tool (see the section below on building the compiler).
+
+> Dependencies (required when compiling wlang code):    
+> - GNU Assembler (as) and Linker (ld): These tools must be installed and accessible via the system's PATH.  
+> - C Standard Library (libc): If --no-libc flag is not used, the compiler will dynamically link to libc, assuming it is available on your system. The dynamic linker /lib64/ld-linux-x86-64.so.2 will be added to the executable.
 
 ```
 $ wlangc --help                                    
@@ -70,23 +42,59 @@ Usage:
     wlangc --help                 display this help message and exit.
 
 Options:
-    -v, --verbose                   output additional information
-    -d, --dev-mode                  activate dev mode (add comments in the asm code, ...)
-    -e, --to-executable             assemble and link the asmed assembly code into an executable
-                                        - GNU assembler (as) and GNU linker (ld) will be needed during compilation time.
-                                        - the generated executable will only run on x86_64 architecture and requires a Linux system.
-``` 
+    -v, --verbose                    output information during compilation
+    -d, --define <macro>             define a macro
+    --no-libc                        do not link with libc
+    --no-libw                        do not link with libw
+    --compile-only                   compile only; do not assemble or link
+    --no-start-fun                   no _start function, and do not rename main to w__main
+    --lib                            create a static library
+```
+
+<br>
+<br>
+
+## The Standard Library
+
+Available Functions:    
+<img src="./docs/libw-functions.png" alt="libw functions">
 
 <br>
 
-## Building the compiler from source
+The goal is to create a standard library that can interface directly with the Linux kernel via system calls, without relying on the libc.     
+However, certain functions, such as `malloc` and `free`, have not yet been fully implemented using system calls. As a result, these functions are currently wrappers around the corresponding libc functions.
 
-Le compilateur est codé en C, vous avec besoin du compilateur gcc ainsi que de la libc.
+<br>
+<br>
 
-Navigate to the project directory and execute this command:
-```shell
+## Building the Compiler from Source
+
+The compiler's source code was developed using a Linux system, and will probably not compile on Windows.
+
+> Dependencies:  
+> - gcc    
+> - C Standard Library (libc):
+
+building steps:
+```sh
 cd compiler
 make release
-``` 
+```
+This command will generate a `wlangc` binary in the root directory of the project.
 
-A binary named `wlangc` will be generated in your current directory.
+<br>
+<br>
+
+## Building the Standard Library from Source
+
+Before building the standard library, ensure that `wlangc` has been compiled.
+
+> Dependencies:  
+> - C Standard Library (libc): Required for compiling libw due to the current implementation of malloc and free. (Refer to "The Standard Library" section for more details.)
+
+building steps:
+```sh
+cd stdlib
+make default
+```
+This will generate a static library named `libw.a` in the root directory of the project.

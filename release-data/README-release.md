@@ -1,1 +1,0 @@
-This is the readme in the release folder

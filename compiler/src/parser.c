@@ -5,12 +5,12 @@
 #include "compiler.h"
 
 typedef struct {
-    const List* token_list; 
-    int token_list_size;    
-    int index;              
-    int index_next_token;   
-    Token current_token;    
-    Token next_token;       
+    const List* token_list;
+    int token_list_size;
+    int index;
+    int index_next_token;
+    Token current_token;
+    Token next_token;
 } Parser;
 
 static Parser* parser_new(const List* token_list)
@@ -92,7 +92,7 @@ static ExprNode* parse_fun_call(Parser* parser)
 
     eat_next_token(parser, TOKEN_RPAREN);
     ExprNode* node = funcall_node_new(str_to_char(final_name), expr_node_list, line);
-    str_free(final_name); 
+    str_free(final_name);
     return node;
 }
 
@@ -580,7 +580,7 @@ static FundefNode* parse_fundef(Parser* parser)
 
     FundefNode* fundef_node = fundef_node_new(str_to_char(full_name), return_size, scope, param_node_list, block_node, line);
     str_free(full_name);
-    free(name);         
+    free(name);
     return fundef_node;
 }
 

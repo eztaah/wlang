@@ -18,7 +18,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/eztaah/dev-wlang/tree/master/plugins/wlang-vscode"
+    "url": "https://github.com/eztaah/wlang/tree/master/editors/wlang-vscode"
   },
   "engines": {
     "vscode": "^1.50.0"

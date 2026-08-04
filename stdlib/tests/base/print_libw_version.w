@@ -4,4 +4,4 @@
     ret 0;
 }
 
-: expected output : libw 0.3.0\n
+: expected output : libw 1.0.0\n
