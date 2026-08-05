@@ -1,6 +1,6 @@
 {
-  "name": "wlang",
-  "displayName": "wlang",
+  "name": "w",
+  "displayName": "wlang (.w)",
   "description": "Language support for wlang.",
   "publisher": "eztaah",
   "license": "MIT",
